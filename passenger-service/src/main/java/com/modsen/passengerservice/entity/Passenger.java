@@ -2,11 +2,15 @@ package com.modsen.passengerservice.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "passengers")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
 public class Passenger {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +25,7 @@ public class Passenger {
     @Column(name = "phone")
     String phone;
     @Column(precision = 3, scale = 2, columnDefinition = "numeric")
-    Double rating = 5.0;
+    Double rating;
 
 
 }
