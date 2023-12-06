@@ -1,13 +1,17 @@
 package com.modsen.driverservice.entity;
 
-import com.modsen.driverservice.entity.enums.Status;
+import com.modsen.driverservice.enums.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "drivers")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
 public class Driver {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +24,7 @@ public class Driver {
     @Column(name = "phone")
     String phone;
 
-    @Column(precision = 3, scale = 2, columnDefinition = "numeric")
+    @Column(name = "rating")
     Double rating = 5.0;
 
     @Enumerated(EnumType.STRING)
