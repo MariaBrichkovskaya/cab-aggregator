@@ -3,13 +3,19 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/drivers?createDatabaseIfNotExist=true
-    username: root
+    url: jdbc:postgresql://localhost:5432/drivers
+    username: postgres
     password: ${DB_PASSWORD}
   liquibase:
     enabled: true
     change-log: db/changelog/db.changelog-master.yaml
   jpa:
+    properties:
+      hibernate:
+        dialect=org:
+          hibernate:
+            dialect:
+              PostgreSQLDialect:
     hibernate:
       ddl-auto: none
     show-sql: true

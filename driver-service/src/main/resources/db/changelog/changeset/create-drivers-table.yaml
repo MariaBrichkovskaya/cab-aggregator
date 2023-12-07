@@ -34,7 +34,7 @@ databaseChangeLog:
                   type: decimal
               - column:
                   name: status
-                  type: enum('AVAILABLE','UNAVAILABLE')
+                  type: varchar(255)
                   constraints:
                     nullable: false
       rollback:

@@ -11,4 +11,7 @@ public interface DriverService {
     List<DriverResponse> findAll(int page, int size, String sortingParam);
     void update(DriverRequest request,Long id);
     void delete(Long id);
+    void changeStatus(Long id);
+    void editRating(Double score,Long id);
+    List<DriverResponse> findAvailableDrivers();
 }

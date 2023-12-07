@@ -48,6 +48,22 @@ public class DriverController {
         driverService.update(driverRequest,id);
         return ResponseEntity.ok("Editing driver with id " + id);
     }
+    @PutMapping("/status/{id}")
+    public ResponseEntity<String> changeStatus(@PathVariable Long id){
+        driverService.changeStatus(id);
+        return ResponseEntity.ok("Status changed");
+    }
+
+    @PutMapping("/rating/{id}")
+    public ResponseEntity<String> changeRating(@PathVariable Long id,@RequestBody Double score){
+        driverService.editRating(score,id);
+        return ResponseEntity.ok("Rating updated");
+    }
+    @GetMapping("/available")
+    public ResponseEntity<List<DriverResponse>> getAvailable(){
+        List<DriverResponse> drivers=driverService.findAvailableDrivers();
+        return ResponseEntity.ok(drivers);
+    }
 }
 
 

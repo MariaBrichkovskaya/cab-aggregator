@@ -3,6 +3,7 @@ package com.modsen.driverservice.service.impl;
 import com.modsen.driverservice.dto.request.DriverRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
 import com.modsen.driverservice.entity.Driver;
+import com.modsen.driverservice.enums.Status;
 import com.modsen.driverservice.exception.AlreadyExistsException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.lang.reflect.Field;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.modsen.driverservice.util.Messages.*;
 
@@ -55,9 +57,9 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverResponse findById(Long id) {
-        Driver passenger=driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Driver driver=driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving driver by id {}", id);
-        return toDto(passenger);
+        return toDto(driver);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class DriverServiceImpl implements DriverService {
         }
         PageRequest pageRequest;
         if (sortingParam == null) {
-            pageRequest = PageRequest.of(page-1, size);
+            pageRequest = PageRequest.of(page-1, size,Sort.by("id"));
         } else {
             validateSortingParameter(sortingParam);
             pageRequest = PageRequest.of(page-1, size, Sort.by(sortingParam));
@@ -123,4 +125,31 @@ public class DriverServiceImpl implements DriverService {
         log.info("Delete driver with id {}", id);
 
     }
+
+    @Override
+    public void changeStatus(Long id) {
+        Driver driver=driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        if(driver.getStatus().equals(Status.AVAILABLE)){
+            driver.setStatus(Status.UNAVAILABLE);
+        } else {
+            driver.setStatus(Status.AVAILABLE);
+        }
+        driverRepository.save(driver);
+    }
+
+    @Override
+    public void editRating(Double score,Long id) {
+        Driver driver=driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        double rating=(driver.getRating()+score)/2;
+        driver.setRating(rating);
+        driverRepository.save(driver);
+    }
+
+    @Override
+    public List<DriverResponse> findAvailableDrivers() {
+        return driverRepository.findByStatus(Status.AVAILABLE).stream()
+                .map(this::toDto).collect(Collectors.toList());
+    }
+
+
 }
