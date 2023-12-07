@@ -1,7 +1,9 @@
 package com.modsen.driverservice.controller;
 
 import com.modsen.driverservice.dto.request.DriverRequest;
+import com.modsen.driverservice.dto.request.RatingRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
+import com.modsen.driverservice.dto.response.DriversListResponse;
 import com.modsen.driverservice.service.DriverService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,10 +21,10 @@ public class DriverController {
     private final DriverService driverService;
 
     @GetMapping
-    public ResponseEntity<List<DriverResponse>> getAll(@RequestParam(required = false, defaultValue = "1") int page,
+    public ResponseEntity<DriversListResponse> getAll(@RequestParam(required = false, defaultValue = "1") int page,
                                                        @RequestParam(required = false, defaultValue = "10") int size,
                                                        @RequestParam(name = "order_by", required = false) String orderBy){
-        List<DriverResponse> drivers=driverService.findAll(page,size,orderBy);
+        DriversListResponse drivers=driverService.findAll(page,size,orderBy);
         return ResponseEntity.ok(drivers);
     }
     @PostMapping
@@ -55,13 +57,13 @@ public class DriverController {
     }
 
     @PutMapping("/rating/{id}")
-    public ResponseEntity<String> changeRating(@PathVariable Long id,@RequestBody Double score){
-        driverService.editRating(score,id);
+    public ResponseEntity<String> changeRating(@PathVariable Long id,@RequestBody RatingRequest request){
+        driverService.editRating(request.getScore(),id);
         return ResponseEntity.ok("Rating updated");
     }
     @GetMapping("/available")
-    public ResponseEntity<List<DriverResponse>> getAvailable(){
-        List<DriverResponse> drivers=driverService.findAvailableDrivers();
+    public ResponseEntity<DriversListResponse> getAvailable(){
+        DriversListResponse drivers=driverService.findAvailableDrivers();
         return ResponseEntity.ok(drivers);
     }
 }

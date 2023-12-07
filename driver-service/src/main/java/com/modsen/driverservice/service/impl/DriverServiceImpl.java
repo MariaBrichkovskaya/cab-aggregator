@@ -2,6 +2,7 @@ package com.modsen.driverservice.service.impl;
 
 import com.modsen.driverservice.dto.request.DriverRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
+import com.modsen.driverservice.dto.response.DriversListResponse;
 import com.modsen.driverservice.entity.Driver;
 import com.modsen.driverservice.enums.Status;
 import com.modsen.driverservice.exception.AlreadyExistsException;
@@ -63,11 +64,12 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public List<DriverResponse> findAll(int page, int size, String sortingParam) {
+    public DriversListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Driver> driversPage = driverRepository.findAll(pageRequest);
-        return driversPage.getContent().stream()
+        List<DriverResponse> drivers= driversPage.getContent().stream()
                 .map(this::toDto).toList();
+        return new DriversListResponse(drivers);
     }
     private PageRequest getPageRequest(int page, int size, String sortingParam) {
         if (page < 1 || size < 1) {
@@ -146,9 +148,10 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public List<DriverResponse> findAvailableDrivers() {
-        return driverRepository.findByStatus(Status.AVAILABLE).stream()
+    public DriversListResponse findAvailableDrivers() {
+        List<DriverResponse> drivers= driverRepository.findByStatus(Status.AVAILABLE).stream()
                 .map(this::toDto).collect(Collectors.toList());
+        return new DriversListResponse(drivers);
     }
 
 
