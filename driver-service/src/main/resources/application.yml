@@ -6,8 +6,11 @@ spring:
     url: jdbc:mysql://localhost:3306/drivers?createDatabaseIfNotExist=true
     username: root
     password: ${DB_PASSWORD}
+  liquibase:
+    enabled: true
+    change-log: db/changelog/db.changelog-master.yaml
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
 
