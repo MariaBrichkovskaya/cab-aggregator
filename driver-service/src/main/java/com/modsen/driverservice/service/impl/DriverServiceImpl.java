@@ -45,7 +45,7 @@ public class DriverServiceImpl implements DriverService {
     public void add(DriverRequest request) {
         if (driverRepository.existsByPhone(request.getPhone())) {
             log.error("Driver with phone {} is exists", request.getPhone());
-            throw new AlreadyExistsException(DRIVER_WITH_PHONE_EXISTS_MESSAGE);
+            throw new AlreadyExistsException(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE,request.getPhone()));
         }
         driverRepository.save(toEntity(request));
         log.info("Create driver with surname {}",request.getSurname());
@@ -104,7 +104,7 @@ public class DriverServiceImpl implements DriverService {
         if (!Objects.equals(request.getPhone(), driver.getPhone())) {
             if (driverRepository.existsByPhone(request.getPhone())) {
                 log.error("Driver with phone {} is exists", request.getPhone());
-                throw new AlreadyExistsException(DRIVER_WITH_PHONE_EXISTS_MESSAGE);
+                throw new AlreadyExistsException(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE,request.getPhone()));
             }
         }
         driver.setId(id);

@@ -19,7 +19,7 @@ import java.util.HashMap;
 import static com.modsen.driverservice.util.Messages.*;
 
 @ControllerAdvice
-public class PassengerHandler {
+public class DriverHandler {
     @ExceptionHandler(value = {NotFoundException.class})
     public ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException){
         ExceptionResponse response=
@@ -37,15 +37,15 @@ public class PassengerHandler {
                 );
         return new ResponseEntity<>(response,response.getStatus());
     }
-
-    @ExceptionHandler(AlreadyExistsException.class)
-    public AlreadyExistsResponse handleDriverAlreadyExists(AlreadyExistsException alreadyExistsException) {
-        return AlreadyExistsResponse.builder()
-                .status(HttpStatus.CONFLICT)
-                .message(alreadyExistsException.getMessage())
-                .errors(alreadyExistsException.getErrors())
-                .build();
+    @ExceptionHandler(value = {AlreadyExistsException.class})
+    public ResponseEntity<Object> handleNotFoundException(AlreadyExistsException alreadyExistsException){
+        ExceptionResponse response=
+                new ExceptionResponse( HttpStatus.BAD_REQUEST,
+                        alreadyExistsException.getMessage()
+                );
+        return new ResponseEntity<>(response,response.getStatus());
     }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ValidationExceptionResponse handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
