@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-ride
+      author: Maria Brichkovskaya
+      changes:
+        - createTable:
+            tableName: rides
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: pick_up_address
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destination_address
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: decimal
+                  constraints:
+                    nullable: false
+              - column:
+                  name: passenger_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: rides
