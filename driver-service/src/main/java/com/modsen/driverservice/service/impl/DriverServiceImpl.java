@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import static com.modsen.driverservice.util.Messages.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class DriverServiceImpl implements DriverService {
     private final ModelMapper modelMapper;
     private final DriverRepository driverRepository;
@@ -57,6 +59,7 @@ public class DriverServiceImpl implements DriverService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public DriverResponse findById(Long id) {
         Driver driver=driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving driver by id {}", id);
@@ -64,6 +67,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DriversListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Driver> driversPage = driverRepository.findAll(pageRequest);
@@ -148,6 +152,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DriversListResponse findAvailableDrivers(int page,int size,String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE,pageRequest);

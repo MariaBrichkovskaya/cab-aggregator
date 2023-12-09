@@ -1,13 +1,17 @@
 package com.modsen.driverservice.dto.response;
 
-import lombok.Builder;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 @Builder
-public record ValidationExceptionResponse(
-        HttpStatus status,
-        String message,
-        Map<String, String> errors
-) {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Getter
+@Setter
+public class ValidationExceptionResponse{
+        final HttpStatus status;
+        final String message;
+        final Map<String, String> errors;
 }
