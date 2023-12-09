@@ -17,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.lang.reflect.Field;
 
 import java.util.*;
@@ -26,6 +28,7 @@ import static com.modsen.passengerservice.util.Messages.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class PassengerServiceImpl implements PassengerService {
     private final ModelMapper modelMapper;
     private final PassengerRepository passengerRepository;
@@ -46,6 +49,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PassengerResponse findById(Long id) {
         Passenger passenger=passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
@@ -54,6 +58,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PassengersListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Passenger> passengersPage = passengerRepository.findAll(pageRequest);

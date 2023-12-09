@@ -12,13 +12,17 @@ import com.modsen.passengerservice.service.RatingService;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class RatingServiceImpl implements RatingService {
     private final RatingRepository ratingRepository;
     private final PassengerRepository passengerRepository;
@@ -31,16 +35,19 @@ public class RatingServiceImpl implements RatingService {
         newPassengerRating.setPassenger(passengerRepository.findById(passengerId)
                 .orElseThrow(() -> new NotFoundException(passengerId)));
         newPassengerRating = ratingRepository.save(newPassengerRating);
+        log.info("Update rating for passenger {}",passengerId);
         return toDto(newPassengerRating);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PassengerListRatingsResponse getRatingsByPassengerId(long passengerId) {
         validatePassengerExists(passengerId);
         List<PassengerRatingResponse> passengerRatings = ratingRepository.getRatingsByPassengerId(passengerId)
                 .stream()
                 .map(this::toDto)
                 .toList();
+        log.info("Retrieving rating for passenger {}",passengerId);
         return PassengerListRatingsResponse.builder()
                 .passengerRatings(passengerRatings)
                 .build();
@@ -56,6 +63,7 @@ public class RatingServiceImpl implements RatingService {
                 .mapToDouble(Rating::getScore)
                 .average()
                 .orElse(0.0);
+        log.info("Retrieving average rating for passenger {}",passengerId);
         return AveragePassengerRatingResponse.builder()
                 .averageRating(Math.round(averageRating * 100.0) / 100.0)
                 .passengerId(passengerId)

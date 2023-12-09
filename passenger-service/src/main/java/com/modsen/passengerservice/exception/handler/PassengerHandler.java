@@ -46,19 +46,15 @@ public class PassengerHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ValidationExceptionResponse handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
+    public ResponseEntity<Object>  handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
         var errors = new HashMap<String, String>();
         methodArgumentNotValidException.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-
-        return ValidationExceptionResponse.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(VALIDATION_FAILED_MESSAGE)
-                .errors(errors)
-                .build();
+        ValidationExceptionResponse response= new ValidationExceptionResponse(HttpStatus.BAD_REQUEST,VALIDATION_FAILED_MESSAGE,errors);
+        return new ResponseEntity<>(response,response.getStatus());
     }
 
 
