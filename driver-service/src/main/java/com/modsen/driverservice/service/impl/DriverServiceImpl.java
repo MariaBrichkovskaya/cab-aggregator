@@ -140,7 +140,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void editRating(Double score,Long id) {
+    public void editRating(Integer score,Long id) {
         Driver driver=driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         double rating=(driver.getRating()+score)/2;
         driver.setRating(rating);
@@ -148,9 +148,11 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public DriversListResponse findAvailableDrivers() {
-        List<DriverResponse> drivers= driverRepository.findByStatus(Status.AVAILABLE).stream()
-                .map(this::toDto).collect(Collectors.toList());
+    public DriversListResponse findAvailableDrivers(int page,int size,String sortingParam) {
+        PageRequest pageRequest = getPageRequest(page, size, sortingParam);
+        Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE,pageRequest);
+        List<DriverResponse> drivers= driversPage.getContent().stream()
+                .map(this::toDto).toList();
         return new DriversListResponse(drivers);
     }
 

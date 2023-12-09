@@ -13,6 +13,6 @@ public interface DriverService {
     void update(DriverRequest request,Long id);
     void delete(Long id);
     void changeStatus(Long id);
-    void editRating(Double score,Long id);
-    DriversListResponse findAvailableDrivers();
+    void editRating(Integer score,Long id);
+    DriversListResponse findAvailableDrivers(int page,int size,String sortingParam);
 }
