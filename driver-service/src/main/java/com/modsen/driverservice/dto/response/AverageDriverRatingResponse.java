@@ -2,8 +2,7 @@ package com.modsen.driverservice.dto.response;
 
 import lombok.*;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Getter
 @Setter
 @Builder

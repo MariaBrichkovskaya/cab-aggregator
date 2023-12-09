@@ -8,7 +8,6 @@ import java.util.List;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
 @Builder
 public class DriversListResponse {
     List<DriverResponse> drivers;

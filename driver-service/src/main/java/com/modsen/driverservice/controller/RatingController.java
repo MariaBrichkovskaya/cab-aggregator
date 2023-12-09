@@ -13,21 +13,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/rating/{id}")
 @RequiredArgsConstructor
 public class RatingController {
-    private final RatingService ratingServiceatingService;
+    private final RatingService ratingService;
 
     @PostMapping
     public DriverRatingResponse rateDriver(@Valid @RequestBody DriverRatingRequest driverRatingRequest,
                                            @PathVariable("id") long driverId) {
-        return ratingServiceatingService.rateDriver(driverRatingRequest, driverId);
+        return ratingService.rateDriver(driverRatingRequest, driverId);
     }
 
     @GetMapping
     public DriverListRatingsResponse getRatingsByDriverId(@PathVariable("id") long driverId) {
-        return ratingServiceatingService.getRatingsByDriverId(driverId);
+        return ratingService.getRatingsByDriverId(driverId);
     }
 
     @GetMapping("/average")
     public AverageDriverRatingResponse getAverageDriverRating(@PathVariable("id") long driverId) {
-        return ratingServiceatingService.getAverageDriverRating(driverId);
+        return ratingService.getAverageDriverRating(driverId);
     }
 }

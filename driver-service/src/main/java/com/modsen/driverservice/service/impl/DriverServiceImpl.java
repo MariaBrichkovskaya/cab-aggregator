@@ -69,7 +69,7 @@ public class DriverServiceImpl implements DriverService {
         Page<Driver> driversPage = driverRepository.findAll(pageRequest);
         List<DriverResponse> drivers= driversPage.getContent().stream()
                 .map(this::toDto).toList();
-        return new DriversListResponse(drivers);
+        return DriversListResponse.builder().drivers(drivers).build();
     }
     private PageRequest getPageRequest(int page, int size, String sortingParam) {
         if (page < 1 || size < 1) {
@@ -153,7 +153,7 @@ public class DriverServiceImpl implements DriverService {
         Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE,pageRequest);
         List<DriverResponse> drivers= driversPage.getContent().stream()
                 .map(this::toDto).toList();
-        return new DriversListResponse(drivers);
+        return DriversListResponse.builder().drivers(drivers).build();
     }
 
 
