@@ -155,7 +155,7 @@ public class RideServiceImpl implements RideService {
         }
         Optional<Ride> ride=rideRepository.findById(id);
         Ride retrievedRide=ride.get();
-        retrievedRide.setStatus(statusRequest.getStatus());
+        retrievedRide.setStatus(Status.valueOf(statusRequest.getStatus()));
         rideRepository.save(retrievedRide);
     }
 }

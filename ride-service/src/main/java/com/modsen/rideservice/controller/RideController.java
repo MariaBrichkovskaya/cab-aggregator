@@ -62,7 +62,7 @@ public class RideController {
         return ResponseEntity.ok(rides);
     }
     @PutMapping("/status/{id}")
-    public ResponseEntity<String> editStatus(@PathVariable Long id,@RequestBody StatusRequest statusRequest)
+    public ResponseEntity<String> editStatus(@PathVariable Long id,@RequestBody @Valid StatusRequest statusRequest)
     {
         rideService.editStatus(id,statusRequest);
         return ResponseEntity.ok("Status updated to " + statusRequest.getStatus());

@@ -10,8 +10,12 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.modsen.rideservice.util.Messages.*;
 
@@ -34,21 +38,16 @@ public class RideHandler {
                 );
         return new ResponseEntity<>(response,response.getStatus());
     }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ValidationExceptionResponse handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
+    public ResponseEntity<Object>  handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
         var errors = new HashMap<String, String>();
         methodArgumentNotValidException.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-
-        return ValidationExceptionResponse.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(VALIDATION_FAILED_MESSAGE)
-                .errors(errors)
-                .build();
+        ValidationExceptionResponse response= new ValidationExceptionResponse(HttpStatus.BAD_REQUEST,VALIDATION_FAILED_MESSAGE,errors);
+        return new ResponseEntity<>(response,response.getStatus());
     }
 
 
