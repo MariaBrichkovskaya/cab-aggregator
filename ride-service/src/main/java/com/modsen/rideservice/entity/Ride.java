@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "rides")
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -27,7 +30,7 @@ public class Ride {
     Long passengerId;
     @Column(name = "driver_id",nullable = false)
     Long driverId;
-
+    LocalDateTime date;
     @Enumerated(EnumType.STRING)
     Status status=Status.CREATED;
 

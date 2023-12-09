@@ -29,6 +29,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
                   name: passenger_id
                   type: bigint
                   constraints:

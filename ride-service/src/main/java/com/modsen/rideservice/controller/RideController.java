@@ -1,6 +1,7 @@
 package com.modsen.rideservice.controller;
 
 import com.modsen.rideservice.dto.request.RideRequest;
+import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
 import com.modsen.rideservice.service.RideService;
@@ -45,5 +46,25 @@ public class RideController {
     {
         rideService.update(rideRequest,id);
         return ResponseEntity.ok("Editing ride with id " + id);
+    }
+    @GetMapping("/passenger/{passenger_id}")
+    public ResponseEntity<RidesListResponse> passengerRides(@PathVariable(name = "passenger_id") long passengerId,@RequestParam(required = false, defaultValue = "1") int page,
+                                                    @RequestParam(required = false, defaultValue = "10") int size,
+                                                    @RequestParam(name = "order_by", required = false) String orderBy){
+        RidesListResponse rides=rideService.getRidesByPassengerId(passengerId,page,size,orderBy);
+        return ResponseEntity.ok(rides);
+    }
+    @GetMapping("/driver/{driver_id}")
+    public ResponseEntity<RidesListResponse> driverRides(@PathVariable(name = "driver_id") long driverId,@RequestParam(required = false, defaultValue = "1") int page,
+                                                            @RequestParam(required = false, defaultValue = "10") int size,
+                                                            @RequestParam(name = "order_by", required = false) String orderBy){
+        RidesListResponse rides=rideService.getRidesByDriverId(driverId,page,size,orderBy);
+        return ResponseEntity.ok(rides);
+    }
+    @PutMapping("/status/{id}")
+    public ResponseEntity<String> editStatus(@PathVariable Long id,@RequestBody StatusRequest statusRequest)
+    {
+        rideService.editStatus(id,statusRequest);
+        return ResponseEntity.ok("Status updated to " + statusRequest.getStatus());
     }
 }
