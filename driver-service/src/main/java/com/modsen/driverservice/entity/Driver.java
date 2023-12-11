@@ -25,7 +25,7 @@ public class Driver {
     String phone;
 
     @Column(name = "rating")
-    Double rating = 5.0;
+    Double rating = 0.0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

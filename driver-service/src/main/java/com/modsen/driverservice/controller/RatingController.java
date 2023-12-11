@@ -7,18 +7,20 @@ import com.modsen.driverservice.dto.response.DriverRatingResponse;
 import com.modsen.driverservice.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/rating/{id}")
+@RequestMapping("/api/v1/drivers/{id}/rating")
 @RequiredArgsConstructor
 public class RatingController {
     private final RatingService ratingService;
 
     @PostMapping
-    public DriverRatingResponse rateDriver(@Valid @RequestBody DriverRatingRequest driverRatingRequest,
-                                           @PathVariable("id") long driverId) {
-        return ratingService.rateDriver(driverRatingRequest, driverId);
+    public ResponseEntity<String> rateDriver(@Valid @RequestBody DriverRatingRequest driverRatingRequest,
+                                     @PathVariable("id") long driverId) {
+        ratingService.rateDriver(driverRatingRequest, driverId);
+        return ResponseEntity.ok("Rate passenger with id " + driverId);
     }
 
     @GetMapping
