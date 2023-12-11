@@ -7,18 +7,20 @@ import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/rating/{id}")
+@RequestMapping("/api/v1/passengers/{id}/rating")
 @RequiredArgsConstructor
 public class RatingController {
     private final RatingService ratingService;
 
     @PostMapping
-    public PassengerRatingResponse ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
-                                              @PathVariable("id") long passengerId) {
-        return ratingService.ratePassenger(passengerRatingRequest, passengerId);
+    public ResponseEntity<String> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
+                                                                 @PathVariable("id") long passengerId) {
+        ratingService.ratePassenger(passengerRatingRequest, passengerId);
+        return ResponseEntity.ok("Rate passenger with id " + passengerId);
     }
 
     @GetMapping

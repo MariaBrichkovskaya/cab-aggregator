@@ -23,7 +23,7 @@ public class Passenger {
     @Column(name = "phone")
     String phone;
     @Column(name = "rating")
-    Double rating=5.0;
+    Double rating=0.0;
 
 
 }

@@ -6,7 +6,7 @@ import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
 import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 
 public interface RatingService {
-    PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId);
+    void ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId);
 
     PassengerListRatingsResponse getRatingsByPassengerId(long driverId);
 
