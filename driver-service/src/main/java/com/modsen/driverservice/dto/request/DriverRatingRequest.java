@@ -18,6 +18,6 @@ public class DriverRatingRequest {
     Integer score;
 
     @NotNull(message = "Passenger is mandatory")
-    @Min(value = 1,message = "Min value is 1")
+    @Min(value = 1, message = "Min value is 1")
     private Long passengerId;
 }
