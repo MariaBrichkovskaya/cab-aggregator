@@ -33,3 +33,4 @@ databaseChangeLog:
             referencedTableName: passengers
             referencedColumnNames: id
             constraintName: FK_driver_rating_driver
+            deleteCascade: true
