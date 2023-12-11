@@ -35,8 +35,8 @@ public class RatingServiceImpl implements RatingService {
         newPassengerRating.setPassenger(passengerRepository.findById(passengerId)
                 .orElseThrow(() -> new NotFoundException(passengerId)));
         newPassengerRating = ratingRepository.save(newPassengerRating);
-        log.info("Update rating for passenger {}",passengerId);
-        //return toDto(newPassengerRating);
+        log.info("Update rating for passenger {}", passengerId);
+
     }
 
     @Override
@@ -47,7 +47,7 @@ public class RatingServiceImpl implements RatingService {
                 .stream()
                 .map(this::toDto)
                 .toList();
-        log.info("Retrieving rating for passenger {}",passengerId);
+        log.info("Retrieving rating for passenger {}", passengerId);
         return PassengerListRatingsResponse.builder()
                 .passengerRatings(passengerRatings)
                 .build();
@@ -63,7 +63,7 @@ public class RatingServiceImpl implements RatingService {
                 .mapToDouble(Rating::getScore)
                 .average()
                 .orElse(0.0);
-        log.info("Retrieving average rating for passenger {}",passengerId);
+        log.info("Retrieving average rating for passenger {}", passengerId);
         return AveragePassengerRatingResponse.builder()
                 .averageRating(Math.round(averageRating * 100.0) / 100.0)
                 .passengerId(passengerId)

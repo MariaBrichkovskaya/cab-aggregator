@@ -2,6 +2,7 @@ package com.modsen.passengerservice.controller;
 
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
 import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.service.RatingService;
@@ -17,20 +18,20 @@ public class RatingController {
     private final RatingService ratingService;
 
     @PostMapping
-    public ResponseEntity<String> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
-                                                                 @PathVariable("id") long passengerId) {
+    public ResponseEntity<MessageResponse> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
+                                                         @PathVariable("id") long passengerId) {
         ratingService.ratePassenger(passengerRatingRequest, passengerId);
-        return ResponseEntity.ok("Rate passenger with id " + passengerId);
+        return ResponseEntity.ok(MessageResponse.builder().message("Rate passenger with id " + passengerId).build());
     }
 
     @GetMapping
-    public PassengerListRatingsResponse getRatingsByPassengerId(@PathVariable("id") long passengerId) {
-        return ratingService.getRatingsByPassengerId(passengerId);
+    public ResponseEntity<PassengerListRatingsResponse> getRatingsByPassengerId(@PathVariable("id") long passengerId) {
+        return ResponseEntity.ok(ratingService.getRatingsByPassengerId(passengerId));
     }
 
     @GetMapping("/average")
-    public AveragePassengerRatingResponse getAveragePassengerRating(@PathVariable("id") long passengerId) {
-        return ratingService.getAveragePassengerRating(passengerId);
+    public ResponseEntity<AveragePassengerRatingResponse> getAveragePassengerRating(@PathVariable("id") long passengerId) {
+        return ResponseEntity.ok(ratingService.getAveragePassengerRating(passengerId));
     }
 }
 
