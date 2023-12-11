@@ -12,8 +12,4 @@ public class RideServiceApplication {
         SpringApplication.run(RideServiceApplication.class, args);
     }
 
-    @Bean
-    public ModelMapper modelMapper(){
-        return new ModelMapper();
-    }
 }
