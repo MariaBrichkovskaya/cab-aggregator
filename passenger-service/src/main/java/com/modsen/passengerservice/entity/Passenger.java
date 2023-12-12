@@ -1,9 +1,7 @@
 package com.modsen.passengerservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
@@ -24,8 +22,6 @@ public class Passenger {
     String email;
     @Column(name = "phone")
     String phone;
-    @Column(precision = 3, scale = 2, columnDefinition = "numeric")
-    Double rating;
-
-
+    @Column(name = "rating")
+    Double rating = 0.0;
 }
