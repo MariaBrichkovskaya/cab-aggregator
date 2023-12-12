@@ -18,11 +18,10 @@ public class RatingController {
     private final RatingService ratingService;
 
     @PostMapping
-    public ResponseEntity<MessageResponse> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
+    public ResponseEntity<PassengerRatingResponse> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
                                                          @PathVariable("id") long passengerId) {
-        ratingService.ratePassenger(passengerRatingRequest, passengerId);
-        String message="Rate passenger with id " + passengerId;
-        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
+        PassengerRatingResponse response=ratingService.ratePassenger(passengerRatingRequest, passengerId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping

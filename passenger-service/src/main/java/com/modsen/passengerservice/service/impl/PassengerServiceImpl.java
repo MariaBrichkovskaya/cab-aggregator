@@ -42,10 +42,11 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
-    public void add(PassengerRequest request) {
+    public PassengerResponse add(PassengerRequest request) {
         checkCreateDataIsUnique(request);
-        passengerRepository.save(toEntity(request));
+        Passenger passenger=passengerRepository.save(toEntity(request));
         log.info("Create passenger with surname {}", request.getSurname());
+        return toDto(passenger);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class PassengerServiceImpl implements PassengerService {
 
 
     @Override
-    public void update(PassengerRequest request, Long id) {
+    public PassengerResponse update(PassengerRequest request, Long id) {
         if (passengerRepository.findById(id).isEmpty()) {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
@@ -104,8 +105,8 @@ public class PassengerServiceImpl implements PassengerService {
         Passenger passenger = toEntity(request);
         checkUpdateDataIsUnique(request, passenger);
         passenger.setId(id);
-        passengerRepository.save(passenger);
         log.info("Update passenger with id {}", id);
+        return toDto(passengerRepository.save(passenger));
     }
 
     @Override
