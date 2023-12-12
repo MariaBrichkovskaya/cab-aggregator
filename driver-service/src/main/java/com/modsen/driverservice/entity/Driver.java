@@ -1,29 +1,34 @@
 package com.modsen.driverservice.entity;
 
-import com.modsen.driverservice.entity.enums.Status;
+import com.modsen.driverservice.enums.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "drivers")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
 public class Driver {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
-    @Column(name = "name")
+    @Column(name = "name",nullable = false)
     String name;
-    @Column(name = "surname")
+    @Column(name = "surname",nullable = false)
     String surname;
-    @Column(name = "phone")
+    @Column(name = "phone",unique = true,nullable = false)
     String phone;
 
-    @Column(precision = 3, scale = 2, columnDefinition = "numeric")
-    Double rating = 5.0;
+    @Column(name = "rating")
+    Double rating = 0.0;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     Status status = Status.AVAILABLE;
 
 }

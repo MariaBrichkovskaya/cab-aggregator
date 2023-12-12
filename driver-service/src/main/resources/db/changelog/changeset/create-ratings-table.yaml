@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-driver-rating
+      author: Maria Brichkovskaya
+      changes:
+        - createTable:
+            tableName: ratings
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: passenger_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: score
+                  type: int
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: ratings
+            baseColumnNames: driver_id
+            referencedTableName: drivers
+            referencedColumnNames: id
+            constraintName: FK_driver_rating_driver
+            deleteCascade: true
