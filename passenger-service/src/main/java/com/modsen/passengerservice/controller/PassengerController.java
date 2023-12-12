@@ -30,13 +30,15 @@ public class PassengerController {
     @PostMapping
     public ResponseEntity<MessageResponse> createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
         passengerService.add(passengerRequest);
-        return ResponseEntity.ok(MessageResponse.builder().message("Adding passenger " + passengerRequest.getName() + " " + passengerRequest.getSurname()).build());
+        String message="Adding passenger " + passengerRequest.getName() + " " + passengerRequest.getSurname();
+        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<MessageResponse> deletePassenger(@PathVariable Long id) {
         passengerService.delete(id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Deleting passenger with id " + id).build());
+        String message="Deleting passenger with id " + id;
+        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
     }
 
     @GetMapping("/{id}")
@@ -48,7 +50,8 @@ public class PassengerController {
     @PutMapping("/{id}")
     public ResponseEntity<MessageResponse> updatePassenger(@PathVariable Long id, @RequestBody @Valid PassengerRequest passengerRequest) {
         passengerService.update(passengerRequest, id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Editing passenger with id " + id).build());
+        String message="Editing passenger with id " + id;
+        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
     }
 
 

@@ -33,28 +33,27 @@ public class PassengerServiceImpl implements PassengerService {
     private final ModelMapper modelMapper;
     private final PassengerRepository passengerRepository;
 
-    private PassengerResponse toDto(Passenger passenger){
-        return modelMapper.map(passenger,PassengerResponse.class);
+    private PassengerResponse toDto(Passenger passenger) {
+        return modelMapper.map(passenger, PassengerResponse.class);
     }
 
-    private Passenger toEntity(PassengerRequest request){
-        return modelMapper.map(request,Passenger.class);
+    private Passenger toEntity(PassengerRequest request) {
+        return modelMapper.map(request, Passenger.class);
     }
 
     @Override
     public void add(PassengerRequest request) {
         checkCreateDataIsUnique(request);
         passengerRepository.save(toEntity(request));
-        log.info("Create passenger with surname {}",request.getSurname());
+        log.info("Create passenger with surname {}", request.getSurname());
     }
 
     @Override
     @Transactional(readOnly = true)
     public PassengerResponse findById(Long id) {
-        Passenger passenger=passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Passenger passenger = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
         return toDto(passenger);
-
     }
 
     @Override
@@ -62,7 +61,7 @@ public class PassengerServiceImpl implements PassengerService {
     public PassengersListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Passenger> passengersPage = passengerRepository.findAll(pageRequest);
-        List<PassengerResponse> passengers= passengersPage.getContent().stream()
+        List<PassengerResponse> passengers = passengersPage.getContent().stream()
                 .map(this::toDto).toList();
         return PassengersListResponse.builder().passengers(passengers).build();
     }
@@ -75,10 +74,10 @@ public class PassengerServiceImpl implements PassengerService {
         }
         PageRequest pageRequest;
         if (sortingParam == null) {
-            pageRequest = PageRequest.of(page-1, size);
+            pageRequest = PageRequest.of(page - 1, size);
         } else {
             validateSortingParameter(sortingParam);
-            pageRequest = PageRequest.of(page-1, size, Sort.by(sortingParam));
+            pageRequest = PageRequest.of(page - 1, size, Sort.by(sortingParam));
         }
 
         return pageRequest;
@@ -98,12 +97,12 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Override
     public void update(PassengerRequest request, Long id) {
-        if(passengerRepository.findById(id).isEmpty()) {
+        if (passengerRepository.findById(id).isEmpty()) {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
         Passenger passenger = toEntity(request);
-        checkUpdateDataIsUnique(request,passenger);
+        checkUpdateDataIsUnique(request, passenger);
         passenger.setId(id);
         passengerRepository.save(passenger);
         log.info("Update passenger with id {}", id);
@@ -111,7 +110,7 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Override
     public void delete(Long id) {
-        if(passengerRepository.findById(id).isEmpty()) {
+        if (passengerRepository.findById(id).isEmpty()) {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
@@ -122,7 +121,7 @@ public class PassengerServiceImpl implements PassengerService {
 
     private void checkEmailIsUnique(String email, Map<String, String> errors) {
         if (passengerRepository.existsByEmail(email)) {
-            log.error("Passenger with email {} is exists",email);
+            log.error("Passenger with email {} is exists", email);
             errors.put(
                     "email",
                     String.format(PASSENGER_WITH_EMAIL_EXISTS_MESSAGE, email)
@@ -132,7 +131,7 @@ public class PassengerServiceImpl implements PassengerService {
 
     private void checkPhoneIsUnique(String phone, Map<String, String> errors) {
         if (passengerRepository.existsByPhone(phone)) {
-            log.error("Passenger with phone {} is exists",phone);
+            log.error("Passenger with phone {} is exists", phone);
             errors.put(
                     "phone",
                     String.format(PASSENGER_WITH_PHONE_EXISTS_MESSAGE, phone)
@@ -159,10 +158,8 @@ public class PassengerServiceImpl implements PassengerService {
         if (!Objects.equals(request.getEmail(), passenger.getEmail())) {
             checkEmailIsUnique(request.getEmail(), errors);
         }
-
         if (!errors.isEmpty()) {
             throw new AlreadyExistsException(errors);
         }
     }
-
 }

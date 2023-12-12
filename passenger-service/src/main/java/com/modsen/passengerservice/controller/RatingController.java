@@ -21,7 +21,8 @@ public class RatingController {
     public ResponseEntity<MessageResponse> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
                                                          @PathVariable("id") long passengerId) {
         ratingService.ratePassenger(passengerRatingRequest, passengerId);
-        return ResponseEntity.ok(MessageResponse.builder().message("Rate passenger with id " + passengerId).build());
+        String message="Rate passenger with id " + passengerId;
+        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
     }
 
     @GetMapping
