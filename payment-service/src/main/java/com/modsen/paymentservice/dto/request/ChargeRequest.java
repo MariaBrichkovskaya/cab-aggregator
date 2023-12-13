@@ -1,4 +1,4 @@
-package com.modsen.paymentservice.utils;
+package com.modsen.paymentservice.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
