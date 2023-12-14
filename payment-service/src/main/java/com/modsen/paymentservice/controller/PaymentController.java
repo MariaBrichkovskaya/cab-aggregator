@@ -1,13 +1,17 @@
 package com.modsen.paymentservice.controller;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.modsen.paymentservice.dto.request.CardRequest;
+import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
 import com.modsen.paymentservice.dto.response.CustomerResponse;
 import com.modsen.paymentservice.dto.response.MessageResponse;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.service.StripeService;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Balance;
+import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +63,14 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/balance")
+     public String balance() throws StripeException {
+        Balance balance=stripeService.balance();
+        return balance.getPending().toString();
+    }
+    @PostMapping("/customers/charge")
+    public String chargeFromCustomer(CustomerChargeRequest request) throws StripeException {
+        return stripeService.chargeFromCustomer(request).toJson();
+    }
 
 }

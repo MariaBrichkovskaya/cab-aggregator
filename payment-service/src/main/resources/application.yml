@@ -1,0 +1,28 @@
+stripe:
+  key:
+    public: ${STRIPE_PUBLIC_KEY}
+    secret: ${STRIPE_SECRET_KEY}
+server:
+  port: 9095
+  servlet:
+    context-path: /api/integration
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payments
+    username: postgres
+    password: ${DB_PASSWORD}
+  liquibase:
+    enabled: true
+    change-log: db/changelog/db.changelog-master.yaml
+  jpa:
+    properties:
+      hibernate:
+        dialect=org:
+          hibernate:
+            dialect:
+              PostgreSQLDialect:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+
+

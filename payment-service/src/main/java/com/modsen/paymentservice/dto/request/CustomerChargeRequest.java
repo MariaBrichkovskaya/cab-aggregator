@@ -8,10 +8,9 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ChargeRequest {
+public class CustomerChargeRequest {
 
     long amount;
     String currency;
-    String cardToken;
+    long passengerId;
 }
-
