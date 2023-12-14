@@ -2,11 +2,17 @@ package com.modsen.paymentservice.service.impl;
 
 import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
+import com.modsen.paymentservice.dto.request.CustomerRequest;
+import com.modsen.paymentservice.dto.response.CustomersListResponse;
 import com.modsen.paymentservice.service.StripeService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
+import com.stripe.model.Customer;
+import com.stripe.model.CustomerCollection;
 import com.stripe.model.Token;
+import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.CustomerListParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -48,5 +54,25 @@ public class StripeServiceImpl implements StripeService {
         Token token = Token.create(params);
         return token.getId();
     }
+
+    @Override
+    public Customer createCustomer(CustomerRequest request) throws StripeException {
+        Stripe.apiKey=SECRET_KEY;
+        CustomerCreateParams params =
+                CustomerCreateParams.builder()
+                        .setName(request.getName())
+                        .setEmail(request.getEmail())
+                        .setPhone(request.getPhone())
+                        .build();
+        return Customer.create(params);
+    }
+
+    @Override
+    public Customer retrieve(String id) throws StripeException {
+        Stripe.apiKey = SECRET_KEY;
+        return Customer.retrieve(id);
+    }
+
+
 
 }

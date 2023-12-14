@@ -10,6 +10,5 @@ public class ChargeRequest {
     private String currency;
     private String cardToken;
 
-    // геттеры и сеттеры
 }
 

@@ -2,13 +2,17 @@ package com.modsen.paymentservice.controller;
 
 
 import com.modsen.paymentservice.dto.request.CardRequest;
+import com.modsen.paymentservice.dto.request.CustomerRequest;
+import com.modsen.paymentservice.dto.response.CustomerResponse;
 import com.modsen.paymentservice.dto.response.MessageResponse;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.service.StripeService;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 
 @RestController
@@ -33,5 +37,27 @@ public class PaymentController {
 
         return ResponseEntity.ok(MessageResponse.builder().message(tokenId).build());
     }
+    @PostMapping("/customers")
+    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody CustomerRequest request) throws StripeException {
+        Customer customer=stripeService.createCustomer(request);
+        CustomerResponse response=CustomerResponse.builder()
+                .id(customer.getId())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .name(customer.getName()).build();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/customers/{id}")
+    public ResponseEntity<CustomerResponse> findCustomer(@PathVariable String id) throws StripeException {
+        Customer customer=stripeService.retrieve(id);
+        CustomerResponse response=CustomerResponse.builder()
+                .id(customer.getId())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .name(customer.getName()).build();
+        return ResponseEntity.ok(response);
+    }
+
 
 }
