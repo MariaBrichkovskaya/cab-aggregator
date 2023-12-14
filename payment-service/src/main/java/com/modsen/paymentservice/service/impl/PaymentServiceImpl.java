@@ -4,12 +4,11 @@ import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
-import com.modsen.paymentservice.dto.response.BalanceResponse;
-import com.modsen.paymentservice.dto.response.MessageResponse;
+import com.modsen.paymentservice.dto.response.*;
 import com.modsen.paymentservice.exception.AlreadyExistsException;
 import com.modsen.paymentservice.model.User;
 import com.modsen.paymentservice.repository.CustomerRepository;
-import com.modsen.paymentservice.service.StripeService;
+import com.modsen.paymentservice.service.PaymentService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class StripeServiceImpl implements StripeService {
+public class PaymentServiceImpl implements PaymentService {
 
     @Value("${stripe.key.secret}")
     private String SECRET_KEY;
@@ -33,21 +32,19 @@ public class StripeServiceImpl implements StripeService {
     private final CustomerRepository customerRepository;
 
     @Override
-    public String charge(ChargeRequest request) throws StripeException {
+    public MessageResponse charge(ChargeRequest request) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-
         Map<String, Object> params = new HashMap<>();
         params.put("amount", request.getAmount() * 100);
         params.put("currency", request.getCurrency());
         params.put("source", request.getCardToken());
-
         Charge charge = Charge.create(params);
-
-        return charge.getId();
+        String message = "Payment successful. ID: " + charge.getId();
+        return MessageResponse.builder().message(message).build();
     }
 
     @Override
-    public String create(CardRequest request) throws StripeException {
+    public TokenResponse create(CardRequest request) throws StripeException {
         Stripe.apiKey = PUBLIC_KEY;
         Map<String, Object> card = new HashMap<>();
         card.put("number", request.getCardNumber());
@@ -57,11 +54,11 @@ public class StripeServiceImpl implements StripeService {
         Map<String, Object> params = new HashMap<>();
         params.put("card", card);
         Token token = Token.create(params);
-        return token.getId();
+        return TokenResponse.builder().token(token.getId()).build();
     }
 
     @Override
-    public Customer createCustomer(CustomerRequest request) throws StripeException {
+    public CustomerResponse createCustomer(CustomerRequest request) throws StripeException {
         Stripe.apiKey = PUBLIC_KEY;
         if(customerRepository.existsById(request.getPassengerId()))
             throw new AlreadyExistsException("Customer with id "+request.getPassengerId()+" already exists");
@@ -73,13 +70,21 @@ public class StripeServiceImpl implements StripeService {
                         .setBalance(request.getAmount())
                         .build();
         Stripe.apiKey = SECRET_KEY;
-        Customer stripeCustomer = Customer.create(params);
-        createPaymentMethod(stripeCustomer.getId());
+        return createUser(params, request.getPassengerId());
+    }
+    private CustomerResponse createUser(CustomerCreateParams params,long id) throws StripeException {
+        Stripe.apiKey = SECRET_KEY;
+        Customer customer = Customer.create(params);
+        createPaymentMethod(customer.getId());
         User user = User
-                .builder().customerId(stripeCustomer.getId())
-                .passengerId(request.getPassengerId()).build();
+                .builder().customerId(customer.getId())
+                .passengerId(id).build();
         customerRepository.save(user);
-        return stripeCustomer;
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .name(customer.getName()).build();
     }
 
     private void createPaymentMethod(String customerId) throws StripeException {
@@ -89,19 +94,21 @@ public class StripeServiceImpl implements StripeService {
         Map<String, Object> cardParams = new HashMap<>();
         cardParams.put("token", "tok_visa"); // здесь "tok_visa" - это пример токена тестирования для карты Visa
         paymentMethodParams.put("card", cardParams);
-
         PaymentMethod paymentMethod = PaymentMethod.create(paymentMethodParams);
         Map<String, Object> attachParams = new HashMap<>();
         attachParams.put("customer", customerId);
-
         paymentMethod.attach(attachParams);
-
     }
 
     @Override
-    public Customer retrieve(String id) throws StripeException {
+    public CustomerResponse retrieve(String id) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-        return Customer.retrieve(id);
+        Customer customer=Customer.retrieve(id);
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .name(customer.getName()).build();
     }
 
     @Override
@@ -116,10 +123,8 @@ public class StripeServiceImpl implements StripeService {
     }
 
     @Override
-    public MessageResponse chargeFromCustomer(CustomerChargeRequest request) throws StripeException {
-
+    public ChargeResponse chargeFromCustomer(CustomerChargeRequest request) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-
         Long passengerId = request.getPassengerId();
         User user = customerRepository.findById(passengerId).get();
         String customerId = user.getCustomerId();
@@ -132,11 +137,11 @@ public class StripeServiceImpl implements StripeService {
         PaymentIntentConfirmParams params =
                 PaymentIntentConfirmParams.builder()
                         .setPaymentMethod("pm_card_visa")
-                        .setReturnUrl("https://www.example.com")
                         .build();
         intent.confirm(params);
-        return MessageResponse.builder().message("Successful").build();
+        return ChargeResponse.builder().id(intent.getId())
+                .amount(intent.getAmount())
+                .currency(intent.getCurrency()).build();
     }
-
 
 }
