@@ -1,22 +1,20 @@
 package com.modsen.paymentservice.controller;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
+import com.modsen.paymentservice.dto.response.BalanceResponse;
 import com.modsen.paymentservice.dto.response.CustomerResponse;
 import com.modsen.paymentservice.dto.response.MessageResponse;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.service.StripeService;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Balance;
-import com.stripe.model.Charge;
 import com.stripe.model.Customer;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 
 @RestController
@@ -28,23 +26,24 @@ public class PaymentController {
 
 
     @PostMapping("/charge")
-    public ResponseEntity<MessageResponse> chargeCard(@RequestBody ChargeRequest chargeRequest) throws StripeException {
+    public ResponseEntity<MessageResponse> chargeCard(@RequestBody @Valid ChargeRequest chargeRequest) throws StripeException {
         String paymentId = stripeService.charge(chargeRequest);
         String message = "Payment successful. ID: " + paymentId;
         return ResponseEntity.ok(MessageResponse.builder().message(message).build());
     }
 
     // Метод для создания токена
-    @PostMapping("/create")
-    public ResponseEntity<MessageResponse> createToken(@RequestBody CardRequest request) throws StripeException {
+    @PostMapping("/token")
+    public ResponseEntity<MessageResponse> createToken(@RequestBody @Valid CardRequest request) throws StripeException {
         String tokenId = stripeService.create(request);
 
         return ResponseEntity.ok(MessageResponse.builder().message(tokenId).build());
     }
+
     @PostMapping("/customers")
-    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody CustomerRequest request) throws StripeException {
-        Customer customer=stripeService.createCustomer(request);
-        CustomerResponse response=CustomerResponse.builder()
+    public ResponseEntity<CustomerResponse> createCustomer(@RequestBody @Valid CustomerRequest request) throws StripeException {
+        Customer customer = stripeService.createCustomer(request);
+        CustomerResponse response = CustomerResponse.builder()
                 .id(customer.getId())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
@@ -54,8 +53,8 @@ public class PaymentController {
 
     @GetMapping("/customers/{id}")
     public ResponseEntity<CustomerResponse> findCustomer(@PathVariable String id) throws StripeException {
-        Customer customer=stripeService.retrieve(id);
-        CustomerResponse response=CustomerResponse.builder()
+        Customer customer = stripeService.retrieve(id);
+        CustomerResponse response = CustomerResponse.builder()
                 .id(customer.getId())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
@@ -64,13 +63,14 @@ public class PaymentController {
     }
 
     @GetMapping("/balance")
-     public String balance() throws StripeException {
-        Balance balance=stripeService.balance();
-        return balance.getPending().toString();
+    public ResponseEntity<BalanceResponse> balance() throws StripeException {
+        BalanceResponse balance = stripeService.balance();
+        return ResponseEntity.ok(balance);
     }
+
     @PostMapping("/customers/charge")
-    public String chargeFromCustomer(CustomerChargeRequest request) throws StripeException {
-        return stripeService.chargeFromCustomer(request).toJson();
+    public ResponseEntity<MessageResponse> chargeFromCustomer(@RequestBody @Valid CustomerChargeRequest request) throws StripeException {
+        return ResponseEntity.ok(stripeService.chargeFromCustomer(request));
     }
 
 }

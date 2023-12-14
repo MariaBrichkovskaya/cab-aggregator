@@ -4,6 +4,9 @@ import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
+import com.modsen.paymentservice.dto.response.BalanceResponse;
+import com.modsen.paymentservice.dto.response.MessageResponse;
+import com.modsen.paymentservice.exception.AlreadyExistsException;
 import com.modsen.paymentservice.model.User;
 import com.modsen.paymentservice.repository.CustomerRepository;
 import com.modsen.paymentservice.service.StripeService;
@@ -60,6 +63,8 @@ public class StripeServiceImpl implements StripeService {
     @Override
     public Customer createCustomer(CustomerRequest request) throws StripeException {
         Stripe.apiKey = PUBLIC_KEY;
+        if(customerRepository.existsById(request.getPassengerId()))
+            throw new AlreadyExistsException("Customer with id "+request.getPassengerId()+" already exists");
         CustomerCreateParams params =
                 CustomerCreateParams.builder()
                         .setName(request.getName())
@@ -100,15 +105,20 @@ public class StripeServiceImpl implements StripeService {
     }
 
     @Override
-    public Balance balance() throws StripeException {
+    public BalanceResponse balance() throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-        return Balance.retrieve();
+        Balance balance = Balance.retrieve();
+        return BalanceResponse
+                .builder()
+                .amount(balance.getPending().get(0).getAmount())
+                .currency(balance.getPending().get(0).getCurrency())
+                .build();
     }
 
     @Override
-    public PaymentIntent chargeFromCustomer(CustomerChargeRequest request) throws StripeException {
+    public MessageResponse chargeFromCustomer(CustomerChargeRequest request) throws StripeException {
 
-        Stripe.apiKey=SECRET_KEY;
+        Stripe.apiKey = SECRET_KEY;
 
         Long passengerId = request.getPassengerId();
         User user = customerRepository.findById(passengerId).get();
@@ -117,14 +127,15 @@ public class StripeServiceImpl implements StripeService {
         paymentIntentParams.put("amount", request.getAmount() * 100);
         paymentIntentParams.put("currency", request.getCurrency());
         paymentIntentParams.put("customer", customerId);
-        PaymentIntent intent= PaymentIntent.create(paymentIntentParams);
+        PaymentIntent intent = PaymentIntent.create(paymentIntentParams);
         intent.setPaymentMethod(customerId);
         PaymentIntentConfirmParams params =
                 PaymentIntentConfirmParams.builder()
                         .setPaymentMethod("pm_card_visa")
                         .setReturnUrl("https://www.example.com")
                         .build();
-        return intent.confirm(params);
+        intent.confirm(params);
+        return MessageResponse.builder().message("Successful").build();
     }
 
 

@@ -4,6 +4,8 @@ import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
+import com.modsen.paymentservice.dto.response.BalanceResponse;
+import com.modsen.paymentservice.dto.response.MessageResponse;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Balance;
 import com.stripe.model.Customer;
@@ -18,8 +20,8 @@ public interface StripeService {
 
     Customer retrieve(String id) throws StripeException;
 
-    Balance balance() throws StripeException;
+    BalanceResponse balance() throws StripeException;
 
 
-    PaymentIntent chargeFromCustomer(CustomerChargeRequest request) throws StripeException;
+    MessageResponse chargeFromCustomer(CustomerChargeRequest request) throws StripeException;
 }
