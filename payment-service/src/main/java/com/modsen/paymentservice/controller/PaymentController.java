@@ -10,6 +10,7 @@ import com.modsen.paymentservice.service.PaymentService;
 import com.stripe.exception.StripeException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class PaymentController {
     }
 
     @PostMapping("/customers")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CustomerResponse> createCustomer(@RequestBody @Valid CustomerRequest request) throws StripeException {
         return ResponseEntity.ok(paymentService.createCustomer(request));
     }
