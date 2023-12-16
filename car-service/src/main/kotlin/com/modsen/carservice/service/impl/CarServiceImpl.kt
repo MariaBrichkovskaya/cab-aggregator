@@ -95,11 +95,9 @@ class CarServiceImpl(private val carRepository: CarRepository) : CarService {
     }
 
     override fun update(request: CarRequest, id: Long): CarResponse {
-        if (carRepository.findById(id).isEmpty) {
-            throw NotFoundException(id)
-        }
-        val car: Car = request.toEntity()
-        checkUpdateDataIsUnique(request, car)
+        val carToUpdate: Car = carRepository.findById(id).orElseThrow{NotFoundException(id)}
+        checkUpdateDataIsUnique(request, carToUpdate)
+        val car:Car=request.toEntity()
         car.id = id
         return carRepository.save(car).toResponse()
     }
