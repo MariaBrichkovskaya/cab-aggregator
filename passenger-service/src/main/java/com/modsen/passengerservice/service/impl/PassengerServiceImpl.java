@@ -102,8 +102,9 @@ public class PassengerServiceImpl implements PassengerService {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
-        Passenger passenger = toEntity(request);
-        checkUpdateDataIsUnique(request, passenger);
+        Passenger passengerToUpdate = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        checkUpdateDataIsUnique(request, passengerToUpdate);
+        Passenger passenger=toEntity(request);
         passenger.setId(id);
         log.info("Update passenger with id {}", id);
         return toDto(passengerRepository.save(passenger));
