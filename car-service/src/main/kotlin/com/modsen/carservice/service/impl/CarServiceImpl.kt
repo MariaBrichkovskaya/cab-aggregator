@@ -17,16 +17,10 @@ import com.modsen.carservice.util.Messages.INVALID_SORTING_MESSAGE
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.validation.FieldError
-import org.springframework.validation.ObjectError
-import org.springframework.web.bind.MethodArgumentNotValidException
 import java.lang.reflect.Field
 import java.util.*
-import java.util.function.Consumer
 
 
 @Service

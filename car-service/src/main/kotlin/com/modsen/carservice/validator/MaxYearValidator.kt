@@ -6,9 +6,7 @@ import jakarta.validation.ConstraintValidatorContext
 import java.time.LocalDateTime
 
 
-class MaxYearValidator : ConstraintValidator<MaxYear?, Int> {
-    override fun initialize(constraintAnnotation: MaxYear?) {
-    }
+class MaxYearValidator : ConstraintValidator<MaxYear, Int> {
 
     override fun isValid(year: Int, context: ConstraintValidatorContext): Boolean {
         val currentYear = LocalDateTime.now().year
