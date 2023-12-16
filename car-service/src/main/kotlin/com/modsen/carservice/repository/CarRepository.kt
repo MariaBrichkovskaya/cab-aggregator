@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface CarRepository:JpaRepository<Car,Long> {
-    fun existsByLicence(licence: String):Boolean
-    fun existsByNumber(number:String):Boolean
-    fun findByStatus(status: Status,pageRequest: PageRequest):Page<Car>
+interface CarRepository : JpaRepository<Car, Long> {
+    fun existsByLicence(licence: String): Boolean
+    fun existsByNumber(number: String): Boolean
+    fun findByStatus(status: Status, pageRequest: PageRequest): Page<Car>
 }

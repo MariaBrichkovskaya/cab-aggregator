@@ -9,18 +9,18 @@ data class Car(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "id")
-        var id:Long=0L,
+        var id: Long = 0L,
         @Column(name = "name")
-        var name: String="",
+        var name: String = "",
         @Column(name = "number")
-        var number:String="",
+        var number: String = "",
         @Column(name = "licence")
-        var licence:String="",
+        var licence: String = "",
         @Column(name = "year")
-        var year: Int=0,
+        var year: Int = 0,
         @Column(name = "model")
-        var model:String="",
-        @Column(name="status")
+        var model: String = "",
+        @Column(name = "status")
         @Enumerated(EnumType.STRING)
-        var status:Status=Status.AVAILABLE
+        var status: Status = Status.AVAILABLE
 )

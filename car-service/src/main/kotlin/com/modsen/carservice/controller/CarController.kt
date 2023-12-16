@@ -6,6 +6,7 @@ import com.modsen.carservice.dto.response.CarsListResponse
 import com.modsen.carservice.dto.response.MessageResponse
 import com.modsen.carservice.entity.Car
 import com.modsen.carservice.service.CarService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,7 +17,7 @@ class CarController(val carService: CarService) {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    fun createCar(@RequestBody carRequest: CarRequest): ResponseEntity<CarResponse> {
+    fun createCar(@RequestBody @Valid carRequest: CarRequest): ResponseEntity<CarResponse> {
         val response = carService.add(carRequest)
         return ResponseEntity.ok(response)
     }
@@ -44,7 +45,7 @@ class CarController(val carService: CarService) {
     }
 
     @PutMapping("/{id}")
-    fun update(@PathVariable id: Long, @RequestBody request: CarRequest): ResponseEntity<CarResponse> {
+    fun update(@PathVariable id: Long, @RequestBody @Valid request: CarRequest): ResponseEntity<CarResponse> {
         val response = carService.update(request, id)
         return ResponseEntity.ok(response)
     }

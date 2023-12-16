@@ -13,12 +13,13 @@ data class CarResponse(
         val model: String,
         val status: Status
 )
+
 fun Car.toResponse() = CarResponse(
         id = id,
         name = name,
-        number=number,
-        licence=licence,
-        year=year,
-        model=model,
-        status=status
+        number = number,
+        licence = licence,
+        year = year,
+        model = model,
+        status = status
 )
