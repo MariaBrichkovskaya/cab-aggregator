@@ -30,4 +30,4 @@ spring:
           passenger:
             url: http://localhost:9001/api/v1/passengers
           payment:
-            url: http://localhost:9095/api/integration/payments
+            url: http://localhost:9004/api/v1/payments
