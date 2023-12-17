@@ -28,9 +28,9 @@ public class RideController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageResponse> createRide(@RequestBody @Valid RideRequest rideRequest) {
-        rideService.add(rideRequest);
-        return ResponseEntity.ok(MessageResponse.builder().message("Adding ride").build());
+    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid RideRequest rideRequest) {
+        RideResponse response=rideService.add(rideRequest);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

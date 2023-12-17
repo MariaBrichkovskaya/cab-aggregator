@@ -9,7 +9,7 @@ import com.modsen.rideservice.enums.Status;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface RideService {
-    void add(RideRequest request);
+    RideResponse add(RideRequest request);
     RideResponse findById(Long id);
     RidesListResponse findAll(int page, int size, String sortingParam);
     void update(RideRequest request,Long id);

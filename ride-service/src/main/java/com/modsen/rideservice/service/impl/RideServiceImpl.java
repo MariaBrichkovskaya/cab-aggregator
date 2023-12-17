@@ -56,11 +56,16 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public void add(RideRequest request) {
+    public RideResponse add(RideRequest request) {
         Ride ride = toEntity(request);
         ride.setDate(LocalDateTime.now());
+        DriverResponse driver=driverFeignClient.getAvailable(1,10,null).getDrivers().get(0);//если список пуст то обработать
+        ride.setDriverId(driver.getId());
         rideRepository.save(ride);
         log.info("Created ride");
+        RideResponse response= toDto(ride);
+        response.setDriverResponse(getDriverById(ride.getDriverId()));
+        return response;
     }
 
     @Override
