@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 @ControllerAdvice
 public class PaymentHandler {
-    public final String VALIDATION_FAILED_MESSAGE = "Invalid request";
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
         var errors = new HashMap<String, String>();
@@ -23,7 +23,16 @@ public class PaymentHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
+        String VALIDATION_FAILED_MESSAGE = "Invalid request";
         ValidationExceptionResponse response = new ValidationExceptionResponse(HttpStatus.BAD_REQUEST, VALIDATION_FAILED_MESSAGE, errors);
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+    @ExceptionHandler(value = {BalanceException.class})
+    public ResponseEntity<Object> handleBalanceException(BalanceException balanceException) {
+        ExceptionResponse response =
+                new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                        balanceException.getMessage()
+                );
         return new ResponseEntity<>(response, response.getStatus());
     }
     @ExceptionHandler(value = {StripeException.class})

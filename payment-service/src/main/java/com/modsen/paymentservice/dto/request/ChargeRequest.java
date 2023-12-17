@@ -13,7 +13,7 @@ import org.hibernate.validator.constraints.Range;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChargeRequest {
     @NotNull(message = "Amount is mandatory")
-    @Range(min = 100, max = 1000000,message = "Amount should be between 100 and 1000000")
+    @Range(min = 1, max = 1000000,message = "Amount should be between 100 and 1000000")
     long amount;
     @NotBlank(message = "Currency is mandatory")
     String currency;

@@ -6,6 +6,7 @@ import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
 import com.modsen.paymentservice.dto.response.*;
 import com.modsen.paymentservice.exception.AlreadyExistsException;
+import com.modsen.paymentservice.exception.BalanceException;
 import com.modsen.paymentservice.model.User;
 import com.modsen.paymentservice.repository.CustomerRepository;
 import com.modsen.paymentservice.service.PaymentService;
@@ -13,6 +14,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.CustomerUpdateParams;
 import com.stripe.param.PaymentIntentConfirmParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -128,6 +130,14 @@ public class PaymentServiceImpl implements PaymentService {
         Long passengerId = request.getPassengerId();
         User user = customerRepository.findById(passengerId).get();
         String customerId = user.getCustomerId();
+        checkBalance(customerId, request.getAmount()*100);
+        PaymentIntent intent=createIntent(request,customerId);
+        updateBalance(customerId,request.getAmount());
+        return ChargeResponse.builder().id(intent.getId())
+                .amount(intent.getAmount()/100)
+                .currency(intent.getCurrency()).build();
+    }
+    private PaymentIntent createIntent(CustomerChargeRequest request,String customerId) throws StripeException {
         Map<String, Object> paymentIntentParams = new HashMap<>();
         paymentIntentParams.put("amount", request.getAmount() * 100);
         paymentIntentParams.put("currency", request.getCurrency());
@@ -138,10 +148,24 @@ public class PaymentServiceImpl implements PaymentService {
                 PaymentIntentConfirmParams.builder()
                         .setPaymentMethod("pm_card_visa")
                         .build();
-        intent.confirm(params);
-        return ChargeResponse.builder().id(intent.getId())
-                .amount(intent.getAmount())
-                .currency(intent.getCurrency()).build();
+        return intent.confirm(params);
+    }
+    private void updateBalance(String customerId,long amount) throws StripeException {
+        Customer customer=Customer.retrieve(customerId);
+        CustomerUpdateParams params =
+                CustomerUpdateParams.builder()
+                        .setBalance(customer.getBalance()-amount*100)
+                        .build();
+        Stripe.apiKey = SECRET_KEY;
+        customer.update(params);
+    }
+    private void checkBalance(String customerId,long amount) throws StripeException {
+        Customer customer=Customer.retrieve(customerId);
+        Long balance=customer.getBalance();
+        if(balance<amount)
+            throw new BalanceException("Not enough money in the account");
+
     }
 
 }
+
