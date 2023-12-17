@@ -21,3 +21,9 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+  cloud:
+    openfeign:
+      client:
+        config:
+          driver:
+            url: http://localhost:9002/api/v1/drivers

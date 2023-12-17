@@ -27,7 +27,7 @@ public class RideRequest {
     Long passengerId;
     @Range(min = 1, message = "Min value is 1")
     @NotNull(message = "Driver address is mandatory")
-    Long driverId;
+    Long driverId;               //позже убрать, будет приходить не из реквеста а по поиску свободных
 
 }
 

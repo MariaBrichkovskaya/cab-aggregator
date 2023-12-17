@@ -11,8 +11,8 @@ import java.util.List;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride,Long> {
-    Page<Ride> findAllByPassengerIdAndStatus(long passengerId, Status status, PageRequest pageRequest);
+    Page<Ride> findAllByPassengerId(long passengerId, PageRequest pageRequest);
 
-    Page<Ride> findAllByDriverIdAndStatus(long driverId, Status status, PageRequest pageRequest);
+    Page<Ride> findAllByDriverId(long driverId, PageRequest pageRequest);
 
 }
