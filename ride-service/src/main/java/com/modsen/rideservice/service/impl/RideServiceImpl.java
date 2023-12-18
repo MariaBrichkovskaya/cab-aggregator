@@ -1,6 +1,7 @@
 package com.modsen.rideservice.service.impl;
 
 import com.modsen.rideservice.client.DriverFeignClient;
+import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
@@ -38,9 +39,13 @@ public class RideServiceImpl implements RideService {
     private final RideRepository rideRepository;
     private final ModelMapper modelMapper;
     private final DriverFeignClient driverFeignClient;
+    private final PassengerFeignClient passengerFeignClient;
 
     private DriverResponse getDriverById(long driverId) {
         return driverFeignClient.getDriver(driverId);
+    }
+    private PassengerResponse getPassengerById(long passengerId){
+        return passengerFeignClient.getPassenger(passengerId);
     }
 
     private RideResponse toDto(Ride ride) {
@@ -85,6 +90,7 @@ public class RideServiceImpl implements RideService {
         log.info("Retrieving ride by id {}", id);
         RideResponse response = toDto(ride);
         response.setDriverResponse(getDriverById(ride.getDriverId()));
+        response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         return response;
     }
 
@@ -97,6 +103,7 @@ public class RideServiceImpl implements RideService {
                 .stream().map(ride -> {
                     RideResponse response = toDto(ride);
                     response.setDriverResponse(getDriverById(ride.getDriverId()));
+                    response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
                     return response;
                 }).toList();
         return RidesListResponse.builder().rides(rides).build();
@@ -163,6 +170,7 @@ public class RideServiceImpl implements RideService {
                 .stream().map(ride -> {
                     RideResponse response = toDto(ride);
                     response.setDriverResponse(getDriverById(ride.getDriverId()));
+                    response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
                     return response;
                 }).toList();
         log.info("Retrieving rides for passenger with id {}", passengerId);
@@ -180,6 +188,7 @@ public class RideServiceImpl implements RideService {
                 .stream().map(ride -> {
                     RideResponse response = toDto(ride);
                     response.setDriverResponse(getDriverById(ride.getDriverId()));
+                    response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
                     return response;
                 }).toList();
         log.info("Retrieving rides for driver with id {}", driverId);
@@ -196,6 +205,7 @@ public class RideServiceImpl implements RideService {
         Ride ride = rideRepository.findById(id).get();
         if (Status.valueOf(statusRequest.getStatus()).equals(Status.FINISHED)) {
             driverFeignClient.changeStatus(ride.getDriverId());
+            //выставлять оценку
         }
         ride.setStatus(Status.valueOf(statusRequest.getStatus()));
         rideRepository.save(ride);

@@ -16,7 +16,7 @@ public class RideResponse {
     String pickUpAddress;
     String destinationAddress;
     Double price;
-    Long passengerId;
+    PassengerResponse passengerResponse;
     DriverResponse driverResponse;
     Status status;
     LocalDateTime date;
