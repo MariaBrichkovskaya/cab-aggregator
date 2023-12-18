@@ -1,6 +1,6 @@
 package com.modsen.rideservice.enums;
 
-public enum Status {
+public enum RideStatus {
     CREATED,
     ACCEPTED,
     REJECTED,

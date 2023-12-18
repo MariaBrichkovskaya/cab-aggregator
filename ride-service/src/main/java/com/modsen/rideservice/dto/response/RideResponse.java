@@ -1,6 +1,6 @@
 package com.modsen.rideservice.dto.response;
 
-import com.modsen.rideservice.enums.Status;
+import com.modsen.rideservice.enums.RideStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +18,6 @@ public class RideResponse {
     Double price;
     PassengerResponse passengerResponse;
     DriverResponse driverResponse;
-    Status status;
+    RideStatus rideStatus;
     LocalDateTime date;
 }

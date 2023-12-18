@@ -1,13 +1,12 @@
 package com.modsen.rideservice.entity;
 
-import com.modsen.rideservice.enums.Status;
+import com.modsen.rideservice.enums.RideStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,6 +31,7 @@ public class Ride {
     Long driverId;
     LocalDateTime date;
     @Enumerated(EnumType.STRING)
-    Status status=Status.CREATED;
+    @Column(name = "status")
+    RideStatus rideStatus = RideStatus.CREATED;
 
 }

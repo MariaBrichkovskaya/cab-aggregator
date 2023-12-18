@@ -7,7 +7,8 @@ import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.*;
 import com.modsen.rideservice.entity.Ride;
-import com.modsen.rideservice.enums.Status;
+import com.modsen.rideservice.enums.PaymentMethod;
+import com.modsen.rideservice.enums.RideStatus;
 import com.modsen.rideservice.exception.InvalidRequestException;
 import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.repository.RideRepository;
@@ -66,7 +67,11 @@ public class RideServiceImpl implements RideService {
         log.info("Created ride");
         RideResponse response = toDto(ride);
         response.setDriverResponse(getDriverById(ride.getDriverId()));
+        response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         driverFeignClient.changeStatus(response.getDriverResponse().getId());
+        if(PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)){
+            //запрос улетает
+        }
         return response;
     }
     private void setAdditionalFields(Ride ride){
@@ -203,11 +208,11 @@ public class RideServiceImpl implements RideService {
             throw new NotFoundException(id);
         }
         Ride ride = rideRepository.findById(id).get();
-        if (Status.valueOf(statusRequest.getStatus()).equals(Status.FINISHED)) {
+        if (RideStatus.valueOf(statusRequest.getStatus()).equals(RideStatus.FINISHED)) {
             driverFeignClient.changeStatus(ride.getDriverId());
             //выставлять оценку
         }
-        ride.setStatus(Status.valueOf(statusRequest.getStatus()));
+        ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
         rideRepository.save(ride);
     }
 }
