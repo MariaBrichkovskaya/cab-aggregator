@@ -1,7 +1,8 @@
 package com.modsen.rideservice.controller;
 
-import com.modsen.rideservice.dto.request.RideRequest;
+import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
+import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.MessageResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
@@ -11,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -28,7 +31,7 @@ public class RideController {
     }
 
     @PostMapping
-    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid RideRequest rideRequest) {
+    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) throws ExecutionException, InterruptedException {
         RideResponse response=rideService.add(rideRequest);
         return ResponseEntity.ok(response);
     }
@@ -46,7 +49,7 @@ public class RideController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateRide(@PathVariable Long id, @RequestBody @Valid RideRequest rideRequest) {
+    public ResponseEntity<MessageResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
         rideService.update(rideRequest, id);
         return ResponseEntity.ok(MessageResponse.builder().message("Editing ride with id " + id).build());
     }
