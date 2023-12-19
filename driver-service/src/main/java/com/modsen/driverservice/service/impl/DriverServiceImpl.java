@@ -47,14 +47,13 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void add(DriverRequest request) {
+    public DriverResponse add(DriverRequest request) {
         if (driverRepository.existsByPhone(request.getPhone())) {
             log.error("Driver with phone {} is exists", request.getPhone());
             throw new AlreadyExistsException(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE,request.getPhone()));
         }
-        driverRepository.save(toEntity(request));
         log.info("Create driver with surname {}",request.getSurname());
-
+        return toDto( driverRepository.save(toEntity(request)));
     }
 
 
@@ -103,7 +102,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void update(DriverRequest request, Long id) {
+    public DriverResponse update(DriverRequest request, Long id) {
         if(driverRepository.findById(id).isEmpty()) {
             log.error("Driver with id {} was not found", id);
             throw new NotFoundException(id);
@@ -116,8 +115,8 @@ public class DriverServiceImpl implements DriverService {
             }
         }
         driver.setId(id);
-        driverRepository.save(driver);
         log.info("Update driver with id {}", id);
+        return toDto(driverRepository.save(driver));
     }
 
 

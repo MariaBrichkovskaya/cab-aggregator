@@ -7,10 +7,10 @@ import com.modsen.driverservice.dto.response.DriversListResponse;
 import java.util.List;
 
 public interface DriverService {
-    void add(DriverRequest request);
+    DriverResponse add(DriverRequest request);
     DriverResponse findById(Long id);
     DriversListResponse findAll(int page, int size, String sortingParam);
-    void update(DriverRequest request,Long id);
+    DriverResponse update(DriverRequest request,Long id);
     void delete(Long id);
     void changeStatus(Long id);
     void editRating(Integer score,Long id);
