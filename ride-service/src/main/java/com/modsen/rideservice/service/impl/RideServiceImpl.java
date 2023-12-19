@@ -68,21 +68,21 @@ public class RideServiceImpl implements RideService {
         RideResponse response = toDto(ride);
         response.setDriverResponse(getDriverById(ride.getDriverId()));
         response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
-        driverFeignClient.changeStatus(response.getDriverResponse().getId());
         if(PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)){
             charge(response);
         }
+        driverFeignClient.changeStatus(response.getDriverResponse().getId());
         return response;
     }
     private void charge(RideResponse response){
         PassengerResponse passengerResponse=response.getPassengerResponse();
-        if (paymentFeignClient.findCustomer(passengerResponse.getId())==null){
+        if (paymentFeignClient.findCustomer(passengerResponse.getId())==null){ //ловить исключение а не проверять на нал
             CustomerRequest customerRequest=CustomerRequest.builder().amount(10000).phone(passengerResponse.getPhone())
                     .email(passengerResponse.getEmail())
                     .name(passengerResponse.getName())
                     .passengerId(passengerResponse.getId()).build();
             paymentFeignClient.createCustomer(customerRequest);
-        }
+        } //если денег меньше то статус меняется на кэш
         CustomerChargeRequest request=CustomerChargeRequest.builder()
                         .currency("BYN").amount((long) (response.getPrice()*100))
                         .passengerId(passengerResponse.getId()).build();
@@ -90,7 +90,9 @@ public class RideServiceImpl implements RideService {
     }
     private void setAdditionalFields(Ride ride){
         ride.setDate(LocalDateTime.now());
-        DriverResponse driver = driverFeignClient.getAvailable(1, 10, "id").getDrivers().get(0);//если список пуст то обработать
+        DriverResponse driver = driverFeignClient
+                .getAvailable(1, 10, "id").getDrivers().get(0);
+        //если список пуст то обработать
         ride.setDriverId(driver.getId());
         double price =generatePrice();
         ride.setPrice(price);

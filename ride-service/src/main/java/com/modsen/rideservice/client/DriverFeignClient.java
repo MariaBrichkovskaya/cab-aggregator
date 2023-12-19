@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@FeignClient(value = "driver")
+@FeignClient(value = "driver",configuration = CustomErrorDecoder.class)
 public interface DriverFeignClient {
     @GetMapping("/{id}")
     DriverResponse getDriver(@PathVariable("id") long id);

@@ -2,6 +2,7 @@ package com.modsen.rideservice.exception.handler;
 
 import com.modsen.rideservice.dto.response.ExceptionResponse;
 import com.modsen.rideservice.dto.response.ValidationExceptionResponse;
+import com.modsen.rideservice.exception.CommunicationNotFoundException;
 import com.modsen.rideservice.exception.InvalidRequestException;
 import com.modsen.rideservice.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,14 @@ public class RideHandler {
             errors.put(fieldName, errorMessage);
         });
         ValidationExceptionResponse response= new ValidationExceptionResponse(HttpStatus.BAD_REQUEST,VALIDATION_FAILED_MESSAGE,errors);
+        return new ResponseEntity<>(response,response.getStatus());
+    }
+    @ExceptionHandler(value = {CommunicationNotFoundException.class})
+    public ResponseEntity<ExceptionResponse> handleNotFoundException(CommunicationNotFoundException communicationNotFoundException){
+        ExceptionResponse response=
+                new ExceptionResponse( HttpStatus.BAD_REQUEST,
+                        communicationNotFoundException.getMessage()
+                );
         return new ResponseEntity<>(response,response.getStatus());
     }
 
