@@ -103,9 +103,10 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public CustomerResponse retrieve(String id) throws StripeException {
+    public CustomerResponse retrieve(long id) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-        Customer customer=Customer.retrieve(id);
+        String customerId=customerRepository.findById(id).get().getCustomerId();
+        Customer customer=Customer.retrieve(customerId);
         return CustomerResponse.builder()
                 .id(customer.getId())
                 .email(customer.getEmail())

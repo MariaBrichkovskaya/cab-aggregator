@@ -30,7 +30,7 @@ public class PaymentHandler {
     @ExceptionHandler(value = {BalanceException.class})
     public ResponseEntity<Object> handleBalanceException(BalanceException balanceException) {
         ExceptionResponse response =
-                new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                new ExceptionResponse(HttpStatus.PAYMENT_REQUIRED,
                         balanceException.getMessage()
                 );
         return new ResponseEntity<>(response, response.getStatus());

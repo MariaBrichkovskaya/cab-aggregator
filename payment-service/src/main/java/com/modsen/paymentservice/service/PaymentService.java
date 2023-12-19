@@ -14,7 +14,7 @@ public interface PaymentService {
 
     CustomerResponse createCustomer(CustomerRequest request) throws StripeException;
 
-    CustomerResponse retrieve(String id) throws StripeException;
+    CustomerResponse retrieve(long id) throws StripeException;
 
     BalanceResponse balance() throws StripeException;
 

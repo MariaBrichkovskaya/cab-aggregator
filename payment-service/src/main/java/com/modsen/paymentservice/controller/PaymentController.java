@@ -40,7 +40,7 @@ public class PaymentController {
     }
 
     @GetMapping("/customers/{id}")
-    public ResponseEntity<CustomerResponse> findCustomer(@PathVariable String id) throws StripeException {
+    public ResponseEntity<CustomerResponse> findCustomer(@PathVariable long id) throws StripeException {
         return ResponseEntity.ok(paymentService.retrieve(id));
     }
 
