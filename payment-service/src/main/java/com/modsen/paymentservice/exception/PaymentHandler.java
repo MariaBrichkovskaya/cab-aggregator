@@ -7,57 +7,48 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class PaymentHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
-        var errors = new HashMap<String, String>();
-        methodArgumentNotValidException.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ValidationExceptionResponse handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException) {
         String VALIDATION_FAILED_MESSAGE = "Invalid request";
-        ValidationExceptionResponse response = new ValidationExceptionResponse(HttpStatus.BAD_REQUEST, VALIDATION_FAILED_MESSAGE, errors);
-        return new ResponseEntity<>(response, response.getStatus());
-    }
-    @ExceptionHandler(value = {BalanceException.class})
-    public ResponseEntity<Object> handleBalanceException(BalanceException balanceException) {
-        ExceptionResponse response =
-                new ExceptionResponse(HttpStatus.PAYMENT_REQUIRED,
-                        balanceException.getMessage()
-                );
-        return new ResponseEntity<>(response, response.getStatus());
-    }
-    @ExceptionHandler(value = {StripeException.class})
-    public ResponseEntity<Object> handleStripeException(StripeException stripeException) {
-        ExceptionResponse response =
-                new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                        stripeException.getMessage()
-                );
-        return new ResponseEntity<>(response, response.getStatus());
-    }
-    @ExceptionHandler(value = {AlreadyExistsException.class})
-    public ResponseEntity<Object> handleStripeException(AlreadyExistsException alreadyExistsException) {
-        ExceptionResponse response =
-                new ExceptionResponse(HttpStatus.BAD_REQUEST,
-                        alreadyExistsException.getMessage()
-                );
-        return new ResponseEntity<>(response, response.getStatus());
-    }
-    @ExceptionHandler(value = {NotFoundException.class})
-    public ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException) {
-        ExceptionResponse response =
-                new ExceptionResponse(HttpStatus.NOT_FOUND,
-                        notFoundException.getMessage()
-                );
-        return new ResponseEntity<>(response, response.getStatus());
+        Map<String, String> errors = methodArgumentNotValidException.getBindingResult().getAllErrors().stream()
+                .map(error -> (FieldError) error)
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+        return new ValidationExceptionResponse(HttpStatus.BAD_REQUEST, VALIDATION_FAILED_MESSAGE, errors);
     }
 
+    @ExceptionHandler(value = {BalanceException.class})
+    @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
+    public ExceptionResponse handleBalanceException(BalanceException balanceException) {
+        return new ExceptionResponse(HttpStatus.PAYMENT_REQUIRED, balanceException.getMessage());
+    }
+
+    @ExceptionHandler(value = {StripeException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse handleStripeException(StripeException stripeException) {
+        return new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, stripeException.getMessage());
+    }
+
+    @ExceptionHandler(value = {AlreadyExistsException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleAlreadyExistsException(AlreadyExistsException alreadyExistsException) {
+        return new ExceptionResponse(HttpStatus.BAD_REQUEST, alreadyExistsException.getMessage());
+    }
+
+    @ExceptionHandler(value = {NotFoundException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ExceptionResponse handleNotFoundException(NotFoundException notFoundException) {
+        return new ExceptionResponse(HttpStatus.NOT_FOUND, notFoundException.getMessage());
+    }
 }
+

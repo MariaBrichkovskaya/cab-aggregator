@@ -1,5 +1,6 @@
 package com.modsen.paymentservice.service.impl;
 
+import com.modsen.paymentservice.enums.PaymentMethodEnum;
 import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
@@ -21,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -37,34 +37,36 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public MessageResponse charge(ChargeRequest request) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-        Map<String, Object> params = new HashMap<>();
-        params.put("amount", request.getAmount() * 100);
-        params.put("currency", request.getCurrency());
-        params.put("source", request.getCardToken());
-        Charge charge = Charge.create(params);
+        Charge charge = Charge.create(
+                Map.of(
+                        "amount", request.getAmount() * 100,
+                        "currency", request.getCurrency(),
+                        "source", request.getCardToken()
+                )
+        );
         String message = "Payment successful. ID: " + charge.getId();
         return MessageResponse.builder().message(message).build();
     }
 
+
     @Override
     public TokenResponse create(CardRequest request) throws StripeException {
         Stripe.apiKey = PUBLIC_KEY;
-        Map<String, Object> card = new HashMap<>();
-        card.put("number", request.getCardNumber());
-        card.put("exp_month", request.getExpMonth());
-        card.put("exp_year", request.getExpYear());
-        card.put("cvc", request.getCvc());
-        Map<String, Object> params = new HashMap<>();
-        params.put("card", card);
-        Token token = Token.create(params);
+        Map<String, Object> card = Map.of(
+                "number", request.getCardNumber(),
+                "exp_month", request.getExpMonth(),
+                "exp_year", request.getExpYear(),
+                "cvc", request.getCvc()
+        );
+        Token token = Token.create(Map.of("card", card));
         return TokenResponse.builder().token(token.getId()).build();
     }
+
 
     @Override
     public CustomerResponse createCustomer(CustomerRequest request) throws StripeException {
         Stripe.apiKey = PUBLIC_KEY;
-        if(customerRepository.existsById(request.getPassengerId()))
-            throw new AlreadyExistsException("Customer with id "+request.getPassengerId()+" already exists");
+        checkCustomerExistence(request.getPassengerId());
         CustomerCreateParams params =
                 CustomerCreateParams.builder()
                         .setName(request.getName())
@@ -75,7 +77,18 @@ public class PaymentServiceImpl implements PaymentService {
         Stripe.apiKey = SECRET_KEY;
         return createUser(params, request.getPassengerId());
     }
-    private CustomerResponse createUser(CustomerCreateParams params,long id) throws StripeException {
+
+    private void checkCustomerNotFound(long id) {
+        if (!customerRepository.existsById(id))
+            throw new NotFoundException("Customer is not found");
+    }
+
+    private void checkCustomerExistence(long id) {
+        if (!customerRepository.existsById(id))
+            throw new AlreadyExistsException("Customer already exists");
+    }
+
+    private CustomerResponse createUser(CustomerCreateParams params, long id) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
         Customer customer = Customer.create(params);
         createPaymentMethod(customer.getId());
@@ -92,25 +105,21 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void createPaymentMethod(String customerId) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-        Map<String, Object> paymentMethodParams = new HashMap<>();
-        paymentMethodParams.put("type", "card");
-        Map<String, Object> cardParams = new HashMap<>();
-        cardParams.put("token", "tok_visa"); // здесь "tok_visa" - это пример токена тестирования для карты Visa
-        paymentMethodParams.put("card", cardParams);
+        Map<String, Object> paymentMethodParams = Map.of(
+                "type", "card",
+                "card", Map.of("token", "tok_visa")
+        );
         PaymentMethod paymentMethod = PaymentMethod.create(paymentMethodParams);
-        Map<String, Object> attachParams = new HashMap<>();
-        attachParams.put("customer", customerId);
-        paymentMethod.attach(attachParams);
+        paymentMethod.attach(Map.of("customer", customerId));
     }
+
 
     @Override
     public CustomerResponse retrieve(long id) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
-        if(!customerRepository.existsById(id)){
-            throw new NotFoundException("Customer is not found");
-        }
-        String customerId=customerRepository.findById(id).get().getCustomerId();
-        Customer customer=Customer.retrieve(customerId);
+        checkCustomerNotFound(id);
+        String customerId = customerRepository.findById(id).get().getCustomerId();
+        Customer customer = Customer.retrieve(customerId);
         return CustomerResponse.builder()
                 .id(customer.getId())
                 .email(customer.getEmail())
@@ -135,39 +144,40 @@ public class PaymentServiceImpl implements PaymentService {
         Long passengerId = request.getPassengerId();
         User user = customerRepository.findById(passengerId).get();
         String customerId = user.getCustomerId();
-        checkBalance(customerId, request.getAmount()*100);
-        PaymentIntent intent=createIntent(request,customerId);
-        updateBalance(customerId,request.getAmount());
+        checkBalance(customerId, request.getAmount() * 100);
+        PaymentIntent intent = createIntent(request, customerId);
+        updateBalance(customerId, request.getAmount());
         return ChargeResponse.builder().id(intent.getId())
-                .amount(intent.getAmount()/100)
+                .amount(intent.getAmount() / 100)
                 .currency(intent.getCurrency()).build();
     }
-    private PaymentIntent createIntent(CustomerChargeRequest request,String customerId) throws StripeException {
-        Map<String, Object> paymentIntentParams = new HashMap<>();
-        paymentIntentParams.put("amount", request.getAmount() * 100);
-        paymentIntentParams.put("currency", request.getCurrency());
-        paymentIntentParams.put("customer", customerId);
-        PaymentIntent intent = PaymentIntent.create(paymentIntentParams);
+
+    private PaymentIntent createIntent(CustomerChargeRequest request, String customerId) throws StripeException {
+        PaymentIntent intent = PaymentIntent.create(Map.of("amount", request.getAmount() * 100,
+                "currency", request.getCurrency(),
+                "customer", customerId));
         intent.setPaymentMethod(customerId);
         PaymentIntentConfirmParams params =
                 PaymentIntentConfirmParams.builder()
-                        .setPaymentMethod("pm_card_visa")
+                        .setPaymentMethod(PaymentMethodEnum.VISA.getMethod())
                         .build();
         return intent.confirm(params);
     }
-    private void updateBalance(String customerId,long amount) throws StripeException {
-        Customer customer=Customer.retrieve(customerId);
+
+    private void updateBalance(String customerId, long amount) throws StripeException {
+        Customer customer = Customer.retrieve(customerId);
         CustomerUpdateParams params =
                 CustomerUpdateParams.builder()
-                        .setBalance(customer.getBalance()-amount*100)
+                        .setBalance(customer.getBalance() - amount * 100)
                         .build();
         Stripe.apiKey = SECRET_KEY;
         customer.update(params);
     }
-    private void checkBalance(String customerId,long amount) throws StripeException {
-        Customer customer=Customer.retrieve(customerId);
-        Long balance=customer.getBalance();
-        if(balance<amount)
+
+    private void checkBalance(String customerId, long amount) throws StripeException {
+        Customer customer = Customer.retrieve(customerId);
+        Long balance = customer.getBalance();
+        if (balance < amount)
             throw new BalanceException("Not enough money in the account");
 
     }

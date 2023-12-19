@@ -3,9 +3,9 @@ stripe:
     public: ${STRIPE_PUBLIC_KEY}
     secret: ${STRIPE_SECRET_KEY}
 server:
-  port: 9095
+  port: 9004
   servlet:
-    context-path: /api/integration
+    context-path: /api/v1
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/payments
