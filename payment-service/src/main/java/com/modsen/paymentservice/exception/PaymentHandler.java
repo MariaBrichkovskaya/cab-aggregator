@@ -51,5 +51,13 @@ public class PaymentHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
+    @ExceptionHandler(value = {NotFoundException.class})
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException) {
+        ExceptionResponse response =
+                new ExceptionResponse(HttpStatus.NOT_FOUND,
+                        notFoundException.getMessage()
+                );
+        return new ResponseEntity<>(response, response.getStatus());
+    }
 
 }

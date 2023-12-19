@@ -7,6 +7,7 @@ import com.modsen.paymentservice.dto.request.CustomerRequest;
 import com.modsen.paymentservice.dto.response.*;
 import com.modsen.paymentservice.exception.AlreadyExistsException;
 import com.modsen.paymentservice.exception.BalanceException;
+import com.modsen.paymentservice.exception.NotFoundException;
 import com.modsen.paymentservice.model.User;
 import com.modsen.paymentservice.repository.CustomerRepository;
 import com.modsen.paymentservice.service.PaymentService;
@@ -106,7 +107,7 @@ public class PaymentServiceImpl implements PaymentService {
     public CustomerResponse retrieve(long id) throws StripeException {
         Stripe.apiKey = SECRET_KEY;
         if(!customerRepository.existsById(id)){
-            return null;
+            throw new NotFoundException("Customer is not found");
         }
         String customerId=customerRepository.findById(id).get().getCustomerId();
         Customer customer=Customer.retrieve(customerId);
