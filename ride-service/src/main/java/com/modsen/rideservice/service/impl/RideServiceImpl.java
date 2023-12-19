@@ -2,9 +2,8 @@ package com.modsen.rideservice.service.impl;
 
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
-import com.modsen.rideservice.dto.request.CreateRideRequest;
-import com.modsen.rideservice.dto.request.StatusRequest;
-import com.modsen.rideservice.dto.request.UpdateRideRequest;
+import com.modsen.rideservice.client.PaymentFeignClient;
+import com.modsen.rideservice.dto.request.*;
 import com.modsen.rideservice.dto.response.*;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
@@ -41,6 +40,7 @@ public class RideServiceImpl implements RideService {
     private final ModelMapper modelMapper;
     private final DriverFeignClient driverFeignClient;
     private final PassengerFeignClient passengerFeignClient;
+    private final PaymentFeignClient paymentFeignClient;
 
     private DriverResponse getDriverById(long driverId) {
         return driverFeignClient.getDriver(driverId);
@@ -70,9 +70,23 @@ public class RideServiceImpl implements RideService {
         response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         driverFeignClient.changeStatus(response.getDriverResponse().getId());
         if(PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)){
-            //запрос улетает
+            charge(response);
         }
         return response;
+    }
+    private void charge(RideResponse response){
+        PassengerResponse passengerResponse=response.getPassengerResponse();
+        if (paymentFeignClient.findCustomer(passengerResponse.getId())==null){
+            CustomerRequest customerRequest=CustomerRequest.builder().amount(10000).phone(passengerResponse.getPhone())
+                    .email(passengerResponse.getEmail())
+                    .name(passengerResponse.getName())
+                    .passengerId(passengerResponse.getId()).build();
+            paymentFeignClient.createCustomer(customerRequest);
+        }
+        CustomerChargeRequest request=CustomerChargeRequest.builder()
+                        .currency("BYN").amount((long) (response.getPrice()*100))
+                        .passengerId(passengerResponse.getId()).build();
+        paymentFeignClient.chargeFromCustomer(request);
     }
     private void setAdditionalFields(Ride ride){
         ride.setDate(LocalDateTime.now());

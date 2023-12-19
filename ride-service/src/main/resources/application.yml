@@ -29,3 +29,5 @@ spring:
             url: http://localhost:9002/api/v1/drivers
           passenger:
             url: http://localhost:9001/api/v1/passengers
+          payment:
+            url: http://localhost:9095/api/integration/payments
