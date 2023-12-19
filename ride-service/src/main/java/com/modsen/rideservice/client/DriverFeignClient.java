@@ -19,7 +19,7 @@ public interface DriverFeignClient {
                                      @RequestParam(required = false, defaultValue = "10") int size,
                                      @RequestParam(name = "order_by", required = false) String orderBy);
 
-    @PutMapping("/status/{id}")
+    @PutMapping("/{id}/status")
     void changeStatus(@PathVariable Long id);
 
 }
