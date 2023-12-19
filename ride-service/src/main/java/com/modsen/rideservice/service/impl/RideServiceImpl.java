@@ -76,13 +76,16 @@ public class RideServiceImpl implements RideService {
     }
     private void charge(RideResponse response){
         PassengerResponse passengerResponse=response.getPassengerResponse();
-        if (paymentFeignClient.findCustomer(passengerResponse.getId())==null){ //ловить исключение а не проверять на нал
+        try {
+            paymentFeignClient.findCustomer(passengerResponse.getId());
+        }catch (NotFoundException e){
             CustomerRequest customerRequest=CustomerRequest.builder().amount(10000).phone(passengerResponse.getPhone())
                     .email(passengerResponse.getEmail())
                     .name(passengerResponse.getName())
                     .passengerId(passengerResponse.getId()).build();
             paymentFeignClient.createCustomer(customerRequest);
-        } //если денег меньше то статус меняется на кэш
+        }
+        //если денег меньше то статус меняется на кэш
         CustomerChargeRequest request=CustomerChargeRequest.builder()
                         .currency("BYN").amount((long) (response.getPrice()*100))
                         .passengerId(passengerResponse.getId()).build();
