@@ -188,13 +188,14 @@ public class RideServiceImpl implements RideService {
     @Override
     @Transactional(readOnly = true)
     public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
+        PassengerResponse passengerResponse=getPassengerById(passengerId);
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
         List<RideResponse> rides = ridesPage.getContent()
                 .stream().map(ride -> {
                     RideResponse response = toDto(ride);
                     response.setDriverResponse(getDriverById(ride.getDriverId()));
-                    response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
+                    response.setPassengerResponse(passengerResponse);
                     return response;
                 }).toList();
         log.info("Retrieving rides for passenger with id {}", passengerId);
@@ -205,13 +206,13 @@ public class RideServiceImpl implements RideService {
     @Override
     @Transactional(readOnly = true)
     public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
-
+        DriverResponse driverResponse=getDriverById(driverId);
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
         List<RideResponse> rides = ridesPage.getContent()
                 .stream().map(ride -> {
                     RideResponse response = toDto(ride);
-                    response.setDriverResponse(getDriverById(ride.getDriverId()));
+                    response.setDriverResponse(driverResponse);
                     response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
                     return response;
                 }).toList();
