@@ -1,7 +1,6 @@
 package com.modsen.rideservice.client;
 
 import com.modsen.rideservice.config.FeignClientConfig;
-import com.modsen.rideservice.dto.response.DriverResponse;
 import com.modsen.rideservice.dto.response.PassengerResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

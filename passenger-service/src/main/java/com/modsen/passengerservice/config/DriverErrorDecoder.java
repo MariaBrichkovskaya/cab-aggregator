@@ -1,4 +1,4 @@
-package com.modsen.rideservice.client;
+package com.modsen.passengerservice.config;
 
 
 import feign.FeignException;
@@ -7,7 +7,7 @@ import feign.RetryableException;
 import feign.codec.ErrorDecoder;
 
 
-public class RideErrorDecoder implements ErrorDecoder {
+public class DriverErrorDecoder implements ErrorDecoder {
     @Override
     public Exception decode(String methodKey, Response response) {
         FeignException exception = FeignException.errorStatus(methodKey, response);
@@ -17,7 +17,7 @@ public class RideErrorDecoder implements ErrorDecoder {
                     response.status(),
                     exception.getMessage(),
                     response.request().httpMethod(),
-                    (Throwable) exception,
+                    exception,
                     (Long) null,
                     response.request());
         }

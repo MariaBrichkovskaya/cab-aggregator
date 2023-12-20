@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PassengerRatingResponse {
-    long id;
-    long passengerId;
-    DriverResponse driverResponse;
-    int score;
+public class DriverResponse {
+    Long id;
+    String name;
+    String surname;
+    String phone;
+    Double rating;
+    String status;
 }

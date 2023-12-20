@@ -1,7 +1,9 @@
 package com.modsen.passengerservice.service.impl;
 
+import com.modsen.passengerservice.client.DriverFeignClient;
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.DriverResponse;
 import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
 import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.entity.Rating;
@@ -9,8 +11,6 @@ import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
 import com.modsen.passengerservice.repository.RatingRepository;
 import com.modsen.passengerservice.service.RatingService;
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -27,8 +27,11 @@ public class RatingServiceImpl implements RatingService {
     private final RatingRepository ratingRepository;
     private final PassengerRepository passengerRepository;
     private final ModelMapper modelMapper;
+    private final DriverFeignClient driverFeignClient;
 
-
+    private DriverResponse getDriver(long id){
+        return driverFeignClient.getDriver(id);
+    }
     @Override
     public PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId) {
         Rating newPassengerRating = toEntity(passengerRatingRequest);
@@ -44,7 +47,11 @@ public class RatingServiceImpl implements RatingService {
         validatePassengerExists(passengerId);
         List<PassengerRatingResponse> passengerRatings = ratingRepository.getRatingsByPassengerId(passengerId)
                 .stream()
-                .map(this::toDto)
+                .map(rating -> {
+                    PassengerRatingResponse response=toDto(rating);
+                    response.setDriverResponse(getDriver(rating.getDriverId()));
+                    return response;
+                })
                 .toList();
         log.info("Retrieving rating for passenger {}", passengerId);
         return PassengerListRatingsResponse.builder()
