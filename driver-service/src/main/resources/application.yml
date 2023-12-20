@@ -19,4 +19,9 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
-
+  cloud:
+    openfeign:
+      client:
+        config:
+          passenger:
+            url: http://localhost:9001/api/v1/passengers

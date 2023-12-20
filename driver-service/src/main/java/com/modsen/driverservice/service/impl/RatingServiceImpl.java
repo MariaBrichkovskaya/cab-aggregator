@@ -1,9 +1,12 @@
 package com.modsen.driverservice.service.impl;
 
+
+import com.modsen.driverservice.cient.PassengerFeignClient;
 import com.modsen.driverservice.dto.request.DriverRatingRequest;
 import com.modsen.driverservice.dto.response.AverageDriverRatingResponse;
 import com.modsen.driverservice.dto.response.DriverListRatingsResponse;
 import com.modsen.driverservice.dto.response.DriverRatingResponse;
+import com.modsen.driverservice.dto.response.PassengerResponse;
 import com.modsen.driverservice.entity.Rating;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.repository.DriverRepository;
@@ -25,14 +28,17 @@ public class RatingServiceImpl implements RatingService {
     private final RatingRepository driverRatingRepository;
     private final DriverRepository driverRepository;
     private final ModelMapper modelMapper;
-
+    private final PassengerFeignClient passengerFeignClient;
+    private PassengerResponse getPassenger(long id){
+        return passengerFeignClient.getPassenger(id);
+    }
 
     @Override
     public void rateDriver(DriverRatingRequest driverRatingRequest, long driverId) {
         Rating newDriverRating = toEntity(driverRatingRequest);
         newDriverRating.setDriver(driverRepository.findById(driverId)
                 .orElseThrow(() -> new NotFoundException(driverId)));
-        newDriverRating = driverRatingRepository.save(newDriverRating);
+        driverRatingRepository.save(newDriverRating);
         log.info("Update rating for driver {}",driverId);
     }
 
@@ -42,7 +48,11 @@ public class RatingServiceImpl implements RatingService {
         validateDriverExists(driverId);
         List<DriverRatingResponse> driverRatings = driverRatingRepository.getRatingsByDriverId(driverId)
                 .stream()
-                .map(this::toDto)
+                .map(rating -> {
+                    DriverRatingResponse response=toDto(rating);
+                    response.setPassengerResponse(getPassenger(rating.getPassengerId()));
+                    return response;
+                })
                 .toList();
         log.info("Retrieving rating for driver {}",driverId);
         return DriverListRatingsResponse.builder()

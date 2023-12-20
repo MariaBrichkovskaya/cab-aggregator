@@ -8,9 +8,11 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DriverRatingResponse {
-    long id;
-    PassengerResponse passengerResponse;
-    long driverId;
-    int score;
+public class PassengerResponse {
+    Long id;
+    String name;
+    String surname;
+    String email;
+    String phone;
+    Double rating;
 }

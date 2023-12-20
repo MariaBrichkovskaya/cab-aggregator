@@ -1,24 +1,24 @@
 package com.modsen.driverservice.exception.handler;
 
 
-import com.modsen.driverservice.dto.response.AlreadyExistsResponse;
 import com.modsen.driverservice.dto.response.ExceptionResponse;
 import com.modsen.driverservice.dto.response.ValidationExceptionResponse;
 import com.modsen.driverservice.exception.AlreadyExistsException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 
-import static com.modsen.driverservice.util.Messages.*;
+import static com.modsen.driverservice.util.Messages.VALIDATION_FAILED_MESSAGE;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class DriverHandler {
     @ExceptionHandler(value = {NotFoundException.class})
     public ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException){
@@ -28,7 +28,13 @@ public class DriverHandler {
                 );
         return new ResponseEntity<>(response,response.getStatus());
     }
+    @ExceptionHandler(value = {FeignException.class})
+    public ExceptionResponse handleFeignException(FeignException feignException) {
 
+        return new ExceptionResponse(HttpStatus.valueOf(feignException.status()),
+                feignException.getMessage()
+        );
+    }
     @ExceptionHandler(value = {InvalidRequestException.class})
     public ResponseEntity<Object> handleNotFoundException(InvalidRequestException invalidRequestException){
         ExceptionResponse response=
