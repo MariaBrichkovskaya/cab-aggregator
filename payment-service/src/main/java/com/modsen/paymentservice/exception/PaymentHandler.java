@@ -2,9 +2,7 @@ package com.modsen.paymentservice.exception;
 
 import com.modsen.paymentservice.dto.response.ExceptionResponse;
 import com.modsen.paymentservice.dto.response.ValidationExceptionResponse;
-import com.stripe.exception.StripeException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,10 +31,10 @@ public class PaymentHandler {
         return new ExceptionResponse(HttpStatus.PAYMENT_REQUIRED, balanceException.getMessage());
     }
 
-    @ExceptionHandler(value = {StripeException.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ExceptionResponse handleStripeException(StripeException stripeException) {
-        return new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, stripeException.getMessage());
+    @ExceptionHandler(value = {PaymentException.class})
+    @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
+    public ExceptionResponse handlePaymentException(PaymentException paymentException) {
+        return new ExceptionResponse(HttpStatus.PAYMENT_REQUIRED, paymentException.getMessage());
     }
 
     @ExceptionHandler(value = {AlreadyExistsException.class})

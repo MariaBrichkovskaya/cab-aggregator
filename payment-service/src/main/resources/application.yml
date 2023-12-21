@@ -4,8 +4,6 @@ stripe:
     secret: ${STRIPE_SECRET_KEY}
 server:
   port: 9004
-  servlet:
-    context-path: /api/v1
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/payments

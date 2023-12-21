@@ -5,19 +5,17 @@ import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
 import com.modsen.paymentservice.dto.response.*;
-import com.stripe.exception.StripeException;
 
 public interface PaymentService {
-    MessageResponse charge(ChargeRequest request) throws StripeException;
+    MessageResponse charge(ChargeRequest request);
 
-    TokenResponse create(CardRequest request) throws StripeException;
+    TokenResponse create(CardRequest request);
 
-    CustomerResponse createCustomer(CustomerRequest request) throws StripeException;
+    CustomerResponse createCustomer(CustomerRequest request);
 
-    CustomerResponse retrieve(long id) throws StripeException;
+    CustomerResponse retrieve(long id);
 
-    BalanceResponse balance() throws StripeException;
+    BalanceResponse balance();
 
-
-    ChargeResponse chargeFromCustomer(CustomerChargeRequest request) throws StripeException;
+    ChargeResponse chargeFromCustomer(CustomerChargeRequest request);
 }
