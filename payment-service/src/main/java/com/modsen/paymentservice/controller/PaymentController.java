@@ -29,7 +29,7 @@ public class PaymentController {
     @PostMapping("/token")
     @ResponseStatus(HttpStatus.CREATED)
     public TokenResponse createToken(@RequestBody @Valid CardRequest request) {
-        return paymentService.create(request);
+        return paymentService.createTokent(request);
     }
 
     @PostMapping("/customers")

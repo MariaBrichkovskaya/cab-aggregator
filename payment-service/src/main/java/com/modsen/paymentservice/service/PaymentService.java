@@ -9,7 +9,7 @@ import com.modsen.paymentservice.dto.response.*;
 public interface PaymentService {
     MessageResponse charge(ChargeRequest request);
 
-    TokenResponse create(CardRequest request);
+    TokenResponse createTokent(CardRequest request);
 
     CustomerResponse createCustomer(CustomerRequest request);
 
