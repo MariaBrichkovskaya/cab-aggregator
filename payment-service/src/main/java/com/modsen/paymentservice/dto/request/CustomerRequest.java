@@ -15,19 +15,19 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerRequest {
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "{name.not.empty.message}")
     String name;
     @Schema(example = "12345@gmail.com")
-    @Email(message = "Email is not valid")
-    @NotBlank(message = "Email is mandatory")
+    @Email(message = "{invalid.email.message}")
+    @NotBlank(message = "{email.not.empty.message}")
     String email;
     @Pattern(regexp = "^(80(29|44|33|25)\\d{7})$")
-    @NotBlank(message = "Phone is mandatory")
+    @NotBlank(message = "{phone.not.empty.message}")
     String phone;
-    @NotNull(message = "Passenger is mandatory")
-    @Range(min = 1, message = "Min value is 1")
+    @NotNull(message = "{passenger.not.empty.message}")
+    @Range(min = 1, message = "{min.value.message}")
     long passengerId;
-    @NotNull(message = "Amount is mandatory")
-    @Range(min = 100, max = 1000000,message = "Amount should be between 100 and 1000000")
+    @NotNull(message = "{amount.not.empty.message}")
+    @Range(min = 100, max = 1000000,message = "{amount.range.message}")
     long amount;
 }

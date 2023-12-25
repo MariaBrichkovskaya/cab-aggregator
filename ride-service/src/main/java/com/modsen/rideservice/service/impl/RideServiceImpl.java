@@ -69,8 +69,8 @@ public class RideServiceImpl implements RideService {
         response.setDriverResponse(getDriverById(ride.getDriverId()));
         response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         if(PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)){
-            charge(response);
-        }
+            charge(response);//тут будет исключение, отловить и поменять статус
+        }//сделать сразу проверки на айди пассажира и тд, а потом уже сохранение
         driverFeignClient.changeStatus(response.getDriverResponse().getId());
         return response;
     }

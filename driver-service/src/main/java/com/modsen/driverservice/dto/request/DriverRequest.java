@@ -12,11 +12,11 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DriverRequest {
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "{name.not.empty.message}")
     String name;
-    @NotBlank(message = "Surname is mandatory")
+    @NotBlank(message = "{surname.not.empty.message}")
     String surname;
     @Pattern(regexp = "^(80(29|44|33|25)\\d{7})$")
-    @NotBlank(message = "Phone is mandatory")
+    @NotBlank(message = "{phone.not.empty.message}")
     String phone;
 }

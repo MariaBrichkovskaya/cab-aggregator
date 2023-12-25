@@ -16,15 +16,15 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateRideRequest {
-    @NotBlank(message = "Pick-up address is mandatory")
+    @NotBlank(message = "{address.not.empty.message}")
     String pickUpAddress;
-    @NotBlank(message = "Destination address is mandatory")
+    @NotBlank(message = "{address.not.empty.message}")
     String destinationAddress;
-    @Range(min = 1, message = "Min value is 1")
-    @NotNull(message = "Passenger address is mandatory")
+    @Range(min = 1, message = "{min.value.message}")
+    @NotNull(message = "{passenger.not.empty.message}")
     Long passengerId;
-    @NotNull(message = "Payment method is mandatory")
-    @Pattern(regexp = "CARD|CASH", message = "Invalid payment method")
+    @NotNull(message = "{payment.not.empty.message}")
+    @Pattern(regexp = "CARD|CASH", message = "{invalid.payment.method.message}")
     String paymentMethod;
 
 }

@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StatusRequest {
-    @NotBlank(message = "Status is mandatory")
-    @Pattern(regexp = "^(CREATED|ACCEPTED|REJECTED|FINISHED)$",message = "Statuses are CREATED ACCEPTED REJECTED FINISHED")
+    @NotBlank(message = "{status.not.empty.message}")
+    @Pattern(regexp = "^(CREATED|ACCEPTED|REJECTED|FINISHED)$",message = "{invalid.status.message}")
     private String status;
 }

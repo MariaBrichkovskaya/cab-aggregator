@@ -12,12 +12,12 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChargeRequest {
-    @NotNull(message = "Amount is mandatory")
-    @Range(min = 1, max = 1000000,message = "Amount should be between 100 and 1000000")
+    @NotNull(message = "{amount.not.empty.message}")
+    @Range(min = 1, max = 10000,message = "{amount.range.message}")
     long amount;
-    @NotBlank(message = "Currency is mandatory")
+    @NotBlank(message = "{currency.not.empty.message}")
     String currency;
-    @NotBlank(message = "Token is mandatory")
+    @NotBlank(message = "{token.not.empty.message}")
     String cardToken;
 }
 

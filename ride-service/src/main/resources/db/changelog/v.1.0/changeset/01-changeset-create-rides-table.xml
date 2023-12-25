@@ -1,0 +1,35 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="1" author="Maria Brichkovskaya">
+        <createTable tableName="rides">
+            <column name="id" type="bigserial" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="pick_up_address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="destination_address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="passenger_id" type="bigserial">
+                <constraints nullable="false"/>
+            </column>
+            <column name="driver_id" type="bigserial">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
