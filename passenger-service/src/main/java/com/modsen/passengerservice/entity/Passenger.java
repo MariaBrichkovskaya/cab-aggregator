@@ -22,6 +22,4 @@ public class Passenger {
     String email;
     @Column(name = "phone")
     String phone;
-    @Column(name = "rating")
-    Double rating = 0.0;
 }

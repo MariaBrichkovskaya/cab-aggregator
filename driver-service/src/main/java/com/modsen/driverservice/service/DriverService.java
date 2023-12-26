@@ -8,11 +8,16 @@ import java.util.List;
 
 public interface DriverService {
     DriverResponse add(DriverRequest request);
+
     DriverResponse findById(Long id);
+
     DriversListResponse findAll(int page, int size, String sortingParam);
-    DriverResponse update(DriverRequest request,Long id);
+
+    DriverResponse update(DriverRequest request, Long id);
+
     void delete(Long id);
+
     void changeStatus(Long id);
-    void editRating(Integer score,Long id);
-    DriversListResponse findAvailableDrivers(int page,int size,String sortingParam);
+
+    DriversListResponse findAvailableDrivers(int page, int size, String sortingParam);
 }

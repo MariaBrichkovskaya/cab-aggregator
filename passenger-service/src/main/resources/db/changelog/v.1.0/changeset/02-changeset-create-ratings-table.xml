@@ -1,0 +1,23 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="Maria Brichkovskaya" id="2">
+        <createTable tableName="ratings">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="driver_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="passenger_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="score" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ratings" baseColumnNames="passenger_id"
+                                 referencedTableName="passengers" referencedColumnNames="id" constraintName="FK_rating_passenger"
+                                 deleteCascade="true"/>
+    </changeSet>
+</databaseChangeLog>

@@ -10,6 +10,7 @@ import com.modsen.passengerservice.exception.InvalidRequestException;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
 import com.modsen.passengerservice.service.PassengerService;
+import com.modsen.passengerservice.service.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -32,6 +33,7 @@ import static com.modsen.passengerservice.util.Messages.*;
 public class PassengerServiceImpl implements PassengerService {
     private final ModelMapper modelMapper;
     private final PassengerRepository passengerRepository;
+    private final RatingService ratingService;
 
     private PassengerResponse toDto(Passenger passenger) {
         return modelMapper.map(passenger, PassengerResponse.class);
@@ -44,9 +46,11 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     public PassengerResponse add(PassengerRequest request) {
         checkCreateDataIsUnique(request);
-        Passenger passenger=passengerRepository.save(toEntity(request));
+        Passenger passenger = passengerRepository.save(toEntity(request));
         log.info("Create passenger with surname {}", request.getSurname());
-        return toDto(passenger);
+        PassengerResponse response = toDto(passenger);
+        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
+        return response;
     }
 
     @Override
@@ -54,7 +58,9 @@ public class PassengerServiceImpl implements PassengerService {
     public PassengerResponse findById(Long id) {
         Passenger passenger = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
-        return toDto(passenger);
+        PassengerResponse response = toDto(passenger);
+        response.setRating(ratingService.getAveragePassengerRating(id).getAverageRating());
+        return response;
     }
 
     @Override
@@ -63,7 +69,11 @@ public class PassengerServiceImpl implements PassengerService {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Passenger> passengersPage = passengerRepository.findAll(pageRequest);
         List<PassengerResponse> passengers = passengersPage.getContent().stream()
-                .map(this::toDto).toList();
+                .map(passenger -> {
+                    PassengerResponse response = toDto(passenger);
+                    response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
+                    return response;
+                }).toList();
         return PassengersListResponse.builder().passengers(passengers).build();
     }
 
@@ -104,10 +114,12 @@ public class PassengerServiceImpl implements PassengerService {
         }
         Passenger passengerToUpdate = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         checkUpdateDataIsUnique(request, passengerToUpdate);
-        Passenger passenger=toEntity(request);
+        Passenger passenger = toEntity(request);
         passenger.setId(id);
         log.info("Update passenger with id {}", id);
-        return toDto(passengerRepository.save(passenger));
+        PassengerResponse response = toDto(passengerRepository.save(passenger));
+        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
+        return response;
     }
 
     @Override

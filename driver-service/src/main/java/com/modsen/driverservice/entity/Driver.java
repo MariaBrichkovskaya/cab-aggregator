@@ -24,9 +24,6 @@ public class Driver {
     @Column(name = "phone",unique = true,nullable = false)
     String phone;
 
-    @Column(name = "rating")
-    Double rating = 0.0;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     Status status = Status.AVAILABLE;

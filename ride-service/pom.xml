@@ -18,6 +18,7 @@
         <swagger.version>2.2.0</swagger.version>
         <mapper.version>3.1.1</mapper.version>
         <openfeign.version>4.1.0</openfeign.version>
+        <kafka.version>3.1.1</kafka.version>
     </properties>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
@@ -30,6 +31,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>${openfeign.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <version>${kafka.version}</version>
         </dependency>
 
         <dependency>
