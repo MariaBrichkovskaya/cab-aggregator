@@ -25,3 +25,15 @@ spring:
         config:
           passenger:
             url: http://localhost:9001/api/v1/passengers
+  kafka:
+    consumer:
+      group-id: my-group-id
+      bootstrap-servers: localhost:9092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer:  org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring:
+          json:
+            trusted:
+              packages=*:

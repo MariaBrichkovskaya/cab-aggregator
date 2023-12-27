@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
+@ToString
 public class Ride {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +29,7 @@ public class Ride {
     Double price;
     @Column(name = "passenger_id",nullable = false)
     Long passengerId;
-    @Column(name = "driver_id",nullable = false)
+    @Column(name = "driver_id")
     Long driverId;
     LocalDateTime date;
     @Enumerated(EnumType.STRING)

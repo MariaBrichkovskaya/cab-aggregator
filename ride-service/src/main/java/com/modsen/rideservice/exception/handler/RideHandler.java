@@ -2,6 +2,7 @@ package com.modsen.rideservice.exception.handler;
 
 import com.modsen.rideservice.dto.response.ExceptionResponse;
 import com.modsen.rideservice.dto.response.ValidationExceptionResponse;
+import com.modsen.rideservice.exception.AlreadyFinishedRideException;
 import com.modsen.rideservice.exception.CommunicationNotFoundException;
 import com.modsen.rideservice.exception.InvalidRequestException;
 import com.modsen.rideservice.exception.NotFoundException;
@@ -30,6 +31,14 @@ public class RideHandler {
         ExceptionResponse response =
                 new ExceptionResponse(HttpStatus.NOT_FOUND,
                         notFoundException.getMessage()
+                );
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+    @ExceptionHandler(value = {AlreadyFinishedRideException.class})
+    public ResponseEntity<Object> handleAlreadyFinishedRideException(AlreadyFinishedRideException alreadyFinishedRideException) {
+        ExceptionResponse response =
+                new ExceptionResponse(HttpStatus.CONFLICT,
+                        alreadyFinishedRideException.getMessage()
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }

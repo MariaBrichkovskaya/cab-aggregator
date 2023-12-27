@@ -76,6 +76,10 @@ public class DriverServiceImpl implements DriverService {
     public DriversListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Driver> driversPage = driverRepository.findAll(pageRequest);
+        return getDriversListResponse(driversPage);
+    }
+
+    private DriversListResponse getDriversListResponse(Page<Driver> driversPage) {
         List<DriverResponse> drivers = driversPage.getContent().stream()
                 .map(driver -> {
                     DriverResponse response = toDto(driver);
@@ -161,13 +165,7 @@ public class DriverServiceImpl implements DriverService {
     public DriversListResponse findAvailableDrivers(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE, pageRequest);
-        List<DriverResponse> drivers = driversPage.getContent().stream()
-                .map(driver -> {
-                    DriverResponse response = toDto(driver);
-                    response.setRating(ratingService.getAverageDriverRating(driver.getId()).getAverageRating());
-                    return response;
-                }).toList();
-        return DriversListResponse.builder().drivers(drivers).build();
+        return getDriversListResponse(driversPage);
     }
 
 
