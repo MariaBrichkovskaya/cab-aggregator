@@ -31,7 +31,12 @@ spring:
           payment:
             url: http://localhost:9004/api/v1/payments
   kafka:
-    producer:
-      bootstrap-servers: localhost:9092
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id:
+        driver: driver-creation-group
+    bootstrap-servers: localhost:9092
+topic:
+  name:
+    ride: ride.create
+    driver: available.driver
+    status: change.driver.status

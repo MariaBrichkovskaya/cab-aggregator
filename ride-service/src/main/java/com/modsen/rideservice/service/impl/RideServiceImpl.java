@@ -3,7 +3,8 @@ package com.modsen.rideservice.service.impl;
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
-import com.modsen.rideservice.config.KafkaProducer;
+import com.modsen.rideservice.config.kafka.RideProducer;
+import com.modsen.rideservice.config.kafka.StatusProducer;
 import com.modsen.rideservice.dto.request.*;
 import com.modsen.rideservice.dto.response.*;
 import com.modsen.rideservice.entity.Ride;
@@ -44,11 +45,17 @@ public class RideServiceImpl implements RideService {
     private final DriverFeignClient driverFeignClient;
     private final PassengerFeignClient passengerFeignClient;
     private final PaymentFeignClient paymentFeignClient;
-    private final KafkaProducer kafkaProducer;
-    private DriverResponse getDriverById(long driverId) {
+    private final RideProducer rideProducer;
+    private final StatusProducer statusProducer;
+
+    private DriverResponse getDriverById(Long driverId) {
+        if (driverId == null) {
+            return null;
+        }
         return driverFeignClient.getDriver(driverId);
     }
-    private PassengerResponse getPassengerById(long passengerId){
+
+    private PassengerResponse getPassengerById(long passengerId) {
         return passengerFeignClient.getPassenger(passengerId);
     }
 
@@ -66,44 +73,50 @@ public class RideServiceImpl implements RideService {
     public RideResponse add(CreateRideRequest request) {
         Ride ride = toEntity(request);
         setAdditionalFields(ride);
-        Ride rideToSave=rideRepository.save(ride);
-        KafkaRideRequest rideRequest=modelMapper.map(request,KafkaRideRequest.class);
-        rideRequest.setId(rideToSave.getId());
-        kafkaProducer.sendMessage(rideRequest);
+        Ride rideToSave = rideRepository.save(ride);
+        rideProducer.sendMessage(RideRequest.builder().id(rideToSave.getId()).build());
         log.info("Created ride");
         RideResponse response = toDto(ride);
-        //response.setDriverResponse(getDriverById(ride.getDriverId()));
-        response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
-        if(PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)){
+        if (PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)) {
             charge(response);//тут будет исключение, отловить и поменять статус
         }//сделать сразу проверки на айди пассажира и тд, а потом уже сохранение
-        //driverFeignClient.changeStatus(response.getDriverResponse().getId());
+        response.setDriverResponse(getDriverById(ride.getDriverId()));
+        response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         return response;
     }
-    private void charge(RideResponse response){
-        PassengerResponse passengerResponse=response.getPassengerResponse();
+
+    @Override
+    public void setDriver(DriverForRideRequest request) {
+        Ride ride = rideRepository.findById(request.getRideId()).get();
+        ride.setDriverId(request.getDriverId());
+        ride.setRideStatus(RideStatus.ACCEPTED);
+        rideRepository.save(ride);
+        EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest
+                .builder().driverId(request.getDriverId()).build();
+        statusProducer.sendMessage(driverStatusRequest);
+    }
+
+    private void charge(RideResponse response) {
+        PassengerResponse passengerResponse = response.getPassengerResponse();
         try {
             paymentFeignClient.findCustomer(passengerResponse.getId());
-        }catch (NotFoundException e){
-            CustomerRequest customerRequest=CustomerRequest.builder().amount(10000).phone(passengerResponse.getPhone())
+        } catch (NotFoundException e) {
+            CustomerRequest customerRequest = CustomerRequest.builder().amount(10000).phone(passengerResponse.getPhone())
                     .email(passengerResponse.getEmail())
                     .name(passengerResponse.getName())
                     .passengerId(passengerResponse.getId()).build();
             paymentFeignClient.createCustomer(customerRequest);
         }
         //если денег меньше то статус меняется на кэш
-        CustomerChargeRequest request=CustomerChargeRequest.builder()
-                        .currency("BYN").amount((long) (response.getPrice()*100))
-                        .passengerId(passengerResponse.getId()).build();
+        CustomerChargeRequest request = CustomerChargeRequest.builder()
+                .currency("BYN").amount((long) (response.getPrice() * 100))
+                .passengerId(passengerResponse.getId()).build();
         paymentFeignClient.chargeFromCustomer(request);
     }
-    private void setAdditionalFields(Ride ride){
+
+    private void setAdditionalFields(Ride ride) {
         ride.setDate(LocalDateTime.now());
-       /* DriverResponse driver = driverFeignClient
-                .getAvailable(1, 10, "id").getDrivers().get(0);
-        //если список пуст то обработать
-        ride.setDriverId(driver.getId());*/
-        double price =generatePrice();
+        double price = generatePrice();
         ride.setPrice(price);
     }
 
@@ -121,7 +134,6 @@ public class RideServiceImpl implements RideService {
         RideResponse response = toDto(ride);
         response.setDriverResponse(getDriverById(ride.getDriverId()));
         response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
-        //kafkaProducer.sendMessage(response.toString());
         return response;
     }
 
@@ -174,7 +186,7 @@ public class RideServiceImpl implements RideService {
             log.error("Ride with id {} was not found", id);
             throw new NotFoundException(id);
         }
-        Ride ride = modelMapper.map(request,Ride.class);
+        Ride ride = modelMapper.map(request, Ride.class);
         ride.setId(id);
         rideRepository.save(ride);
         log.info("Update ride with id {}", id);
@@ -195,7 +207,7 @@ public class RideServiceImpl implements RideService {
     @Override
     @Transactional(readOnly = true)
     public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
-        PassengerResponse passengerResponse=getPassengerById(passengerId);
+        PassengerResponse passengerResponse = getPassengerById(passengerId);
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
         List<RideResponse> rides = ridesPage.getContent()
@@ -213,7 +225,7 @@ public class RideServiceImpl implements RideService {
     @Override
     @Transactional(readOnly = true)
     public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
-        DriverResponse driverResponse=getDriverById(driverId);
+        DriverResponse driverResponse = getDriverById(driverId);
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
         List<RideResponse> rides = ridesPage.getContent()
@@ -235,12 +247,13 @@ public class RideServiceImpl implements RideService {
             throw new NotFoundException(id);
         }
         Ride ride = rideRepository.findById(id).get();
-        if (ride.getRideStatus().equals(RideStatus.FINISHED))
-        {
+        if (ride.getRideStatus().equals(RideStatus.FINISHED)) {
             throw new AlreadyFinishedRideException("Ride already finished");
         }
         if (RideStatus.valueOf(statusRequest.getStatus()).equals(RideStatus.FINISHED)) {
-            driverFeignClient.changeStatus(ride.getDriverId());
+            EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest
+                    .builder().driverId(ride.getDriverId()).build();
+            statusProducer.sendMessage(driverStatusRequest);
             //выставлять оценку
         }
         ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));

@@ -2,6 +2,7 @@ package com.modsen.rideservice.service;
 
 
 import com.modsen.rideservice.dto.request.CreateRideRequest;
+import com.modsen.rideservice.dto.request.DriverForRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.RideResponse;
@@ -11,6 +12,9 @@ import java.util.concurrent.ExecutionException;
 
 public interface RideService {
     RideResponse add(CreateRideRequest request) throws ExecutionException, InterruptedException;
+
+    void setDriver(DriverForRideRequest request);
+
     RideResponse findById(Long id);
     RidesListResponse findAll(int page, int size, String sortingParam);
     void update(UpdateRideRequest request, Long id);

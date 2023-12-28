@@ -1,6 +1,8 @@
 package com.modsen.driverservice.service.impl;
 
+import com.modsen.driverservice.dto.request.DriverForRideRequest;
 import com.modsen.driverservice.dto.request.DriverRequest;
+import com.modsen.driverservice.dto.request.RideRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
 import com.modsen.driverservice.dto.response.DriversListResponse;
 import com.modsen.driverservice.entity.Driver;
@@ -21,11 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.lang.reflect.Field;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.modsen.driverservice.util.Messages.*;
 
@@ -166,6 +166,15 @@ public class DriverServiceImpl implements DriverService {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE, pageRequest);
         return getDriversListResponse(driversPage);
+    }
+    @Override
+    public DriverForRideRequest findDriverForRide(RideRequest request){
+        List<DriverResponse> drivers=findAvailableDrivers(1,10,"id").getDrivers();
+        if(!drivers.isEmpty()){
+            return DriverForRideRequest.builder().driverId(drivers.get(0).getId())
+                    .rideId(request.getId()).build();
+        }
+        else return null;
     }
 
 

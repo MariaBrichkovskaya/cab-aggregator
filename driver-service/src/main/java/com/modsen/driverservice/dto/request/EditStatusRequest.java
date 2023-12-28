@@ -1,13 +1,13 @@
 package com.modsen.driverservice.dto.request;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FinishRideRequest {
+@NoArgsConstructor
+@ToString
+public class EditStatusRequest {
     long driverId;
 }
