@@ -1,5 +1,6 @@
 package com.modsen.rideservice.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,6 +9,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 public class DriverForRideRequest {
-    long driverId;
-    long rideId;
+    @JsonProperty("driverId")
+    Long driverId;
+    @JsonProperty("rideId")
+    Long rideId;
 }

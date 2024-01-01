@@ -1,4 +1,4 @@
-package com.modsen.driverservice.config.kafka;
+package com.modsen.driverservice.kafka;
 
 import com.modsen.driverservice.dto.request.DriverForRideRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +14,10 @@ public class DriverProducer {
     @Value("${topic.name.driver}")
     private String rideTopic;
     private static final Logger LOGGER = LoggerFactory.getLogger(DriverProducer.class);
-    private final KafkaTemplate<String, DriverForRideRequest> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendMessage(DriverForRideRequest request){
+    public void sendMessage(DriverForRideRequest request) {
         LOGGER.info(String.format("Message sent %s", request));
-        kafkaTemplate.send( rideTopic,request);
+        kafkaTemplate.send(rideTopic, request);
     }
 }

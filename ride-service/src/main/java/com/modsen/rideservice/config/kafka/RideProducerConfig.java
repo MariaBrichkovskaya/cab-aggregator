@@ -1,5 +1,6 @@
 package com.modsen.rideservice.config.kafka;
 
+import com.modsen.rideservice.dto.request.RideRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -13,31 +14,24 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
-public class ProducerConfiguration {
+public class RideProducerConfig {
     @Value("${topic.name.ride}")
     private String rideTopic;
-    @Value("${topic.name.status}")
-    private String statusTopic;
     private static final int PARTITIONS_COUNT = 1;
     private static final int REPLICAS_COUNT = 1;
+    private static final String RIDE_MESSAGE = "rideMessage:";
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                "localhost:9092");
-        configProps.put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class);
-        configProps.put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                JsonSerializer.class);
+        Map<String, Object> configProps = Map.of(
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class,
+                JsonSerializer.TYPE_MAPPINGS, RIDE_MESSAGE + RideRequest.class.getName());
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
@@ -53,11 +47,5 @@ public class ProducerConfiguration {
                 .replicas(REPLICAS_COUNT)
                 .build();
     }
-    @Bean
-    public NewTopic sendStatusTopic() {
-        return TopicBuilder.name(statusTopic)
-                .partitions(PARTITIONS_COUNT)
-                .replicas(REPLICAS_COUNT)
-                .build();
-    }
+
 }

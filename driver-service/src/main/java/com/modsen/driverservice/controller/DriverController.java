@@ -30,7 +30,7 @@ public class DriverController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<DriverResponse> createDriver(@RequestBody @Valid DriverRequest driverRequest) {
-        DriverResponse response=driverService.add(driverRequest);
+        DriverResponse response = driverService.add(driverRequest);
         return ResponseEntity.ok(response);
     }
 
@@ -48,7 +48,7 @@ public class DriverController {
 
     @PutMapping("/{id}")
     public ResponseEntity<DriverResponse> updateDriver(@PathVariable Long id, @RequestBody @Valid DriverRequest driverRequest) {
-        DriverResponse response=driverService.update(driverRequest, id);
+        DriverResponse response = driverService.update(driverRequest, id);
         return ResponseEntity.ok(response);
     }
 

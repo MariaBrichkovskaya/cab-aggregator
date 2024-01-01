@@ -1,5 +1,6 @@
 package com.modsen.driverservice.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @ToString
-public class EditStatusRequest {
+public class EditDriverStatusRequest {
+    @JsonProperty("driverId")
     long driverId;
 }

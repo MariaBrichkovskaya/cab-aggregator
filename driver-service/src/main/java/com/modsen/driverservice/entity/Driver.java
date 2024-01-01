@@ -17,11 +17,11 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
-    @Column(name = "name",nullable = false)
+    @Column(name = "name", nullable = false)
     String name;
-    @Column(name = "surname",nullable = false)
+    @Column(name = "surname", nullable = false)
     String surname;
-    @Column(name = "phone",unique = true,nullable = false)
+    @Column(name = "phone", unique = true, nullable = false)
     String phone;
 
     @Enumerated(EnumType.STRING)

@@ -1,5 +1,6 @@
 package com.modsen.rideservice.dto.response;
 
+import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,4 +23,5 @@ public class RideResponse {
     DriverResponse driverResponse;
     RideStatus rideStatus;
     LocalDateTime date;
+    String paymentMethod;
 }

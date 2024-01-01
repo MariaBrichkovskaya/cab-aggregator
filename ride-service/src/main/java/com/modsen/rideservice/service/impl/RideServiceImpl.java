@@ -3,14 +3,15 @@ package com.modsen.rideservice.service.impl;
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
-import com.modsen.rideservice.config.kafka.RideProducer;
-import com.modsen.rideservice.config.kafka.StatusProducer;
+import com.modsen.rideservice.kafka.RideProducer;
+import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.dto.request.*;
 import com.modsen.rideservice.dto.response.*;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
 import com.modsen.rideservice.exception.AlreadyFinishedRideException;
+import com.modsen.rideservice.exception.BalanceException;
 import com.modsen.rideservice.exception.InvalidRequestException;
 import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.repository.RideRepository;
@@ -73,16 +74,26 @@ public class RideServiceImpl implements RideService {
     public RideResponse add(CreateRideRequest request) {
         Ride ride = toEntity(request);
         setAdditionalFields(ride);
+        checkBalance(ride);
         Ride rideToSave = rideRepository.save(ride);
         rideProducer.sendMessage(RideRequest.builder().id(rideToSave.getId()).build());
         log.info("Created ride");
-        RideResponse response = toDto(ride);
-        if (PaymentMethod.valueOf(request.getPaymentMethod()).equals(PaymentMethod.CARD)) {
-            charge(response);//тут будет исключение, отловить и поменять статус
-        }//сделать сразу проверки на айди пассажира и тд, а потом уже сохранение
+        RideResponse response = toDto(rideToSave);
+        //сделать сразу проверки на айди пассажира и тд, а потом уже сохранение
         response.setDriverResponse(getDriverById(ride.getDriverId()));
         response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         return response;
+    }
+
+    private void checkBalance(Ride ride) {
+        if (PaymentMethod.valueOf(ride.getPaymentMethod().name()).equals(PaymentMethod.CARD)) {
+            try {
+                charge(ride, (long) (ride.getPrice() * 100));
+            } catch (BalanceException exception) {
+                ride.setPaymentMethod(PaymentMethod.CASH);
+                rideRepository.save(ride);
+            }
+        }
     }
 
     @Override
@@ -96,22 +107,26 @@ public class RideServiceImpl implements RideService {
         statusProducer.sendMessage(driverStatusRequest);
     }
 
-    private void charge(RideResponse response) {
-        PassengerResponse passengerResponse = response.getPassengerResponse();
+    private void charge(Ride ride, long amount) {
+        long passengerId = ride.getPassengerId();
+        PassengerResponse passengerResponse = passengerFeignClient.getPassenger(passengerId);
+        checkCustomer(passengerId, passengerResponse);
+        CustomerChargeRequest request = CustomerChargeRequest.builder()
+                .currency("BYN").amount(amount)
+                .passengerId(passengerResponse.getId()).build();
+        paymentFeignClient.chargeFromCustomer(request);
+    }
+
+    private void checkCustomer(long passengerId, PassengerResponse passengerResponse) {
         try {
-            paymentFeignClient.findCustomer(passengerResponse.getId());
+            paymentFeignClient.findCustomer(passengerId);
         } catch (NotFoundException e) {
-            CustomerRequest customerRequest = CustomerRequest.builder().amount(10000).phone(passengerResponse.getPhone())
+            CustomerRequest customerRequest = CustomerRequest.builder().amount(1000000).phone(passengerResponse.getPhone())
                     .email(passengerResponse.getEmail())
                     .name(passengerResponse.getName())
                     .passengerId(passengerResponse.getId()).build();
             paymentFeignClient.createCustomer(customerRequest);
         }
-        //если денег меньше то статус меняется на кэш
-        CustomerChargeRequest request = CustomerChargeRequest.builder()
-                .currency("BYN").amount((long) (response.getPrice() * 100))
-                .passengerId(passengerResponse.getId()).build();
-        paymentFeignClient.chargeFromCustomer(request);
     }
 
     private void setAdditionalFields(Ride ride) {
@@ -254,7 +269,6 @@ public class RideServiceImpl implements RideService {
             EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest
                     .builder().driverId(ride.getDriverId()).build();
             statusProducer.sendMessage(driverStatusRequest);
-            //выставлять оценку
         }
         ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
         rideRepository.save(ride);

@@ -1,6 +1,5 @@
-package com.modsen.rideservice.config.kafka;
+package com.modsen.rideservice.kafka;
 
-import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
 import com.modsen.rideservice.dto.request.RideRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -11,14 +10,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class StatusProducer {
-    @Value("${topic.name.status}")
-    private String statusTopic;
+public class RideProducer {
+    @Value("${topic.name.ride}")
+    private String rideTopic;
     private static final Logger LOGGER = LoggerFactory.getLogger(RideProducer.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendMessage(EditDriverStatusRequest request){
+    public void sendMessage(RideRequest request) {
         LOGGER.info(String.format("Message sent %s", request));
-        kafkaTemplate.send( statusTopic,request);
+        kafkaTemplate.send(rideTopic, request);
     }
 }

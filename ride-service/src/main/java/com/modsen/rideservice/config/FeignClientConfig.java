@@ -11,6 +11,7 @@ public class FeignClientConfig {
     public ErrorDecoder errorDecoder() {
         return new RideErrorDecoder();
     }
+
     @Bean
     public Retryer retryer() {
         return new RideRetryer();

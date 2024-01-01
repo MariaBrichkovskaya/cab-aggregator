@@ -167,14 +167,14 @@ public class DriverServiceImpl implements DriverService {
         Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE, pageRequest);
         return getDriversListResponse(driversPage);
     }
+
     @Override
-    public DriverForRideRequest findDriverForRide(RideRequest request){
-        List<DriverResponse> drivers=findAvailableDrivers(1,10,"id").getDrivers();
-        if(!drivers.isEmpty()){
+    public DriverForRideRequest findDriverForRide(RideRequest request) {
+        List<DriverResponse> drivers = findAvailableDrivers(1, 10, "id").getDrivers();
+        if (!drivers.isEmpty()) {
             return DriverForRideRequest.builder().driverId(drivers.get(0).getId())
                     .rideId(request.getId()).build();
-        }
-        else return null;
+        } else return null;
     }
 
 

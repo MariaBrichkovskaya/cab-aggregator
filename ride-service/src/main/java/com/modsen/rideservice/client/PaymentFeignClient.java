@@ -10,12 +10,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-@FeignClient(value = "payment",configuration = FeignClientConfig.class)
+
+@FeignClient(value = "payment", configuration = FeignClientConfig.class)
 public interface PaymentFeignClient {
     @GetMapping("/customers/{id}")
     CustomerResponse findCustomer(@PathVariable long id);
+
     @PostMapping("/customers/charge")
     ChargeResponse chargeFromCustomer(@RequestBody CustomerChargeRequest request);
+
     @PostMapping("/customers")
     CustomerResponse createCustomer(@RequestBody CustomerRequest request);
 }

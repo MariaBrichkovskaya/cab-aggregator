@@ -1,5 +1,6 @@
 package com.modsen.rideservice.entity;
 
+import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -21,13 +22,13 @@ public class Ride {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
-    @Column(name = "pick_up_address",nullable = false)
+    @Column(name = "pick_up_address", nullable = false)
     String pickUpAddress;
-    @Column(name = "destination_address",nullable = false)
+    @Column(name = "destination_address", nullable = false)
     String destinationAddress;
-    @Column(name = "price",nullable = false)
+    @Column(name = "price", nullable = false)
     Double price;
-    @Column(name = "passenger_id",nullable = false)
+    @Column(name = "passenger_id", nullable = false)
     Long passengerId;
     @Column(name = "driver_id")
     Long driverId;
@@ -35,5 +36,8 @@ public class Ride {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     RideStatus rideStatus = RideStatus.CREATED;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    PaymentMethod paymentMethod;
 
 }

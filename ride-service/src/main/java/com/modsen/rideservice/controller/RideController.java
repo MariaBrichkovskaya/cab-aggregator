@@ -32,7 +32,7 @@ public class RideController {
 
     @PostMapping
     public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) throws ExecutionException, InterruptedException {
-        RideResponse response=rideService.add(rideRequest);
+        RideResponse response = rideService.add(rideRequest);
         return ResponseEntity.ok(response);
     }
 
