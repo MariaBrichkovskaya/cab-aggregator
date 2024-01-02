@@ -8,4 +8,5 @@ public class Messages {
     public final String NOT_FOUND_WITH_ID_MESSAGE = "Ride with id %d was not found";
     public final String INVALID_PAGE_MESSAGE="Page request is not valid";
     public final String INVALID_SORTING_MESSAGE="Sorting request is not valid. Acceptable parameters are: %s";
+    public final String EMPTY_DRIVER_MESSAGE ="Driver is empty";
 }

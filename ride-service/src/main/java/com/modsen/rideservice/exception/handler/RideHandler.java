@@ -2,25 +2,17 @@ package com.modsen.rideservice.exception.handler;
 
 import com.modsen.rideservice.dto.response.ExceptionResponse;
 import com.modsen.rideservice.dto.response.ValidationExceptionResponse;
-import com.modsen.rideservice.exception.AlreadyFinishedRideException;
-import com.modsen.rideservice.exception.CommunicationNotFoundException;
-import com.modsen.rideservice.exception.InvalidRequestException;
-import com.modsen.rideservice.exception.NotFoundException;
+import com.modsen.rideservice.exception.*;
 import feign.FeignException;
-import feign.RetryableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 import static com.modsen.rideservice.util.Messages.*;
 
@@ -34,6 +26,7 @@ public class RideHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
+
     @ExceptionHandler(value = {AlreadyFinishedRideException.class})
     public ResponseEntity<Object> handleAlreadyFinishedRideException(AlreadyFinishedRideException alreadyFinishedRideException) {
         ExceptionResponse response =
@@ -52,12 +45,17 @@ public class RideHandler {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
+    @ExceptionHandler(value = {DriverIsEmptyException.class})
+    public ExceptionResponse handleDriverIsEmptyException(DriverIsEmptyException driverIsEmptyException) {
+        return new ExceptionResponse(HttpStatus.NO_CONTENT,
+                driverIsEmptyException.getMessage());
+
+    }
+
     @ExceptionHandler(value = {FeignException.class})
     public ExceptionResponse handleFeignException(FeignException feignException) {
-
         return new ExceptionResponse(HttpStatus.valueOf(feignException.status()),
-                feignException.getMessage()
-        );
+                feignException.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
