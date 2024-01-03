@@ -13,27 +13,26 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static com.modsen.passengerservice.util.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-//@MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class PassengerServiceImplTest {
 
     @Mock
     private PassengerRepository passengerRepository;
     @Mock
     private ModelMapper modelMapper;
-
 
     @InjectMocks
     private PassengerServiceImpl passengerService;
@@ -143,7 +142,6 @@ class PassengerServiceImplTest {
         doReturn(Optional.empty())
                 .when(passengerRepository)
                 .findById(DEFAULT_ID);
-
         assertThrows(
                 NotFoundException.class,
                 () -> passengerService.findById(DEFAULT_ID)
@@ -198,15 +196,67 @@ class PassengerServiceImplTest {
     @Test
     void findAllWhenParamsValid() {
 
+        Page<Passenger> mockPassengersPage = new PageImpl<>(Arrays.asList(
+                getDefaultPassenger(),
+                getSecondPassenger()
+        ));
+
+        when(passengerRepository.findAll(any(PageRequest.class))).thenReturn(mockPassengersPage);
+        doReturn(getDefaultPassengerResponse()).when(modelMapper).map(any(Passenger.class), eq(PassengerResponse.class));
+        when(ratingService.getAveragePassengerRating(any(Long.class))).thenReturn(getDefaultRating());
+
+        PassengersListResponse response = passengerService.findAll(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
+
+        assertNotNull(response);
+        assertEquals(2, response.getPassengers().size());
+        assertEquals(1, response.getPassengers().get(0).getId());
+        assertEquals(DEFAULT_NAME, response.getPassengers().get(0).getName());
+
     }
 
     @Test
     void updateWhenPassengerDataIsNotUnique() {
-
+        Passenger passengerToUpdate = getUpdatePassenger();
+        PassengerRequest request = getPassengerRequest();
+        doReturn(Optional.of(passengerToUpdate)).when(passengerRepository).findById(DEFAULT_ID);
+        doReturn(true).when(passengerRepository).existsByPhone(request.getPhone());
+        doReturn(true).when(passengerRepository).existsByEmail(request.getEmail());
+        assertThrows(
+                AlreadyExistsException.class,
+                () -> passengerService.update(request, DEFAULT_ID)
+        );
+        verify(passengerRepository).findById(DEFAULT_ID);
+        verify(passengerRepository).existsByEmail(request.getEmail());
+        verify(passengerRepository).existsByPhone(request.getPhone());
     }
+
     @Test
     void updateWhenPassengerExistsAndDataIsUnique() {
 
+        Passenger passengerToUpdate = getUpdatePassenger();
+        PassengerRequest request = getPassengerRequest();
+        PassengerResponse response = getDefaultPassengerResponse();
+
+        when(passengerRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(passengerToUpdate));
+        when(passengerRepository.existsByPhone(request.getPhone())).thenReturn(false);
+        when(passengerRepository.existsByEmail(request.getEmail())).thenReturn(false);
+        when(modelMapper.map(request, Passenger.class)).thenReturn(passengerToUpdate);
+        when(passengerRepository.save(passengerToUpdate)).thenReturn(passengerToUpdate);
+        when(modelMapper.map(passengerToUpdate, PassengerResponse.class)).thenReturn(response);
+        when(ratingService.getAveragePassengerRating(DEFAULT_ID)).thenReturn(getDefaultRating());
+
+        PassengerResponse result = passengerService.update(request, DEFAULT_ID);
+
+        verify(passengerRepository).findById(DEFAULT_ID);
+        verify(passengerRepository).existsByEmail(request.getEmail());
+        verify(passengerRepository).existsByPhone(request.getPhone());
+        verify(modelMapper).map(request, Passenger.class);
+        verify(passengerRepository).save(passengerToUpdate);
+        verify(modelMapper).map(passengerToUpdate, PassengerResponse.class);
+        verify(ratingService).getAveragePassengerRating(DEFAULT_ID);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(request.getEmail());
     }
 
 
