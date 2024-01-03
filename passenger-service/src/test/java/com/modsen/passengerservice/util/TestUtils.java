@@ -1,14 +1,20 @@
 package com.modsen.passengerservice.util;
 
+import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.request.PassengerRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.DriverResponse;
+import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
 import com.modsen.passengerservice.entity.Passenger;
+import com.modsen.passengerservice.entity.Rating;
 import lombok.experimental.UtilityClass;
 import org.hibernate.query.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.Arrays;
+
+import static org.mockito.ArgumentMatchers.any;
 
 @UtilityClass
 public class TestUtils {
@@ -21,7 +27,7 @@ public class TestUtils {
     public final double DEFAULT_RATING = 5.0;
     public final String UNIQUE_EMAIL = "12356@example.com";
     public final String UNIQUE_PHONE = "80291237567";
-
+    public final Integer DEFAULT_SCORE=4;
 
     public final int INVALID_PAGE = -1;
     public final int VALID_PAGE = 1;
@@ -91,6 +97,39 @@ public class TestUtils {
                 .phone(UNIQUE_PHONE)
                 .build();
     }
-
+    public Rating getDefaultPassengerRating(){
+        return Rating.builder().passenger(getDefaultPassenger())
+                .score(DEFAULT_SCORE)
+                .driverId(DEFAULT_ID).build();
+    }
+    public Rating getSavedPassengerRating(){
+        return Rating.builder().passenger(getDefaultPassenger())
+                .id(DEFAULT_ID)
+                .score(DEFAULT_SCORE)
+                .driverId(DEFAULT_ID).build();
+    }
+    public Rating getNewSavedPassengerRating(){
+        return Rating.builder().passenger(getDefaultPassenger())
+                .id(NEW_ID)
+                .score(DEFAULT_SCORE)
+                .driverId(DEFAULT_ID).build();
+    }
+    public PassengerRatingRequest getDefaultPassengerRatingRequest(){
+        return PassengerRatingRequest.builder()
+                .score(DEFAULT_SCORE)
+                .driverId(DEFAULT_ID).build();
+    }
+    public PassengerRatingResponse getDefaultPassengerRatingResponse(){
+        return PassengerRatingResponse.builder()
+                .passengerId(DEFAULT_ID)
+                .score(DEFAULT_SCORE).build();
+    }
+    public DriverResponse getDefaultDriverResponse(){
+        return DriverResponse.builder().name(DEFAULT_NAME)
+                .id(DEFAULT_ID)
+                .name(DEFAULT_SURNAME)
+                .phone(DEFAULT_PHONE)
+                .build();
+    }
 
 }

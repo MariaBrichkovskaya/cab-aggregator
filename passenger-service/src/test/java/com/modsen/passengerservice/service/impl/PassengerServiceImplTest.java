@@ -196,12 +196,12 @@ class PassengerServiceImplTest {
     @Test
     void findAllWhenParamsValid() {
 
-        Page<Passenger> mockPassengersPage = new PageImpl<>(Arrays.asList(
+        Page<Passenger> passengerPage = new PageImpl<>(Arrays.asList(
                 getDefaultPassenger(),
                 getSecondPassenger()
         ));
 
-        when(passengerRepository.findAll(any(PageRequest.class))).thenReturn(mockPassengersPage);
+        when(passengerRepository.findAll(any(PageRequest.class))).thenReturn(passengerPage);
         doReturn(getDefaultPassengerResponse()).when(modelMapper).map(any(Passenger.class), eq(PassengerResponse.class));
         when(ratingService.getAveragePassengerRating(any(Long.class))).thenReturn(getDefaultRating());
 
