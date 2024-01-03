@@ -108,10 +108,6 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Override
     public PassengerResponse update(PassengerRequest request, Long id) {
-        if (passengerRepository.findById(id).isEmpty()) {
-            log.error("Passenger with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
         Passenger passengerToUpdate = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         checkUpdateDataIsUnique(request, passengerToUpdate);
         Passenger passenger = toEntity(request);
@@ -124,7 +120,7 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Override
     public void delete(Long id) {
-        if (passengerRepository.findById(id).isEmpty()) {
+        if (!passengerRepository.existsById(id)) {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
