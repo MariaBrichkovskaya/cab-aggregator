@@ -28,7 +28,7 @@ public class TestUtils {
     public final String UNIQUE_EMAIL = "12356@example.com";
     public final String UNIQUE_PHONE = "80291237567";
     public final Integer DEFAULT_SCORE=4;
-
+    public final double DEFAULT_AVERAGE_RATING=4.0;
     public final int INVALID_PAGE = -1;
     public final int VALID_PAGE = 1;
     public final int INVALID_SIZE = -1;

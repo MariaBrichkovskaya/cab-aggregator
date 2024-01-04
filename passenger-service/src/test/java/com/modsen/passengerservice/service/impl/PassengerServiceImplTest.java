@@ -8,6 +8,7 @@ import com.modsen.passengerservice.exception.AlreadyExistsException;
 import com.modsen.passengerservice.exception.InvalidRequestException;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -209,7 +210,7 @@ class PassengerServiceImplTest {
 
         assertNotNull(response);
         assertEquals(2, response.getPassengers().size());
-        assertEquals(1, response.getPassengers().get(0).getId());
+        assertEquals(DEFAULT_ID, response.getPassengers().get(0).getId());
         assertEquals(DEFAULT_NAME, response.getPassengers().get(0).getName());
 
     }
@@ -232,7 +233,6 @@ class PassengerServiceImplTest {
 
     @Test
     void updateWhenPassengerExistsAndDataIsUnique() {
-
         Passenger passengerToUpdate = getUpdatePassenger();
         PassengerRequest request = getPassengerRequest();
         PassengerResponse response = getDefaultPassengerResponse();

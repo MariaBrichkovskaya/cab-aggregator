@@ -108,10 +108,10 @@ class RatingServiceImplTest {
 
         verify(passengerRepository).findById(DEFAULT_ID);
         verify(ratingRepository).getRatingsByPassengerId(DEFAULT_ID);
-        verify(driverFeignClient,times(2)).getDriver(DEFAULT_ID);
+        verify(driverFeignClient,times(ratings.size())).getDriver(DEFAULT_ID);
 
         assertNotNull(response);
-        assertEquals(2, response.getPassengerRatings().size());
+        assertEquals(ratings.size(), response.getPassengerRatings().size());
         assertEquals(DEFAULT_SCORE, response.getPassengerRatings().get(0).getScore());
 
     }
@@ -138,9 +138,9 @@ class RatingServiceImplTest {
         doReturn(Optional.of(getDefaultPassenger())).when(passengerRepository).findById(DEFAULT_ID);
         AveragePassengerRatingResponse response = ratingService.getAveragePassengerRating(DEFAULT_ID);
 
-        verify(ratingRepository, times(1)).getRatingsByPassengerId(DEFAULT_ID);
+        verify(ratingRepository).getRatingsByPassengerId(DEFAULT_ID);
         assertNotNull(response);
-        assertEquals(4.0, response.getAverageRating());
+        assertEquals(DEFAULT_AVERAGE_RATING, response.getAverageRating());
 
     }
 }
