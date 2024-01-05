@@ -19,8 +19,8 @@ public class RatingController {
 
     @PostMapping
     public ResponseEntity<PassengerRatingResponse> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
-                                                         @PathVariable("id") long passengerId) {
-        PassengerRatingResponse response=ratingService.ratePassenger(passengerRatingRequest, passengerId);
+                                                                 @PathVariable("id") long passengerId) {
+        PassengerRatingResponse response = ratingService.ratePassenger(passengerRatingRequest, passengerId);
         return ResponseEntity.ok(response);
     }
 

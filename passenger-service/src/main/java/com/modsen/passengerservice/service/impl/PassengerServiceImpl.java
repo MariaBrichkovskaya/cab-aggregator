@@ -1,7 +1,7 @@
 package com.modsen.passengerservice.service.impl;
 
 import com.modsen.passengerservice.dto.request.PassengerRequest;
-import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
+import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
 import com.modsen.passengerservice.dto.response.PassengersListResponse;
 import com.modsen.passengerservice.entity.Passenger;
@@ -35,8 +35,8 @@ public class PassengerServiceImpl implements PassengerService {
     private final PassengerRepository passengerRepository;
     private final RatingService ratingService;
 
-    private PassengerResponse toDto(Passenger passenger) {
-        PassengerResponse response= modelMapper.map(passenger, PassengerResponse.class);
+    private PassengerResponse fromEntityToPassengerResponse(Passenger passenger) {
+        PassengerResponse response = modelMapper.map(passenger, PassengerResponse.class);
         response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
         return response;
     }
@@ -51,16 +51,17 @@ public class PassengerServiceImpl implements PassengerService {
         Passenger passenger = passengerRepository.save(toEntity(request));
         log.info("Create passenger with surname {}", request.getSurname());
 
-        return toDto(passenger);
+        return fromEntityToPassengerResponse(passenger);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PassengerResponse findById(Long id) {
-        Passenger passenger = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
 
-        return toDto(passenger);
+        return fromEntityToPassengerResponse(passenger);
     }
 
     @Override
@@ -69,8 +70,12 @@ public class PassengerServiceImpl implements PassengerService {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Passenger> passengersPage = passengerRepository.findAll(pageRequest);
         List<PassengerResponse> passengers = passengersPage.getContent().stream()
-                .map(this::toDto).toList();
-        return PassengersListResponse.builder().passengers(passengers).build();
+                .map(this::fromEntityToPassengerResponse)
+                .toList();
+
+        return PassengersListResponse.builder()
+                .passengers(passengers)
+                .build();
     }
 
 
@@ -108,23 +113,29 @@ public class PassengerServiceImpl implements PassengerService {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
-        Passenger passengerToUpdate = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Passenger passengerToUpdate = passengerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         checkUpdateDataIsUnique(request, passengerToUpdate);
         Passenger passenger = toEntity(request);
         passenger.setId(id);
         log.info("Update passenger with id {}", id);
 
-        return toDto(passengerRepository.save(passenger));
+        return fromEntityToPassengerResponse(passengerRepository.save(passenger));
     }
 
     @Override
-    public void delete(Long id) {
+    public MessageResponse delete(Long id) {
         if (passengerRepository.findById(id).isEmpty()) {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
         passengerRepository.deleteById(id);
         log.info("Delete passenger with id {}", id);
+        String message = "Deleting passenger with id " + id;
+
+        return MessageResponse.builder()
+                .message(message)
+                .build();
     }
 
 

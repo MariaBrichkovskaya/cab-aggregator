@@ -29,15 +29,14 @@ public class PassengerController {
 
     @PostMapping
     public ResponseEntity<PassengerResponse> createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
-        PassengerResponse response=passengerService.add(passengerRequest);
+        PassengerResponse response = passengerService.add(passengerRequest);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<MessageResponse> deletePassenger(@PathVariable Long id) {
-        passengerService.delete(id);
-        String message="Deleting passenger with id " + id;
-        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
+        MessageResponse response = passengerService.delete(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -48,7 +47,7 @@ public class PassengerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PassengerResponse> updatePassenger(@PathVariable Long id, @RequestBody @Valid PassengerRequest passengerRequest) {
-        PassengerResponse response=passengerService.update(passengerRequest, id);
+        PassengerResponse response = passengerService.update(passengerRequest, id);
         return ResponseEntity.ok(response);
     }
 

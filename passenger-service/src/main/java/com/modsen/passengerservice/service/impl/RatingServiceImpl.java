@@ -29,9 +29,10 @@ public class RatingServiceImpl implements RatingService {
     private final ModelMapper modelMapper;
     private final DriverFeignClient driverFeignClient;
 
-    private DriverResponse getDriver(long id){
+    private DriverResponse getDriver(long id) {
         return driverFeignClient.getDriver(id);
     }
+
     @Override
     public PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId) {
         Rating newPassengerRating = toEntity(passengerRatingRequest);
@@ -82,7 +83,7 @@ public class RatingServiceImpl implements RatingService {
     }
 
     private PassengerRatingResponse toDto(Rating rating) {
-        PassengerRatingResponse response= modelMapper.map(rating, PassengerRatingResponse.class);
+        PassengerRatingResponse response = modelMapper.map(rating, PassengerRatingResponse.class);
         response.setDriverResponse(getDriver(rating.getDriverId()));
         return response;
     }

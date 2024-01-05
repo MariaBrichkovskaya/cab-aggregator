@@ -68,7 +68,7 @@ public class RideServiceImpl implements RideService {
     public void sendEditStatus(DriverForRideRequest request) {
         setDriver(request);
         EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest.builder()
-                .driverId(request.getDriverId())
+                .driverId(request.driverId())
                 .build();
         statusProducer.sendMessage(driverStatusRequest);
     }
@@ -81,7 +81,7 @@ public class RideServiceImpl implements RideService {
                 .orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving ride by id {}", id);
 
-        return toDto(ride);
+        return fromEntityToRideResponse(ride);
     }
 
 
@@ -90,8 +90,8 @@ public class RideServiceImpl implements RideService {
     public RidesListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Ride> ridePage = rideRepository.findAll(pageRequest);
-        List<RideResponse> rides = ridePage.getContent()
-                .stream().map(this::toDto)
+        List<RideResponse> rides = ridePage.getContent().stream()
+                .map(this::fromEntityToRideResponse)
                 .toList();
         return RidesListResponse.builder()
                 .rides(rides)
@@ -111,7 +111,7 @@ public class RideServiceImpl implements RideService {
         Ride savedRide = rideRepository.save(ride);
         log.info("Update ride with id {}", id);
 
-        return toDto(savedRide);
+        return fromEntityToRideResponse(savedRide);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class RideServiceImpl implements RideService {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
         List<RideResponse> rides = ridesPage.getContent().stream()
-                .map(this::toDto)
+                .map(this::fromEntityToRideResponse)
                 .toList();
         log.info("Retrieving rides for passenger with id {}", passengerId);
         return RidesListResponse.builder()
@@ -144,7 +144,7 @@ public class RideServiceImpl implements RideService {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
         List<RideResponse> rides = ridesPage.getContent().stream()
-                .map(this::toDto)
+                .map(this::fromEntityToRideResponse)
                 .toList();
         log.info("Retrieving rides for driver with id {}", driverId);
         return RidesListResponse.builder()
@@ -153,13 +153,23 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public void editStatus(long id, StatusRequest statusRequest) {
+    public MessageResponse editStatus(long id, StatusRequest statusRequest) {
         Optional<Ride> optionalRide = rideRepository.findById(id);
         if (optionalRide.isEmpty()) {
             log.error("Ride with id {} was not found", id);
             throw new NotFoundException(id);
         }
         Ride ride = optionalRide.get();
+        checkStatus(ride, statusRequest);
+        ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
+        rideRepository.save(ride);
+
+        return MessageResponse.builder()
+                .message("Status updated to " + statusRequest.getStatus())
+                .build();
+    }
+
+    private void checkStatus(Ride ride, StatusRequest statusRequest) {
         if (ride.getDriverId() == null) {
             throw new DriverIsEmptyException(EMPTY_DRIVER_MESSAGE);
         }
@@ -172,9 +182,6 @@ public class RideServiceImpl implements RideService {
                     .build();
             statusProducer.sendMessage(driverStatusRequest);
         }
-
-        ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
-        rideRepository.save(ride);
     }
 
     private PageRequest getPageRequest(int page, int size, String sortingParam) {
@@ -214,7 +221,7 @@ public class RideServiceImpl implements RideService {
         return passengerFeignClient.getPassenger(passengerId);
     }
 
-    private RideResponse toDto(Ride ride) {
+    private RideResponse fromEntityToRideResponse(Ride ride) {
         modelMapper.getConfiguration().setAmbiguityIgnored(true);
         RideResponse response = modelMapper.map(ride, RideResponse.class);
         assignAndCheckDriver(response, ride.getDriverId());
@@ -228,7 +235,7 @@ public class RideServiceImpl implements RideService {
     }
 
     private RideResponse createRideResponse(Ride rideToSave, PassengerResponse passengerResponse) {
-        RideResponse response = toDto(rideToSave);
+        RideResponse response = fromEntityToRideResponse(rideToSave);
         response.setDriverResponse(getDriverById(rideToSave.getDriverId()));
         response.setPassengerResponse(passengerResponse);
         return response;
@@ -291,9 +298,9 @@ public class RideServiceImpl implements RideService {
     }
 
     private void setDriver(DriverForRideRequest request) {
-        Ride ride = rideRepository.findById(request.getRideId())
-                .orElseThrow(() -> new NotFoundException(request.getRideId()));
-        ride.setDriverId(request.getDriverId());
+        Ride ride = rideRepository.findById(request.rideId())
+                .orElseThrow(() -> new NotFoundException(request.rideId()));
+        ride.setDriverId(request.driverId());
         ride.setRideStatus(RideStatus.ACCEPTED);
         rideRepository.save(ride);
     }

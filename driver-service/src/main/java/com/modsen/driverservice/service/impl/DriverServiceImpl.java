@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.lang.reflect.Field;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.modsen.driverservice.util.Messages.*;
 
@@ -42,7 +41,7 @@ public class DriverServiceImpl implements DriverService {
     private final RatingService ratingService;
     private final DriverProducer driverProducer;
 
-    private DriverResponse toDto(Driver driver) {
+    private DriverResponse fromEntityToDriverResponse(Driver driver) {
         DriverResponse response = modelMapper.map(driver, DriverResponse.class);
         response.setRating(ratingService.getAverageDriverRating(response.getId()).getAverageRating());
 
@@ -61,7 +60,7 @@ public class DriverServiceImpl implements DriverService {
         }
         log.info("Create driver with surname {}", request.getSurname());
 
-        return toDto(driverRepository.save(toEntity(request)));
+        return fromEntityToDriverResponse(driverRepository.save(toEntity(request)));
     }
 
 
@@ -71,7 +70,7 @@ public class DriverServiceImpl implements DriverService {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving driver by id {}", id);
 
-        return toDto(driver);
+        return fromEntityToDriverResponse(driver);
     }
 
     @Override
@@ -84,7 +83,8 @@ public class DriverServiceImpl implements DriverService {
 
     private DriversListResponse getDriversListResponse(Page<Driver> driversPage) {
         List<DriverResponse> drivers = driversPage.getContent().stream()
-                .map(this::toDto).toList();
+                .map(this::fromEntityToDriverResponse)
+                .toList();
 
         return DriversListResponse.builder()
                 .drivers(drivers)
@@ -125,7 +125,7 @@ public class DriverServiceImpl implements DriverService {
         updatedDriver.setId(id);
         log.info("Update driver with id {}", id);
 
-        return toDto(driverRepository.save(updatedDriver));
+        return fromEntityToDriverResponse(driverRepository.save(updatedDriver));
     }
 
     private void checkDriverUnique(DriverRequest request, Long id) {

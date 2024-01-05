@@ -29,13 +29,14 @@ public class PassengerHandler {
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }
-    @ExceptionHandler(value = {FeignException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ExceptionResponse handleFeignException(FeignException feignException) {
 
-        return new ExceptionResponse(HttpStatus.valueOf(feignException.status()),
+    @ExceptionHandler(value = {FeignException.class})
+    public ResponseEntity<ExceptionResponse> handleFeignException(FeignException feignException) {
+
+        ExceptionResponse response = new ExceptionResponse(HttpStatus.valueOf(feignException.status()),
                 feignException.getMessage()
         );
+        return new ResponseEntity<>(response, response.getStatus());
     }
 
     @ExceptionHandler(value = {InvalidRequestException.class})

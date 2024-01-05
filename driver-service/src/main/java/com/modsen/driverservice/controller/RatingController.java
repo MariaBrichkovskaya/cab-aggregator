@@ -19,8 +19,8 @@ public class RatingController {
 
     @PostMapping
     public ResponseEntity<DriverRatingResponse> rateDriver(@Valid @RequestBody DriverRatingRequest driverRatingRequest,
-                                                      @PathVariable("id") long driverId) {
-        DriverRatingResponse response=ratingService.rateDriver(driverRatingRequest, driverId);
+                                                           @PathVariable("id") long driverId) {
+        DriverRatingResponse response = ratingService.rateDriver(driverRatingRequest, driverId);
         return ResponseEntity.ok(response);
     }
 

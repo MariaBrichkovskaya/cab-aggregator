@@ -40,7 +40,7 @@ public class RatingServiceImpl implements RatingService {
         newDriverRating.setDriver(driverRepository.findById(driverId)
                 .orElseThrow(() -> new NotFoundException(driverId)));
         log.info("Update rating for driver {}", driverId);
-        return toDto(driverRatingRepository.save(newDriverRating));
+        return fromEntityToRatingResponse(driverRatingRepository.save(newDriverRating));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class RatingServiceImpl implements RatingService {
         validateDriverExists(driverId);
         List<DriverRatingResponse> driverRatings = driverRatingRepository.getRatingsByDriverId(driverId)
                 .stream()
-                .map(this::toDto)
+                .map(this::fromEntityToRatingResponse)
                 .toList();
         log.info("Retrieving rating for driver {}", driverId);
         return DriverListRatingsResponse.builder()
@@ -84,8 +84,8 @@ public class RatingServiceImpl implements RatingService {
         return modelMapper.map(driverRatingRequest, Rating.class);
     }
 
-    private DriverRatingResponse toDto(Rating driverRating) {
-        DriverRatingResponse response= modelMapper.map(driverRating, DriverRatingResponse.class);
+    private DriverRatingResponse fromEntityToRatingResponse(Rating driverRating) {
+        DriverRatingResponse response = modelMapper.map(driverRating, DriverRatingResponse.class);
         response.setPassengerResponse(getPassenger(driverRating.getPassengerId()));
         return response;
     }
