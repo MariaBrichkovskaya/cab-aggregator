@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "payment", configuration = FeignClientConfig.class)
+@FeignClient(value = "${feign.client.config.payment.name}", url = "${feign.client.config.payment.url}",
+        path = "${feign.client.config.payment.path}", configuration = FeignClientConfig.class)
 public interface PaymentFeignClient {
     @GetMapping("/customers/{id}")
     CustomerResponse findCustomer(@PathVariable long id);

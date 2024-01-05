@@ -12,11 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 
-import static com.modsen.driverservice.util.Messages.VALIDATION_FAILED_MESSAGE;
+import static com.modsen.driverservice.util.Messages.*;
 
 @RestControllerAdvice
 public class DriverHandler {
@@ -29,6 +30,7 @@ public class DriverHandler {
         return new ResponseEntity<>(response,response.getStatus());
     }
     @ExceptionHandler(value = {FeignException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ExceptionResponse handleFeignException(FeignException feignException) {
 
         return new ExceptionResponse(HttpStatus.valueOf(feignException.status()),

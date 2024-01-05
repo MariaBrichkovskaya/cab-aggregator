@@ -9,8 +9,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 public class DriverForRideRequest {
-    @JsonProperty("driverId")
     Long driverId;
-    @JsonProperty("rideId")
     Long rideId;
 }

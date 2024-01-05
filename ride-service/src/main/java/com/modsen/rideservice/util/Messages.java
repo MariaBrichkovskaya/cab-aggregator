@@ -9,4 +9,8 @@ public class Messages {
     public final String INVALID_PAGE_MESSAGE="Page request is not valid";
     public final String INVALID_SORTING_MESSAGE="Sorting request is not valid. Acceptable parameters are: %s";
     public final String EMPTY_DRIVER_MESSAGE ="Driver is empty";
+    public final String CURRENCY="BYN";
+    public final int RETRYER_PERIOD=100;
+    public final int RETRYER_MAX_PERIOD=1000;
+    public final int RETRYER_MAX_ATTEMPTS=5;
 }

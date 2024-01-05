@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import static com.modsen.rideservice.util.Messages.*;
@@ -46,6 +47,162 @@ public class RideServiceImpl implements RideService {
     private final RideProducer rideProducer;
     private final StatusProducer statusProducer;
 
+
+    @Override
+    public RideResponse add(CreateRideRequest request) {
+        Ride ride = toEntity(request);
+        PassengerResponse passengerResponse = validatePassenger(ride.getPassengerId());
+        setAdditionalFields(ride);
+        checkBalance(ride);
+        Ride rideToSave = rideRepository.save(ride);
+        rideProducer.sendMessage(RideRequest.builder()
+                .id(rideToSave.getId())
+                .build()
+        );
+        log.info("Created ride");
+        return createRideResponse(rideToSave, passengerResponse);
+    }
+
+
+    @Override
+    public void sendEditStatus(DriverForRideRequest request) {
+        setDriver(request);
+        EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest.builder()
+                .driverId(request.getDriverId())
+                .build();
+        statusProducer.sendMessage(driverStatusRequest);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public RideResponse findById(Long id) {
+        Ride ride = rideRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
+        log.info("Retrieving ride by id {}", id);
+
+        return toDto(ride);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public RidesListResponse findAll(int page, int size, String sortingParam) {
+        PageRequest pageRequest = getPageRequest(page, size, sortingParam);
+        Page<Ride> ridePage = rideRepository.findAll(pageRequest);
+        List<RideResponse> rides = ridePage.getContent()
+                .stream().map(this::toDto)
+                .toList();
+        return RidesListResponse.builder()
+                .rides(rides)
+                .build();
+    }
+
+
+    @Override
+    public RideResponse update(UpdateRideRequest request, Long id) {
+        if (!rideRepository.existsById(id)) {
+            log.error("Ride with id {} was not found", id);
+            throw new NotFoundException(id);
+        }
+
+        Ride ride = modelMapper.map(request, Ride.class);
+        ride.setId(id);
+        Ride savedRide = rideRepository.save(ride);
+        log.info("Update ride with id {}", id);
+
+        return toDto(savedRide);
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!rideRepository.existsById(id)) {
+            log.error("Ride with id {} was not found", id);
+            throw new NotFoundException(id);
+        }
+        rideRepository.deleteById(id);
+        log.info("Delete ride with id {}", id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
+        PageRequest pageRequest = getPageRequest(page, size, orderBy);
+        Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
+        List<RideResponse> rides = ridesPage.getContent().stream()
+                .map(this::toDto)
+                .toList();
+        log.info("Retrieving rides for passenger with id {}", passengerId);
+        return RidesListResponse.builder()
+                .rides(rides)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
+        PageRequest pageRequest = getPageRequest(page, size, orderBy);
+        Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
+        List<RideResponse> rides = ridesPage.getContent().stream()
+                .map(this::toDto)
+                .toList();
+        log.info("Retrieving rides for driver with id {}", driverId);
+        return RidesListResponse.builder()
+                .rides(rides)
+                .build();
+    }
+
+    @Override
+    public void editStatus(long id, StatusRequest statusRequest) {
+        Optional<Ride> optionalRide = rideRepository.findById(id);
+        if (optionalRide.isEmpty()) {
+            log.error("Ride with id {} was not found", id);
+            throw new NotFoundException(id);
+        }
+        Ride ride = optionalRide.get();
+        if (ride.getDriverId() == null) {
+            throw new DriverIsEmptyException(EMPTY_DRIVER_MESSAGE);
+        }
+        if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
+            throw new AlreadyFinishedRideException("Ride already finished");
+        }
+        if (RideStatus.FINISHED.toString().equals(statusRequest.getStatus())) {
+            EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest.builder()
+                    .driverId(ride.getDriverId())
+                    .build();
+            statusProducer.sendMessage(driverStatusRequest);
+        }
+
+        ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
+        rideRepository.save(ride);
+    }
+
+    private PageRequest getPageRequest(int page, int size, String sortingParam) {
+        if (page < 1 || size < 1) {
+            log.error("Invalid page request");
+            throw new InvalidRequestException(INVALID_PAGE_MESSAGE);
+        }
+        PageRequest pageRequest;
+        if (sortingParam == null) {
+            pageRequest = PageRequest.of(page - 1, size);
+        } else {
+            validateSortingParameter(sortingParam);
+            pageRequest = PageRequest.of(page - 1, size, Sort.by(sortingParam));
+        }
+
+        return pageRequest;
+    }
+
+    private void validateSortingParameter(String sortingParam) {
+        List<String> fieldNames = Arrays.stream(RideResponse.class.getDeclaredFields())
+                .map(Field::getName)
+                .toList();
+        if (!fieldNames.contains(sortingParam)) {
+            String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
+            throw new InvalidRequestException(errorMessage);
+        }
+    }
+
     private DriverResponse getDriverById(Long driverId) {
         if (driverId == null) {
             return null;
@@ -59,24 +216,15 @@ public class RideServiceImpl implements RideService {
 
     private RideResponse toDto(Ride ride) {
         modelMapper.getConfiguration().setAmbiguityIgnored(true);
-        return modelMapper.map(ride, RideResponse.class);
+        RideResponse response = modelMapper.map(ride, RideResponse.class);
+        assignAndCheckDriver(response, ride.getDriverId());
+        assignAndCheckPassenger(response, ride.getPassengerId());
+        return response;
     }
 
     private Ride toEntity(CreateRideRequest request) {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper.map(request, Ride.class);
-    }
-
-    @Override
-    public RideResponse add(CreateRideRequest request) {
-        Ride ride = toEntity(request);
-        PassengerResponse passengerResponse = validatePassenger(ride.getPassengerId());
-        setAdditionalFields(ride);
-        checkBalance(ride);
-        Ride rideToSave = rideRepository.save(ride);
-        rideProducer.sendMessage(RideRequest.builder().id(rideToSave.getId()).build());
-        log.info("Created ride");
-        return createRideResponse(rideToSave, passengerResponse);
     }
 
     private RideResponse createRideResponse(Ride rideToSave, PassengerResponse passengerResponse) {
@@ -105,24 +253,14 @@ public class RideServiceImpl implements RideService {
         }
     }
 
-    @Override
-    public void setDriver(DriverForRideRequest request) {
-        Ride ride = rideRepository.findById(request.getRideId()).get();
-        ride.setDriverId(request.getDriverId());
-        ride.setRideStatus(RideStatus.ACCEPTED);
-        rideRepository.save(ride);
-        EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest
-                .builder().driverId(request.getDriverId()).build();
-        statusProducer.sendMessage(driverStatusRequest);
-    }
-
     private void charge(Ride ride, long amount) {
         long passengerId = ride.getPassengerId();
         PassengerResponse passengerResponse = passengerFeignClient.getPassenger(passengerId);
         checkCustomer(passengerId, passengerResponse);
         CustomerChargeRequest request = CustomerChargeRequest.builder()
-                .currency("BYN").amount(amount)
-                .passengerId(passengerResponse.getId()).build();
+                .currency(CURRENCY).amount(amount)
+                .passengerId(passengerResponse.getId())
+                .build();
         paymentFeignClient.chargeFromCustomer(request);
     }
 
@@ -130,37 +268,37 @@ public class RideServiceImpl implements RideService {
         try {
             paymentFeignClient.findCustomer(passengerId);
         } catch (NotFoundException e) {
-            CustomerRequest customerRequest = CustomerRequest.builder().amount(1000000).phone(passengerResponse.getPhone())
+            CustomerRequest customerRequest = CustomerRequest.builder()
+                    .amount(1000000)
+                    .phone(passengerResponse.getPhone())
                     .email(passengerResponse.getEmail())
                     .name(passengerResponse.getName())
-                    .passengerId(passengerResponse.getId()).build();
+                    .passengerId(passengerResponse.getId())
+                    .build();
             paymentFeignClient.createCustomer(customerRequest);
         }
     }
 
     private void setAdditionalFields(Ride ride) {
         ride.setDate(LocalDateTime.now());
-        double price = generatePrice();
+        double price = calculatePrice();
         ride.setPrice(price);
     }
 
-    private double generatePrice() {
+    private double calculatePrice() {
         Random random = new Random();
         return Math.round((3 + (100 - 3) * random.nextDouble()) * 100.0) / 100.0;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public RideResponse findById(Long id) {
-        Ride ride = rideRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
-        log.info("Retrieving ride by id {}", id);
-        RideResponse response = toDto(ride);
-        checkDriver(response, ride.getDriverId());
-        checkPassenger(response, ride.getPassengerId());
-        return response;
+    private void setDriver(DriverForRideRequest request) {
+        Ride ride = rideRepository.findById(request.getRideId())
+                .orElseThrow(() -> new NotFoundException(request.getRideId()));
+        ride.setDriverId(request.getDriverId());
+        ride.setRideStatus(RideStatus.ACCEPTED);
+        rideRepository.save(ride);
     }
 
-    private void checkPassenger(RideResponse response, long id) {
+    private void assignAndCheckPassenger(RideResponse response, long id) {
         try {
             response.setPassengerResponse(getPassengerById(id));
         } catch (NotFoundException exception) {
@@ -168,7 +306,7 @@ public class RideServiceImpl implements RideService {
         }
     }
 
-    private void checkDriver(RideResponse response, Long id) {
+    private void assignAndCheckDriver(RideResponse response, Long id) {
         try {
             if (id != null) {
                 response.setDriverResponse(getDriverById(id));
@@ -176,128 +314,5 @@ public class RideServiceImpl implements RideService {
         } catch (NotFoundException exception) {
             response.setDriverResponse(null);
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RidesListResponse findAll(int page, int size, String sortingParam) {
-        PageRequest pageRequest = getPageRequest(page, size, sortingParam);
-        Page<Ride> ridePage = rideRepository.findAll(pageRequest);
-        List<RideResponse> rides = ridePage.getContent()
-                .stream().map(ride -> {
-                    RideResponse response = toDto(ride);
-                    checkDriver(response, ride.getDriverId());
-                    checkPassenger(response, ride.getPassengerId());
-                    return response;
-                }).toList();
-        return RidesListResponse.builder().rides(rides).build();
-    }
-
-    private PageRequest getPageRequest(int page, int size, String sortingParam) {
-        if (page < 1 || size < 1) {
-            log.error("Invalid page request");
-            throw new InvalidRequestException(INVALID_PAGE_MESSAGE);
-        }
-        PageRequest pageRequest;
-        if (sortingParam == null) {
-            pageRequest = PageRequest.of(page - 1, size);
-        } else {
-            validateSortingParameter(sortingParam);
-            pageRequest = PageRequest.of(page - 1, size, Sort.by(sortingParam));
-        }
-
-        return pageRequest;
-    }
-
-    private void validateSortingParameter(String sortingParam) {
-        List<String> fieldNames = Arrays.stream(RideResponse.class.getDeclaredFields())
-                .map(Field::getName)
-                .toList();
-
-        if (!fieldNames.contains(sortingParam)) {
-            String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
-            throw new InvalidRequestException(errorMessage);
-        }
-    }
-
-
-    @Override
-    public void update(UpdateRideRequest request, Long id) {
-        if (rideRepository.findById(id).isEmpty()) {
-            log.error("Ride with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
-        Ride ride = modelMapper.map(request, Ride.class);
-        ride.setId(id);
-        rideRepository.save(ride);
-        log.info("Update ride with id {}", id);
-
-    }
-
-    @Override
-    public void delete(Long id) {
-        if (rideRepository.findById(id).isEmpty()) {
-            log.error("Ride with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
-        rideRepository.deleteById(id);
-        log.info("Delete ride with id {}", id);
-
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
-        PageRequest pageRequest = getPageRequest(page, size, orderBy);
-        Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
-        List<RideResponse> rides = ridesPage.getContent()
-                .stream().map(ride -> {
-                    RideResponse response = toDto(ride);
-                    checkDriver(response, ride.getDriverId());
-                    checkPassenger(response, passengerId);
-                    return response;
-                }).toList();
-        log.info("Retrieving rides for passenger with id {}", passengerId);
-        return RidesListResponse.builder()
-                .rides(rides).build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
-        PageRequest pageRequest = getPageRequest(page, size, orderBy);
-        Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
-        List<RideResponse> rides = ridesPage.getContent()
-                .stream().map(ride -> {
-                    RideResponse response = toDto(ride);
-                    checkDriver(response, driverId);
-                    checkPassenger(response, ride.getPassengerId());
-                    return response;
-                }).toList();
-        log.info("Retrieving rides for driver with id {}", driverId);
-        return RidesListResponse.builder()
-                .rides(rides).build();
-    }
-
-    @Override
-    public void editStatus(long id, StatusRequest statusRequest) {
-        if (rideRepository.findById(id).isEmpty()) {
-            log.error("Ride with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
-        Ride ride = rideRepository.findById(id).get();
-        if (ride.getDriverId()==null){
-            throw new DriverIsEmptyException(EMPTY_DRIVER_MESSAGE);
-        }
-        if (ride.getRideStatus().equals(RideStatus.FINISHED)) {
-            throw new AlreadyFinishedRideException("Ride already finished");
-        }
-        if (RideStatus.valueOf(statusRequest.getStatus()).equals(RideStatus.FINISHED)) {
-            EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest
-                    .builder().driverId(ride.getDriverId()).build();
-            statusProducer.sendMessage(driverStatusRequest);
-        }
-        ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
-        rideRepository.save(ride);
     }
 }

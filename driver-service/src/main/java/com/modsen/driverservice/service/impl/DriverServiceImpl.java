@@ -10,6 +10,7 @@ import com.modsen.driverservice.enums.Status;
 import com.modsen.driverservice.exception.AlreadyExistsException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
+import com.modsen.driverservice.kafka.DriverProducer;
 import com.modsen.driverservice.repository.DriverRepository;
 import com.modsen.driverservice.service.DriverService;
 import com.modsen.driverservice.service.RatingService;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.lang.reflect.Field;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.modsen.driverservice.util.Messages.*;
 
@@ -38,10 +40,13 @@ public class DriverServiceImpl implements DriverService {
     private final ModelMapper modelMapper;
     private final DriverRepository driverRepository;
     private final RatingService ratingService;
-
+    private final DriverProducer driverProducer;
 
     private DriverResponse toDto(Driver driver) {
-        return modelMapper.map(driver, DriverResponse.class);
+        DriverResponse response = modelMapper.map(driver, DriverResponse.class);
+        response.setRating(ratingService.getAverageDriverRating(response.getId()).getAverageRating());
+
+        return response;
     }
 
     private Driver toEntity(DriverRequest request) {
@@ -55,9 +60,8 @@ public class DriverServiceImpl implements DriverService {
             throw new AlreadyExistsException(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone()));
         }
         log.info("Create driver with surname {}", request.getSurname());
-        DriverResponse response = toDto(driverRepository.save(toEntity(request)));
-        response.setRating(ratingService.getAverageDriverRating(response.getId()).getAverageRating());
-        return response;
+
+        return toDto(driverRepository.save(toEntity(request)));
     }
 
 
@@ -66,9 +70,8 @@ public class DriverServiceImpl implements DriverService {
     public DriverResponse findById(Long id) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving driver by id {}", id);
-        DriverResponse response = toDto(driver);
-        response.setRating(ratingService.getAverageDriverRating(id).getAverageRating());
-        return response;
+
+        return toDto(driver);
     }
 
     @Override
@@ -81,12 +84,11 @@ public class DriverServiceImpl implements DriverService {
 
     private DriversListResponse getDriversListResponse(Page<Driver> driversPage) {
         List<DriverResponse> drivers = driversPage.getContent().stream()
-                .map(driver -> {
-                    DriverResponse response = toDto(driver);
-                    response.setRating(ratingService.getAverageDriverRating(driver.getId()).getAverageRating());
-                    return response;
-                }).toList();
-        return DriversListResponse.builder().drivers(drivers).build();
+                .map(this::toDto).toList();
+
+        return DriversListResponse.builder()
+                .drivers(drivers)
+                .build();
     }
 
     private PageRequest getPageRequest(int page, int size, String sortingParam) {
@@ -118,28 +120,28 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverResponse update(DriverRequest request, Long id) {
-        if (driverRepository.findById(id).isEmpty()) {
-            log.error("Driver with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
-        Driver driver = toEntity(request);
+        checkDriverUnique(request, id);
+        Driver updatedDriver = toEntity(request);
+        updatedDriver.setId(id);
+        log.info("Update driver with id {}", id);
+
+        return toDto(driverRepository.save(updatedDriver));
+    }
+
+    private void checkDriverUnique(DriverRequest request, Long id) {
+        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         if (!Objects.equals(request.getPhone(), driver.getPhone())) {
             if (driverRepository.existsByPhone(request.getPhone())) {
                 log.error("Driver with phone {} is exists", request.getPhone());
                 throw new AlreadyExistsException(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone()));
             }
         }
-        driver.setId(id);
-        log.info("Update driver with id {}", id);
-        DriverResponse response = toDto(driverRepository.save(driver));
-        response.setRating(ratingService.getAverageDriverRating(driver.getId()).getAverageRating());
-        return response;
     }
 
 
     @Override
     public void delete(Long id) {
-        if (driverRepository.findById(id).isEmpty()) {
+        if (!driverRepository.existsById(id)) {
             log.error("Driver with id {} was not found", id);
             throw new NotFoundException(id);
         }
@@ -156,6 +158,7 @@ public class DriverServiceImpl implements DriverService {
         } else {
             driver.setStatus(Status.AVAILABLE);
         }
+
         driverRepository.save(driver);
     }
 
@@ -169,12 +172,16 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public DriverForRideRequest findDriverForRide(RideRequest request) {
-        List<DriverResponse> drivers = findAvailableDrivers(1, 10, "id").getDrivers();
+    public void findDriverForRide(RideRequest request) {
+        List<DriverResponse> drivers = findAvailableDrivers(1, 1, "id").getDrivers();
         if (!drivers.isEmpty()) {
-            return DriverForRideRequest.builder().driverId(drivers.get(0).getId())
-                    .rideId(request.getId()).build();
-        } else return null;
+            DriverForRideRequest driver = DriverForRideRequest.builder()
+                    .driverId(drivers.get(0).getId())
+                    .rideId(request.getId())
+                    .build();
+            driverProducer.sendMessage(driver);
+        }
+
     }
 
 

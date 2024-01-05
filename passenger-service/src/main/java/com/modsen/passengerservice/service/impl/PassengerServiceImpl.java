@@ -36,7 +36,9 @@ public class PassengerServiceImpl implements PassengerService {
     private final RatingService ratingService;
 
     private PassengerResponse toDto(Passenger passenger) {
-        return modelMapper.map(passenger, PassengerResponse.class);
+        PassengerResponse response= modelMapper.map(passenger, PassengerResponse.class);
+        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
+        return response;
     }
 
     private Passenger toEntity(PassengerRequest request) {
@@ -48,9 +50,8 @@ public class PassengerServiceImpl implements PassengerService {
         checkCreateDataIsUnique(request);
         Passenger passenger = passengerRepository.save(toEntity(request));
         log.info("Create passenger with surname {}", request.getSurname());
-        PassengerResponse response = toDto(passenger);
-        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
-        return response;
+
+        return toDto(passenger);
     }
 
     @Override
@@ -58,9 +59,8 @@ public class PassengerServiceImpl implements PassengerService {
     public PassengerResponse findById(Long id) {
         Passenger passenger = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
-        PassengerResponse response = toDto(passenger);
-        response.setRating(ratingService.getAveragePassengerRating(id).getAverageRating());
-        return response;
+
+        return toDto(passenger);
     }
 
     @Override
@@ -69,11 +69,7 @@ public class PassengerServiceImpl implements PassengerService {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Passenger> passengersPage = passengerRepository.findAll(pageRequest);
         List<PassengerResponse> passengers = passengersPage.getContent().stream()
-                .map(passenger -> {
-                    PassengerResponse response = toDto(passenger);
-                    response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
-                    return response;
-                }).toList();
+                .map(this::toDto).toList();
         return PassengersListResponse.builder().passengers(passengers).build();
     }
 
@@ -117,9 +113,8 @@ public class PassengerServiceImpl implements PassengerService {
         Passenger passenger = toEntity(request);
         passenger.setId(id);
         log.info("Update passenger with id {}", id);
-        PassengerResponse response = toDto(passengerRepository.save(passenger));
-        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
-        return response;
+
+        return toDto(passengerRepository.save(passenger));
     }
 
     @Override

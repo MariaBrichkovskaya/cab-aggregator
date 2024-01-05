@@ -47,11 +47,7 @@ public class RatingServiceImpl implements RatingService {
         validatePassengerExists(passengerId);
         List<PassengerRatingResponse> passengerRatings = ratingRepository.getRatingsByPassengerId(passengerId)
                 .stream()
-                .map(rating -> {
-                    PassengerRatingResponse response=toDto(rating);
-                    response.setDriverResponse(getDriver(rating.getDriverId()));
-                    return response;
-                })
+                .map(this::toDto)
                 .toList();
         log.info("Retrieving rating for passenger {}", passengerId);
         return PassengerListRatingsResponse.builder()
@@ -82,12 +78,12 @@ public class RatingServiceImpl implements RatingService {
     }
 
     public Rating toEntity(PassengerRatingRequest passengerRatingRequest) {
-        Rating driverRating = modelMapper.map(passengerRatingRequest, Rating.class);
-        driverRating.setId(null);
-        return driverRating;
+        return modelMapper.map(passengerRatingRequest, Rating.class);
     }
 
     private PassengerRatingResponse toDto(Rating rating) {
-        return modelMapper.map(rating, PassengerRatingResponse.class);
+        PassengerRatingResponse response= modelMapper.map(rating, PassengerRatingResponse.class);
+        response.setDriverResponse(getDriver(rating.getDriverId()));
+        return response;
     }
 }

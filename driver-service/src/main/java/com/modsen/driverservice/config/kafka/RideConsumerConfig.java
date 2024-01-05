@@ -2,6 +2,7 @@ package com.modsen.driverservice.config.kafka;
 
 import com.modsen.driverservice.dto.request.RideRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RideConsumerConfig {
     private final KafkaProperties kafkaProperties;
-    private static final String RIDE_MESSAGE = "rideMessage:";
+    @Value("${kafka.message.ride}")
+    private String RIDE_MESSAGE;
 
     @Bean
     public ConsumerFactory<String, RideRequest> consumerFactory() {

@@ -31,7 +31,7 @@ public class RideController {
     }
 
     @PostMapping
-    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) throws ExecutionException, InterruptedException {
+    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest){
         RideResponse response = rideService.add(rideRequest);
         return ResponseEntity.ok(response);
     }
@@ -49,9 +49,9 @@ public class RideController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
-        rideService.update(rideRequest, id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Editing ride with id " + id).build());
+    public ResponseEntity<RideResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
+        RideResponse response=rideService.update(rideRequest, id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/passenger/{passenger_id}")

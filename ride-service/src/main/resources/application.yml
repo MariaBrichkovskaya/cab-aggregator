@@ -9,7 +9,7 @@ spring:
       driver: org.postgresql.Driver
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/v.1.0/db.changelog-v.1.0.xml
+    change-log: db/changelog/db.changelog-master.xml
   jpa:
     properties:
       hibernate:
@@ -18,27 +18,45 @@ spring:
             dialect:
               PostgreSQLDialect:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: true
-  cloud:
-    openfeign:
-      client:
-        config:
-          driver:
-            url: http://localhost:9002/api/v1/drivers
-          passenger:
-            url: http://localhost:9001/api/v1/passengers
-          payment:
-            url: http://localhost:9004/api/v1/payments
   kafka:
     consumer:
       group-id:
         driver: driver-creation-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-    bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:9092
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+feign:
+  client:
+    config:
+      passenger:
+        name: passenger
+        url: http://localhost:9001
+        path: /api/v1/passengers
+      driver:
+        name: driver
+        url: http://localhost:9002
+        path: /api/v1/drivers
+      payment:
+        name: payment
+        url: http://localhost:9004
+        path: /api/v1/payments
 topic:
   name:
     ride: create.ride
     driver: available.driver
     status: change.driver.status
+kafka:
+  partitions:
+    count: 1
+  replicas:
+    count: 1
+  message:
+    driver: "driverMessage:"
+    ride: "rideMessage:"
+    status: "statusMessage:"

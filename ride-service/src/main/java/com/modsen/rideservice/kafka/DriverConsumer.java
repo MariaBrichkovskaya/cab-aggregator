@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,14 +28,20 @@ public class DriverConsumer {
         if (driver.getRideId() == 0) {
             setDriver(driver);
         } else {
-            rideService.setDriver(driver);
+            rideService.sendEditStatus(driver);
         }
 
     }
 
     private void setDriver(DriverForRideRequest driver) {
-        if (!rideRepository.findAll().stream().filter(ride -> ride.getDriverId() == null).toList().isEmpty()) {
-            Ride ride = rideRepository.findAll().stream().filter(rideWithoutDriver -> rideWithoutDriver.getDriverId() == null).toList().get(0);
+        List<Ride> rides = rideRepository.findAll().stream().filter(ride -> ride.getDriverId() == null).toList();
+        if (!rides.isEmpty()) {
+            Ride ride = rideRepository
+                    .findAll()
+                    .stream()
+                    .filter(rideWithoutDriver -> rideWithoutDriver.getDriverId() == null)
+                    .toList()
+                    .get(0);
             ride.setDriverId(driver.getDriverId());
             ride.setRideStatus(RideStatus.ACCEPTED);
             rideRepository.save(ride);
