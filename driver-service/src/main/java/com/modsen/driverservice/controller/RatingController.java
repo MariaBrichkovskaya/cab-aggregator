@@ -18,11 +18,10 @@ public class RatingController {
     private final RatingService ratingService;
 
     @PostMapping
-    public ResponseEntity<MessageResponse> rateDriver(@Valid @RequestBody DriverRatingRequest driverRatingRequest,
-                                                      @PathVariable("id") long driverId) {
-        ratingService.rateDriver(driverRatingRequest, driverId);
-        String message = "Rate driver with id " + driverId;
-        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
+    public ResponseEntity<DriverRatingResponse> rateDriver(@Valid @RequestBody DriverRatingRequest driverRatingRequest,
+                                                           @PathVariable("id") long driverId) {
+        DriverRatingResponse response = ratingService.rateDriver(driverRatingRequest, driverId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping

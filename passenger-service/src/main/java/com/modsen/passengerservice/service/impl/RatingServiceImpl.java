@@ -29,9 +29,10 @@ public class RatingServiceImpl implements RatingService {
     private final ModelMapper modelMapper;
     private final DriverFeignClient driverFeignClient;
 
-    private DriverResponse getDriver(long id){
+    private DriverResponse getDriver(long id) {
         return driverFeignClient.getDriver(id);
     }
+
     @Override
     public PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId) {
         Rating newPassengerRating = toEntity(passengerRatingRequest);
@@ -49,11 +50,7 @@ public class RatingServiceImpl implements RatingService {
         validatePassengerExists(passengerId);
         List<PassengerRatingResponse> passengerRatings = ratingRepository.getRatingsByPassengerId(passengerId)
                 .stream()
-                .map(rating -> {
-                    PassengerRatingResponse response=toDto(rating);
-                    response.setDriverResponse(getDriver(rating.getDriverId()));
-                    return response;
-                })
+                .map(this::toDto)
                 .toList();
         log.info("Retrieving rating for passenger {}", passengerId);
         return PassengerListRatingsResponse.builder()
@@ -83,13 +80,13 @@ public class RatingServiceImpl implements RatingService {
                 .orElseThrow(() -> new NotFoundException(passengerId));
     }
 
-    private Rating toEntity(PassengerRatingRequest passengerRatingRequest) {
-        Rating driverRating = modelMapper.map(passengerRatingRequest, Rating.class);
-        driverRating.setId(null);
-        return driverRating;
+    public Rating toEntity(PassengerRatingRequest passengerRatingRequest) {
+        return modelMapper.map(passengerRatingRequest, Rating.class);
     }
 
     private PassengerRatingResponse toDto(Rating rating) {
-        return modelMapper.map(rating, PassengerRatingResponse.class);
+        PassengerRatingResponse response = modelMapper.map(rating, PassengerRatingResponse.class);
+        response.setDriverResponse(getDriver(rating.getDriverId()));
+        return response;
     }
 }

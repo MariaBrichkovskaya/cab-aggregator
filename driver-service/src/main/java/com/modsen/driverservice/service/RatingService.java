@@ -6,7 +6,7 @@ import com.modsen.driverservice.dto.response.DriverRatingResponse;
 import com.modsen.driverservice.dto.response.DriverListRatingsResponse;
 
 public interface RatingService {
-    void rateDriver(DriverRatingRequest driverRatingRequest, long driverId);
+    DriverRatingResponse rateDriver(DriverRatingRequest driverRatingRequest, long driverId);
 
     DriverListRatingsResponse getRatingsByDriverId(long driverId);
 

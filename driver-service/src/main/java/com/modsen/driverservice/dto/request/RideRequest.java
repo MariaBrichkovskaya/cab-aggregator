@@ -8,6 +8,5 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 public class RideRequest {
-    @JsonProperty("id")
     private long id;
 }
