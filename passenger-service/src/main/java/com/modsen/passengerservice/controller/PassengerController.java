@@ -1,7 +1,6 @@
 package com.modsen.passengerservice.controller;
 
 import com.modsen.passengerservice.dto.request.PassengerRequest;
-import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
 import com.modsen.passengerservice.dto.response.PassengersListResponse;
@@ -9,6 +8,7 @@ import com.modsen.passengerservice.service.PassengerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +34,7 @@ public class PassengerController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<MessageResponse> deletePassenger(@PathVariable Long id) {
         MessageResponse response = passengerService.delete(id);
         return ResponseEntity.ok(response);

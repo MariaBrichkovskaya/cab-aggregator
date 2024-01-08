@@ -23,9 +23,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 import static com.modsen.driverservice.util.Messages.*;
@@ -67,7 +67,8 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional(readOnly = true)
     public DriverResponse findById(Long id) {
-        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving driver by id {}", id);
 
         return fromEntityToDriverResponse(driver);
@@ -152,7 +153,8 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public void changeStatus(Long id) {
-        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         if (driver.getStatus().equals(Status.AVAILABLE)) {
             driver.setStatus(Status.UNAVAILABLE);
         } else {
