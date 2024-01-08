@@ -100,7 +100,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void checkCustomerExistence(long id) {
-        if (!customerRepository.existsById(id)) {
+        if (customerRepository.existsById(id)) {
             throw new AlreadyExistsException("Customer already exists");
         }
     }
@@ -194,7 +194,7 @@ public class PaymentServiceImpl implements PaymentService {
         Long passengerId = request.getPassengerId();
         User user = customerRepository.findById(passengerId).get();
         String customerId = user.getCustomerId();
-        checkBalance(customerId, request.getAmount() * 100);
+        checkBalance(customerId, request.getAmount());
         PaymentIntent intent = confirmIntent(request, customerId);
         updateBalance(customerId, request.getAmount());
         return ChargeResponse.builder().id(intent.getId())

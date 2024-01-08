@@ -10,7 +10,7 @@ spring:
       driver: org.postgresql.Driver
   liquibase:
     enabled: true
-    change-log: db/changelog/db.changelog-master.yaml
+    change-log: db/changelog/db.changelog-master.xml
   jpa:
     properties:
       hibernate:
@@ -19,5 +19,12 @@ spring:
             dialect:
               PostgreSQLDialect:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: true
+feign:
+  client:
+    config:
+      driver:
+        name: driver
+        url: http://localhost:9002
+        path: /api/v1/drivers

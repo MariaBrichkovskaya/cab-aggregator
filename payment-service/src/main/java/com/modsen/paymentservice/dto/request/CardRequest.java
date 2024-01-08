@@ -12,13 +12,13 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Builder
 public class CardRequest {
-    @NotBlank(message = "Card number is mandatory")
+    @NotBlank(message = "{number.not.empty.message}")
     String cardNumber;
-    @NotNull(message = "Expiration month is mandatory")
+    @NotNull(message = "{month.not.empty.message}")
     int expMonth;
-    @NotNull(message = "Expiration year is mandatory")
+    @NotNull(message = "{year.not.empty.message}")
     int expYear;
-    @NotBlank(message = "Cvc is mandatory")
-    @Length(max = 3,message = "Max length is 3")
+    @NotBlank(message = "{cvc.not.empty.message}")
+    @Length(max = 3,message = "{cvc.length.message}")
     String cvc;
 }

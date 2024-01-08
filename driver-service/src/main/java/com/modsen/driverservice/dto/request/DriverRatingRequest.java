@@ -12,12 +12,11 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 public class DriverRatingRequest {
-    @NotNull(message = "Score is mandatory")
-    @Min(value = 1, message = "Min value is 1")
-    @Max(value = 5, message = "Min value is 5")
+    @NotNull(message = "{score.not.empty.message}")
+    @Min(value = 1, message = "{min.value.message}")
+    @Max(value = 5, message = "{max.value.message}")
     Integer score;
-
-    @NotNull(message = "Passenger is mandatory")
-    @Min(value = 1, message = "Min value is 1")
+    @NotNull(message = "{passenger.not.empty.message}")
+    @Min(value = 1, message = "{min.value.message}")
     private Long passengerId;
 }

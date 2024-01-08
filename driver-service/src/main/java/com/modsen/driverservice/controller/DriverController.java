@@ -8,6 +8,7 @@ import com.modsen.driverservice.service.DriverService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,12 +28,14 @@ public class DriverController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageResponse> createDriver(@RequestBody @Valid DriverRequest driverRequest) {
-        driverService.add(driverRequest);
-        return ResponseEntity.ok(MessageResponse.builder().message("Adding driver " + driverRequest.getName() + " " + driverRequest.getSurname()).build());
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<DriverResponse> createDriver(@RequestBody @Valid DriverRequest driverRequest) {
+        DriverResponse response = driverService.add(driverRequest);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<MessageResponse> deleteDriver(@PathVariable Long id) {
         driverService.delete(id);
         return ResponseEntity.ok(MessageResponse.builder().message("Deleting driver with id " + id).build());
@@ -45,12 +48,12 @@ public class DriverController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateDriver(@PathVariable Long id, @RequestBody @Valid DriverRequest driverRequest) {
-        driverService.update(driverRequest, id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Editing driver with id " + id).build());
+    public ResponseEntity<DriverResponse> updateDriver(@PathVariable Long id, @RequestBody @Valid DriverRequest driverRequest) {
+        DriverResponse response = driverService.update(driverRequest, id);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/status/{id}")
+    @PutMapping("/{id}/status")
     public ResponseEntity<MessageResponse> changeStatus(@PathVariable Long id) {
         driverService.changeStatus(id);
         return ResponseEntity.ok(MessageResponse.builder().message("Status changed").build());

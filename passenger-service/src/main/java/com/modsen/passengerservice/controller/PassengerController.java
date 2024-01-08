@@ -1,7 +1,6 @@
 package com.modsen.passengerservice.controller;
 
 import com.modsen.passengerservice.dto.request.PassengerRequest;
-import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
 import com.modsen.passengerservice.dto.response.PassengersListResponse;
@@ -9,6 +8,7 @@ import com.modsen.passengerservice.service.PassengerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +29,15 @@ public class PassengerController {
 
     @PostMapping
     public ResponseEntity<PassengerResponse> createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
-        PassengerResponse response=passengerService.add(passengerRequest);
+        PassengerResponse response = passengerService.add(passengerRequest);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<MessageResponse> deletePassenger(@PathVariable Long id) {
-        passengerService.delete(id);
-        String message="Deleting passenger with id " + id;
-        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
+        MessageResponse response = passengerService.delete(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -48,7 +48,7 @@ public class PassengerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PassengerResponse> updatePassenger(@PathVariable Long id, @RequestBody @Valid PassengerRequest passengerRequest) {
-        PassengerResponse response=passengerService.update(passengerRequest, id);
+        PassengerResponse response = passengerService.update(passengerRequest, id);
         return ResponseEntity.ok(response);
     }
 

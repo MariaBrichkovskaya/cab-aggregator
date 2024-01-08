@@ -1,9 +1,6 @@
 package com.modsen.rideservice.dto.response;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 
@@ -11,8 +8,9 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@NoArgsConstructor
 public class ExceptionResponse {
-    final HttpStatus status;
-    final String message;
+     HttpStatus status;
+     String message;
 }
 

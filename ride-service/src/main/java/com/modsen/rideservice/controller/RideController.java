@@ -1,7 +1,8 @@
 package com.modsen.rideservice.controller;
 
-import com.modsen.rideservice.dto.request.RideRequest;
+import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
+import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.MessageResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
@@ -9,6 +10,7 @@ import com.modsen.rideservice.service.RideService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +30,13 @@ public class RideController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageResponse> createRide(@RequestBody @Valid RideRequest rideRequest) {
-        rideService.add(rideRequest);
-        return ResponseEntity.ok(MessageResponse.builder().message("Adding ride").build());
+    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) {
+        RideResponse response = rideService.add(rideRequest);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<MessageResponse> deleteRide(@PathVariable Long id) {
         rideService.delete(id);
         return ResponseEntity.ok(MessageResponse.builder().message("Deleting ride with id " + id).build());
@@ -46,9 +49,9 @@ public class RideController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateRide(@PathVariable Long id, @RequestBody @Valid RideRequest rideRequest) {
-        rideService.update(rideRequest, id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Editing ride with id " + id).build());
+    public ResponseEntity<RideResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
+        RideResponse response = rideService.update(rideRequest, id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/passenger/{passenger_id}")
@@ -67,9 +70,9 @@ public class RideController {
         return ResponseEntity.ok(rides);
     }
 
-    @PutMapping("/status/{id}")
+    @PutMapping("/{id}/status")
     public ResponseEntity<MessageResponse> editStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest statusRequest) {
-        rideService.editStatus(id, statusRequest);
-        return ResponseEntity.ok(MessageResponse.builder().message("Status updated to " + statusRequest.getStatus()).build());
+        MessageResponse response = rideService.editStatus(id, statusRequest);
+        return ResponseEntity.ok(response);
     }
 }

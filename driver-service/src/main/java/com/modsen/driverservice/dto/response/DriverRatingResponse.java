@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DriverRatingResponse {
     long id;
-    long passengerId;
+    PassengerResponse passengerResponse;
     long driverId;
     int score;
 }

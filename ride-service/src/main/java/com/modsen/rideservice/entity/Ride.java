@@ -1,13 +1,14 @@
 package com.modsen.rideservice.entity;
 
-import com.modsen.rideservice.enums.Status;
+import com.modsen.rideservice.enums.PaymentMethod;
+import com.modsen.rideservice.enums.RideStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,23 +16,28 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
+@ToString
 public class Ride {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
-    @Column(name = "pick_up_address",nullable = false)
+    @Column(name = "pick_up_address", nullable = false)
     String pickUpAddress;
-    @Column(name = "destination_address",nullable = false)
+    @Column(name = "destination_address", nullable = false)
     String destinationAddress;
-    @Column(name = "price",nullable = false)
+    @Column(name = "price", nullable = false)
     Double price;
-    @Column(name = "passenger_id",nullable = false)
+    @Column(name = "passenger_id", nullable = false)
     Long passengerId;
-    @Column(name = "driver_id",nullable = false)
+    @Column(name = "driver_id")
     Long driverId;
     LocalDateTime date;
     @Enumerated(EnumType.STRING)
-    Status status=Status.CREATED;
+    @Column(name = "status")
+    RideStatus rideStatus = RideStatus.CREATED;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    PaymentMethod paymentMethod;
 
 }

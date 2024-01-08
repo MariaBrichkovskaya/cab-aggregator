@@ -1,7 +1,9 @@
 package com.modsen.passengerservice.service.impl;
 
+import com.modsen.passengerservice.client.DriverFeignClient;
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.DriverResponse;
 import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
 import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.entity.Rating;
@@ -9,8 +11,6 @@ import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
 import com.modsen.passengerservice.repository.RatingRepository;
 import com.modsen.passengerservice.service.RatingService;
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -27,7 +27,11 @@ public class RatingServiceImpl implements RatingService {
     private final RatingRepository ratingRepository;
     private final PassengerRepository passengerRepository;
     private final ModelMapper modelMapper;
+    private final DriverFeignClient driverFeignClient;
 
+    private DriverResponse getDriver(long id) {
+        return driverFeignClient.getDriver(id);
+    }
 
     @Override
     public PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId) {
@@ -35,7 +39,9 @@ public class RatingServiceImpl implements RatingService {
         newPassengerRating.setPassenger(passengerRepository.findById(passengerId)
                 .orElseThrow(() -> new NotFoundException(passengerId)));
         log.info("Update rating for passenger {}", passengerId);
-        return toDto(ratingRepository.save(newPassengerRating));
+        PassengerRatingResponse response= toDto(ratingRepository.save(newPassengerRating));
+        response.setDriverResponse(getDriver(passengerRatingRequest.getDriverId()));
+        return response;
     }
 
     @Override
@@ -69,18 +75,18 @@ public class RatingServiceImpl implements RatingService {
                 .build();
     }
 
-    public void validatePassengerExists(long passengerId) {
+    private void validatePassengerExists(long passengerId) {
         passengerRepository.findById(passengerId)
                 .orElseThrow(() -> new NotFoundException(passengerId));
     }
 
     public Rating toEntity(PassengerRatingRequest passengerRatingRequest) {
-        Rating driverRating = modelMapper.map(passengerRatingRequest, Rating.class);
-        driverRating.setId(null);
-        return driverRating;
+        return modelMapper.map(passengerRatingRequest, Rating.class);
     }
 
     private PassengerRatingResponse toDto(Rating rating) {
-        return modelMapper.map(rating, PassengerRatingResponse.class);
+        PassengerRatingResponse response = modelMapper.map(rating, PassengerRatingResponse.class);
+        response.setDriverResponse(getDriver(rating.getDriverId()));
+        return response;
     }
 }

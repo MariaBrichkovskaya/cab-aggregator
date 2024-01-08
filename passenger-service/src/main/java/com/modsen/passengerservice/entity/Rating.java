@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Builder
 @Setter
 @Table(name = "ratings")
 @FieldDefaults(level = AccessLevel.PRIVATE)

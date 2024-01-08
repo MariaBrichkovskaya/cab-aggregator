@@ -9,6 +9,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Passenger {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +25,4 @@ public class Passenger {
     String email;
     @Column(name = "phone")
     String phone;
-    @Column(name = "rating")
-    Double rating = 0.0;
 }

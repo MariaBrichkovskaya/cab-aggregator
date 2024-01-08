@@ -8,7 +8,7 @@ spring:
     password: ${DB_PASSWORD}
   liquibase:
     enabled: true
-    change-log: db/changelog/db.changelog-master.yaml
+    change-log: db/changelog/db.changelog-master.xml
   jpa:
     properties:
       hibernate:
@@ -19,4 +19,36 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
-
+  kafka:
+    consumer:
+      group-id:
+        ride: ride-creation-group
+        status: edit-status-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    bootstrap-servers: localhost:9092
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+topic:
+  name:
+    ride: create.ride
+    driver: available.driver
+    status: change.driver.status
+kafka:
+  partitions:
+    count: 1
+  replicas:
+    count: 1
+  message:
+    driver: "driverMessage:"
+    ride: "rideMessage:"
+    status: "statusMessage:"
+feign:
+  client:
+    config:
+      passenger:
+        name: passenger
+        url: http://localhost:9001
+        path: /api/v1/passengers
