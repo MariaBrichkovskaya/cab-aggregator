@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 @Entity
 @AllArgsConstructor
+@Builder
 @NoArgsConstructor
 @Getter
 @Setter
