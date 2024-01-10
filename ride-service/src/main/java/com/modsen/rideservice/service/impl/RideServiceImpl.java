@@ -215,7 +215,6 @@ public class RideServiceImpl implements RideService {
     }
 
     private RideResponse fromEntityToRideResponse(Ride ride) {
-        //modelMapper.getConfiguration().setAmbiguityIgnored(true);
         RideResponse response = modelMapper.map(ride, RideResponse.class);
         assignAndCheckDriver(response, ride.getDriverId());
         assignAndCheckPassenger(response, ride.getPassengerId());
@@ -223,7 +222,6 @@ public class RideServiceImpl implements RideService {
     }
 
     private Ride toEntity(CreateRideRequest request) {
-        //modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper.map(request, Ride.class);
     }
 

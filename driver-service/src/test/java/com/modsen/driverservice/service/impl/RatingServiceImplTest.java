@@ -139,7 +139,7 @@ class RatingServiceImplTest {
 
         verify(ratingRepository).getRatingsByDriverId(DEFAULT_ID);
         assertNotNull(response);
-        assertEquals(DEFAULT_AVERAGE_RATING, response.getAverageRating());
+        assertEquals(AVERAGE_RATING, response.getAverageRating());
 
     }
 }

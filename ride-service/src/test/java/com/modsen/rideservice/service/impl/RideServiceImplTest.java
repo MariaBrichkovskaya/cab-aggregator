@@ -425,7 +425,7 @@ class RideServiceImplTest {
         assertEquals(actual.getPaymentMethod(), "CASH");
         verify(modelMapper).map(request, Ride.class);
         verify(paymentFeignClient).findCustomer(DEFAULT_ID);
-        verify(paymentFeignClient, times(0)).createCustomer(any(CustomerRequest.class));
+        verify(paymentFeignClient, never()).createCustomer(any(CustomerRequest.class));
         verify(paymentFeignClient).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));
         verify(modelMapper).map(savedRide, RideResponse.class);
@@ -448,7 +448,7 @@ class RideServiceImplTest {
         assertEquals(actual.getPaymentMethod(), "CARD");
         verify(modelMapper).map(request, Ride.class);
         verify(paymentFeignClient).findCustomer(DEFAULT_ID);
-        verify(paymentFeignClient, times(0)).createCustomer(any(CustomerRequest.class));
+        verify(paymentFeignClient, never()).createCustomer(any(CustomerRequest.class));
         verify(paymentFeignClient).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));
         verify(modelMapper).map(savedRide, RideResponse.class);
@@ -471,9 +471,9 @@ class RideServiceImplTest {
         assertEquals(actual, expected);
         verify(modelMapper).map(request, Ride.class);
         verify(passengerFeignClient, times(2)).getPassenger(DEFAULT_ID);
-        verify(paymentFeignClient, times(0)).findCustomer(DEFAULT_ID);
-        verify(paymentFeignClient, times(0)).createCustomer(any(CustomerRequest.class));
-        verify(paymentFeignClient, times(0)).chargeFromCustomer(any(CustomerChargeRequest.class));
+        verify(paymentFeignClient, never()).findCustomer(DEFAULT_ID);
+        verify(paymentFeignClient, never()).createCustomer(any(CustomerRequest.class));
+        verify(paymentFeignClient, never()).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));
         verify(modelMapper).map(savedRide, RideResponse.class);
         verify(driverFeignClient).getDriver(DEFAULT_ID);

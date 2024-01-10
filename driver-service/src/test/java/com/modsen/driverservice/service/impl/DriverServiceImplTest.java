@@ -84,7 +84,6 @@ class DriverServiceImplTest {
         doReturn(true)
                 .when(driverRepository)
                 .existsByPhone(DEFAULT_PHONE);
-
         assertThrows(
                 AlreadyExistsException.class,
                 () -> driverService.add(createRequest)
