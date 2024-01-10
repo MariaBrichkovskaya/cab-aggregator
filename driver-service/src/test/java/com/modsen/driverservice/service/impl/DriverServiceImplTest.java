@@ -128,10 +128,26 @@ class DriverServiceImplTest {
 
 
     @Test
-    void findAllWhenParamsInvalid() {
+    void findAllWhenPageInvalid() {
         assertThrows(
                 InvalidRequestException.class,
-                () -> driverService.findAll(INVALID_PAGE, INVALID_SIZE, INVALID_ORDER_BY)
+                () -> driverService.findAll(INVALID_PAGE, VALID_SIZE, VALID_ORDER_BY)
+        );
+    }
+
+    @Test
+    void findAllWhenSizeInvalid() {
+        assertThrows(
+                InvalidRequestException.class,
+                () -> driverService.findAll(VALID_PAGE, INVALID_SIZE, VALID_ORDER_BY)
+        );
+    }
+
+    @Test
+    void findAllWhenOrderByInvalid() {
+        assertThrows(
+                InvalidRequestException.class,
+                () -> driverService.findAll(VALID_PAGE, VALID_SIZE, INVALID_ORDER_BY)
         );
     }
 

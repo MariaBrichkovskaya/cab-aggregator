@@ -12,8 +12,6 @@ import com.modsen.driverservice.entity.Rating;
 import com.modsen.driverservice.enums.Status;
 import lombok.experimental.UtilityClass;
 
-import java.util.List;
-
 @UtilityClass
 public class TestUtils {
     public final long DEFAULT_ID = 1L;
@@ -25,7 +23,6 @@ public class TestUtils {
     public final double DEFAULT_RATING = 5.0;
     public final String UNIQUE_PHONE = "80291237567";
     public final Integer DEFAULT_SCORE = 4;
-    public final double DEFAULT_AVERAGE_RATING = 4.0;
     public final int INVALID_PAGE = -1;
     public final int VALID_PAGE = 1;
     public final int INVALID_SIZE = -1;
@@ -144,10 +141,6 @@ public class TestUtils {
                 .build();
     }
 
-    public List<DriverResponse> getDefaultDriversList() {
-        return List.of(getDefaultDriverResponse());
-
-    }
 
     public RideRequest getDefaultRideRequest() {
         return RideRequest.builder()

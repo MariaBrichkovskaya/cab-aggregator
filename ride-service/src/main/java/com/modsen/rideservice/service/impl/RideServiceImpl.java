@@ -3,20 +3,22 @@ package com.modsen.rideservice.service.impl;
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
-import com.modsen.rideservice.exception.*;
-import com.modsen.rideservice.kafka.RideProducer;
-import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.dto.request.*;
-import com.modsen.rideservice.dto.response.*;
+import com.modsen.rideservice.dto.response.DriverResponse;
+import com.modsen.rideservice.dto.response.PassengerResponse;
+import com.modsen.rideservice.dto.response.RideResponse;
+import com.modsen.rideservice.dto.response.RidesListResponse;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
+import com.modsen.rideservice.exception.*;
+import com.modsen.rideservice.kafka.RideProducer;
+import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
 import com.modsen.rideservice.service.RideService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,11 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import static com.modsen.rideservice.util.Messages.*;
@@ -153,20 +153,13 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public MessageResponse editStatus(long id, StatusRequest statusRequest) {
-        Optional<Ride> optionalRide = rideRepository.findById(id);
-        if (optionalRide.isEmpty()) {
-            log.error("Ride with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
-        Ride ride = optionalRide.get();
+    public RideResponse editStatus(long id, StatusRequest statusRequest) {
+        Ride ride = rideRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         checkStatus(ride, statusRequest);
         ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
-        rideRepository.save(ride);
+        Ride savedRide = rideRepository.save(ride);
 
-        return MessageResponse.builder()
-                .message("Status updated to " + statusRequest.getStatus())
-                .build();
+        return fromEntityToRideResponse(savedRide);
     }
 
     private void checkStatus(Ride ride, StatusRequest statusRequest) {
@@ -222,7 +215,7 @@ public class RideServiceImpl implements RideService {
     }
 
     private RideResponse fromEntityToRideResponse(Ride ride) {
-        modelMapper.getConfiguration().setAmbiguityIgnored(true);
+        //modelMapper.getConfiguration().setAmbiguityIgnored(true);
         RideResponse response = modelMapper.map(ride, RideResponse.class);
         assignAndCheckDriver(response, ride.getDriverId());
         assignAndCheckPassenger(response, ride.getPassengerId());
@@ -230,15 +223,13 @@ public class RideServiceImpl implements RideService {
     }
 
     private Ride toEntity(CreateRideRequest request) {
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        //modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper.map(request, Ride.class);
     }
 
     private RideResponse createRideResponse(Ride rideToSave, PassengerResponse passengerResponse) {
-        RideResponse response = fromEntityToRideResponse(rideToSave);
-        response.setDriverResponse(getDriverById(rideToSave.getDriverId()));
-        response.setPassengerResponse(passengerResponse);
-        return response;
+
+        return fromEntityToRideResponse(rideToSave);
     }
 
     private PassengerResponse validatePassenger(long passengerId) {
