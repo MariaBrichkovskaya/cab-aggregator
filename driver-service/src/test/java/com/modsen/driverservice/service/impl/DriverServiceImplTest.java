@@ -12,6 +12,7 @@ import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.kafka.DriverProducer;
 import com.modsen.driverservice.repository.DriverRepository;
+import com.modsen.driverservice.service.RatingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +29,9 @@ import java.util.Optional;
 
 import static com.modsen.driverservice.util.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,7 +44,7 @@ class DriverServiceImplTest {
     @InjectMocks
     private DriverServiceImpl driverService;
     @Mock
-    private RatingServiceImpl ratingService;
+    private RatingService ratingService;
     @Mock
     private DriverProducer driverProducer;
 

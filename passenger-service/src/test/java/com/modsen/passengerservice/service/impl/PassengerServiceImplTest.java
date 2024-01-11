@@ -8,7 +8,7 @@ import com.modsen.passengerservice.exception.AlreadyExistsException;
 import com.modsen.passengerservice.exception.InvalidRequestException;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
-import org.junit.jupiter.api.BeforeAll;
+import com.modsen.passengerservice.service.RatingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +38,7 @@ class PassengerServiceImplTest {
     @InjectMocks
     private PassengerServiceImpl passengerService;
     @Mock
-    private RatingServiceImpl ratingService;
+    private RatingService ratingService;
 
     @Test
     void addPassengerWhenPassengerUnique() {
