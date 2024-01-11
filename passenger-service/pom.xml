@@ -18,6 +18,8 @@
         <springdoc.version>2.2.0</springdoc.version>
         <modelmapper.version>3.1.1</modelmapper.version>
         <openfeign.version>4.1.0</openfeign.version>
+        <rest-assured.version>5.4.0</rest-assured.version>
+        <test-conteiners-postgres.version>1.17.3</test-conteiners-postgres.version>
     </properties>
     <dependencies>
         <dependency>
@@ -64,6 +66,19 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>${openfeign.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${test-conteiners-postgres.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

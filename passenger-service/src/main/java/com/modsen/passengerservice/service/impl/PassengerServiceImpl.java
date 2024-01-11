@@ -1,19 +1,14 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.dto.request.PassengerRequest;
-import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
-import com.modsen.passengerservice.dto.response.PassengerResponse;
-import com.modsen.passengerservice.dto.response.PassengersListResponse;
-import com.modsen.passengerservice.entity.Passenger;
-import com.modsen.passengerservice.exception.AlreadyExistsException;
-import com.modsen.passengerservice.exception.InvalidRequestException;
-import com.modsen.passengerservice.exception.NotFoundException;
-import com.modsen.passengerservice.repository.PassengerRepository;
-import com.modsen.passengerservice.service.PassengerService;
-import com.modsen.passengerservice.service.RatingService;
+import com.modsen.passengerservice.dto.request.*;
+import com.modsen.passengerservice.dto.response.*;
+import com.modsen.passengerservice.entity.*;
+import com.modsen.passengerservice.exception.*;
+import com.modsen.passengerservice.mapper.*;
+import com.modsen.passengerservice.repository.*;
+import com.modsen.passengerservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,8 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.modsen.passengerservice.util.Messages.*;
 
@@ -31,26 +29,16 @@ import static com.modsen.passengerservice.util.Messages.*;
 @Slf4j
 @Transactional
 public class PassengerServiceImpl implements PassengerService {
-    private final ModelMapper modelMapper;
     private final PassengerRepository passengerRepository;
-    private final RatingService ratingService;
 
-    private PassengerResponse toDto(Passenger passenger) {
-        return modelMapper.map(passenger, PassengerResponse.class);
-    }
-
-    private Passenger toEntity(PassengerRequest request) {
-        return modelMapper.map(request, Passenger.class);
-    }
+    private final PassengerMapper passengerMapper;
 
     @Override
     public PassengerResponse add(PassengerRequest request) {
         checkCreateDataIsUnique(request);
-        Passenger passenger = passengerRepository.save(toEntity(request));
+        Passenger passenger = passengerRepository.save(passengerMapper.toEntity(request));
         log.info("Create passenger with surname {}", request.getSurname());
-        PassengerResponse response = toDto(passenger);
-        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
-        return response;
+        return passengerMapper.toPassengerResponse(passenger);
     }
 
     @Override
@@ -58,9 +46,7 @@ public class PassengerServiceImpl implements PassengerService {
     public PassengerResponse findById(Long id) {
         Passenger passenger = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
-        PassengerResponse response = toDto(passenger);
-        response.setRating(ratingService.getAveragePassengerRating(id).getAverageRating());
-        return response;
+        return passengerMapper.toPassengerResponse(passenger);
     }
 
     @Override
@@ -68,12 +54,7 @@ public class PassengerServiceImpl implements PassengerService {
     public PassengersListResponse findAll(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
         Page<Passenger> passengersPage = passengerRepository.findAll(pageRequest);
-        List<PassengerResponse> passengers = passengersPage.getContent().stream()
-                .map(passenger -> {
-                    PassengerResponse response = toDto(passenger);
-                    response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
-                    return response;
-                }).toList();
+        List<PassengerResponse> passengers = passengerMapper.toPassengerResponseList(passengersPage);
         return PassengersListResponse.builder().passengers(passengers).build();
     }
 
@@ -110,12 +91,10 @@ public class PassengerServiceImpl implements PassengerService {
     public PassengerResponse update(PassengerRequest request, Long id) {
         Passenger passengerToUpdate = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
         checkUpdateDataIsUnique(request, passengerToUpdate);
-        Passenger passenger = toEntity(request);
+        Passenger passenger = passengerMapper.toEntity(request);
         passenger.setId(id);
         log.info("Update passenger with id {}", id);
-        PassengerResponse response = toDto(passengerRepository.save(passenger));
-        response.setRating(ratingService.getAveragePassengerRating(passenger.getId()).getAverageRating());
-        return response;
+        return passengerMapper.toPassengerResponse(passengerRepository.save(passenger));
     }
 
     @Override
