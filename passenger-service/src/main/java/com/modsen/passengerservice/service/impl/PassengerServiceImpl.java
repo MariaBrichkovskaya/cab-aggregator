@@ -44,7 +44,8 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     @Transactional(readOnly = true)
     public PassengerResponse findById(Long id) {
-        Passenger passenger = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving passenger by id {}", id);
         return passengerMapper.toPassengerResponse(passenger);
     }
@@ -89,7 +90,8 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Override
     public PassengerResponse update(PassengerRequest request, Long id) {
-        Passenger passengerToUpdate = passengerRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Passenger passengerToUpdate = passengerRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         checkUpdateDataIsUnique(request, passengerToUpdate);
         Passenger passenger = passengerMapper.toEntity(request);
         passenger.setId(id);
