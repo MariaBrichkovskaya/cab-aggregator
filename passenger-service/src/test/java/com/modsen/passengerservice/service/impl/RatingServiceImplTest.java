@@ -2,9 +2,10 @@ package com.modsen.passengerservice.service.impl;
 
 import com.modsen.passengerservice.client.DriverFeignClient;
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
-
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.entity.Passenger;
+import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.DriverResponse;
+import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
+import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.entity.Rating;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
@@ -108,7 +109,7 @@ class RatingServiceImplTest {
 
         verify(passengerRepository).findById(DEFAULT_ID);
         verify(ratingRepository).getRatingsByPassengerId(DEFAULT_ID);
-        verify(driverFeignClient,times(ratings.size())).getDriver(DEFAULT_ID);
+        verify(driverFeignClient, times(ratings.size())).getDriver(DEFAULT_ID);
 
         assertNotNull(response);
         assertEquals(ratings.size(), response.getPassengerRatings().size());

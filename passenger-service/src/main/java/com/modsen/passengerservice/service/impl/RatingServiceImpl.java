@@ -39,9 +39,7 @@ public class RatingServiceImpl implements RatingService {
         newPassengerRating.setPassenger(passengerRepository.findById(passengerId)
                 .orElseThrow(() -> new NotFoundException(passengerId)));
         log.info("Update rating for passenger {}", passengerId);
-        PassengerRatingResponse response= toDto(ratingRepository.save(newPassengerRating));
-        response.setDriverResponse(getDriver(passengerRatingRequest.getDriverId()));
-        return response;
+        return toDto(ratingRepository.save(newPassengerRating));
     }
 
     @Override

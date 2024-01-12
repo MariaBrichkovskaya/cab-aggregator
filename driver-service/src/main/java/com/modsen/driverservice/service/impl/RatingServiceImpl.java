@@ -75,12 +75,12 @@ public class RatingServiceImpl implements RatingService {
                 .build();
     }
 
-    public void validateDriverExists(long driverId) {
+    private void validateDriverExists(long driverId) {
         driverRepository.findById(driverId)
                 .orElseThrow(() -> new NotFoundException(driverId));
     }
 
-    public Rating toEntity(DriverRatingRequest driverRatingRequest) {
+    private Rating toEntity(DriverRatingRequest driverRatingRequest) {
         return modelMapper.map(driverRatingRequest, Rating.class);
     }
 

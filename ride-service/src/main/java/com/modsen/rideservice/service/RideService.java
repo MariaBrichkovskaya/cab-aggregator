@@ -5,7 +5,6 @@ import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.DriverForRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
-import com.modsen.rideservice.dto.response.MessageResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
 
@@ -26,5 +25,5 @@ public interface RideService {
 
     RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy);
 
-    MessageResponse editStatus(long id, StatusRequest statusRequest);
+    RideResponse editStatus(long id, StatusRequest statusRequest);
 }

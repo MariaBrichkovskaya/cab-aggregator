@@ -130,7 +130,8 @@ public class DriverServiceImpl implements DriverService {
     }
 
     private void checkDriverUnique(DriverRequest request, Long id) {
-        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         if (!Objects.equals(request.getPhone(), driver.getPhone())) {
             if (driverRepository.existsByPhone(request.getPhone())) {
                 log.error("Driver with phone {} is exists", request.getPhone());

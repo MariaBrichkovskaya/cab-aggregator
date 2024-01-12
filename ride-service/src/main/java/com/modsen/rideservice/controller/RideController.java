@@ -30,6 +30,7 @@ public class RideController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) {
         RideResponse response = rideService.add(rideRequest);
         return ResponseEntity.ok(response);
@@ -71,8 +72,8 @@ public class RideController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<MessageResponse> editStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest statusRequest) {
-        MessageResponse response = rideService.editStatus(id, statusRequest);
+    public ResponseEntity<RideResponse> editStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest statusRequest) {
+        RideResponse response = rideService.editStatus(id, statusRequest);
         return ResponseEntity.ok(response);
     }
 }

@@ -1,14 +1,10 @@
 package com.modsen.rideservice.dto.request;
 
 
-import com.modsen.rideservice.enums.PaymentMethod;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.Range;
 
@@ -17,6 +13,7 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class CreateRideRequest {
     @NotBlank(message = "{address.not.empty.message}")
     String pickUpAddress;
