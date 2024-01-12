@@ -41,10 +41,8 @@ public class PassengerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> deletePassenger(@PathVariable Long id) {
-        passengerService.delete(id);
-        String message = "Deleting passenger with id " + id;
-        return ResponseEntity.ok(MessageResponse.builder().message(message).build());
+    public MessageResponse deletePassenger(@PathVariable Long id) {
+        return passengerService.delete(id);
     }
 
     @GetMapping("/{id}")

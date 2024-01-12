@@ -8,8 +8,9 @@ public class Messages {
 
     public final String PASSENGER_ALREADY_EXISTS_MESSAGE = "Passenger already exists";
     public final String NOT_FOUND_WITH_ID_MESSAGE = "Passenger with id %d was not found";
+    public final String DELETE_PASSENGER_MESSAGE = "Passenger with %d was deleted";
     public final String PASSENGER_WITH_EMAIL_EXISTS_MESSAGE = "Passenger with email %s already exists";
     public final String PASSENGER_WITH_PHONE_EXISTS_MESSAGE = "Passenger with phone %s already exists";
-    public final String INVALID_PAGE_MESSAGE="Page request is not valid";
-    public final String INVALID_SORTING_MESSAGE="Sorting request is not valid. Acceptable parameters are: %s";
+    public final String INVALID_PAGE_MESSAGE = "Page request is not valid";
+    public final String INVALID_SORTING_MESSAGE = "Sorting request is not valid. Acceptable parameters are: %s";
 }

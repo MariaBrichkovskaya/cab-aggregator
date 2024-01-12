@@ -98,13 +98,16 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
-    public void delete(Long id) {
+    public MessageResponse delete(Long id) {
         if (!passengerRepository.existsById(id)) {
             log.error("Passenger with id {} was not found", id);
             throw new NotFoundException(id);
         }
         passengerRepository.deleteById(id);
         log.info("Delete passenger with id {}", id);
+        return MessageResponse.builder()
+                .message(String.format(DELETE_PASSENGER_MESSAGE, id))
+                .build();
     }
 
 

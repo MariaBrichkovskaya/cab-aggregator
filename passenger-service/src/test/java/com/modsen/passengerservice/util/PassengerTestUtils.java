@@ -15,7 +15,7 @@ import java.util.ResourceBundle;
 import static com.modsen.passengerservice.util.Messages.*;
 
 @UtilityClass
-public class TestUtils {
+public class PassengerTestUtils {
     public final long DEFAULT_ID = 1L;
     public final long NEW_ID = 4L;
     public final String DEFAULT_NAME = "Name";
@@ -39,14 +39,15 @@ public class TestUtils {
     public final String VALID_ORDER_BY = "id";
     public final long NOT_FOUND_ID = 1000L;
     public final String ID_PARAM_NAME = "id";
-    public final String FIND_BY_ID_PATH = "/api/v1/passengers/{id}";
+    public final String DEFAULT_ID_PATH = "/api/v1/passengers/{id}";
     public final String PAGE_PARAM_NAME = "page";
     public final String SIZE_PARAM_NAME = "size";
     public final String ORDER_BY_PARAM_NAME = "order_by";
     public final String DEFAULT_PATH = "/api/v1/passengers";
+
     private static final ResourceBundle validationMessages = ResourceBundle.getBundle("CustomValidationMessages");
 
-    public ValidationExceptionResponse getValidationExceptionResponse() {
+    public ValidationExceptionResponse getPassengerValidationExceptionResponse() {
         String nameMessage = validationMessages.getString("name.not.empty.message");
         String surnameMessage = validationMessages.getString("surname.not.empty.message");
         String emailMessage = validationMessages.getString("invalid.email.message");
@@ -94,10 +95,18 @@ public class TestUtils {
                 .build();
     }
 
-    public AveragePassengerRatingResponse getDefaultRating() {
-        return AveragePassengerRatingResponse.builder().passengerId(DEFAULT_ID)
-                .averageRating(DEFAULT_RATING).build();
+    public List<PassengerResponse> getDefaultPassengersListResponse() {
+        PassengerResponse second = PassengerResponse.builder()
+                .id(NEW_ID)
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(UNIQUE_EMAIL)
+                .phone(UNIQUE_PHONE)
+                .rating(DEFAULT_RATING)
+                .build();
+        return List.of(getDefaultPassengerResponse(), second);
     }
+
 
     public Passenger getNotSavedPassenger() {
         return Passenger.builder()
@@ -117,7 +126,7 @@ public class TestUtils {
                 .build();
     }
 
-    public PassengerRequest getNewPassengerRequest() {
+    public PassengerRequest getUniquePassengerRequest() {
         return PassengerRequest.builder()
                 .name(DEFAULT_NAME)
                 .surname(DEFAULT_SURNAME)
@@ -135,45 +144,6 @@ public class TestUtils {
                 .build();
     }
 
-    public Rating getDefaultPassengerRating() {
-        return Rating.builder().passenger(getDefaultPassenger())
-                .score(DEFAULT_SCORE)
-                .driverId(DEFAULT_ID).build();
-    }
-
-    public Rating getSavedPassengerRating() {
-        return Rating.builder().passenger(getDefaultPassenger())
-                .id(DEFAULT_ID)
-                .score(DEFAULT_SCORE)
-                .driverId(DEFAULT_ID).build();
-    }
-
-    public Rating getNewSavedPassengerRating() {
-        return Rating.builder().passenger(getDefaultPassenger())
-                .id(NEW_ID)
-                .score(DEFAULT_SCORE)
-                .driverId(DEFAULT_ID).build();
-    }
-
-    public PassengerRatingRequest getDefaultPassengerRatingRequest() {
-        return PassengerRatingRequest.builder()
-                .score(DEFAULT_SCORE)
-                .driverId(DEFAULT_ID).build();
-    }
-
-    public PassengerRatingResponse getDefaultPassengerRatingResponse() {
-        return PassengerRatingResponse.builder()
-                .passengerId(DEFAULT_ID)
-                .score(DEFAULT_SCORE).build();
-    }
-
-    public DriverResponse getDefaultDriverResponse() {
-        return DriverResponse.builder().name(DEFAULT_NAME)
-                .id(DEFAULT_ID)
-                .name(DEFAULT_SURNAME)
-                .phone(DEFAULT_PHONE)
-                .build();
-    }
 
     public String getInvalidSortingMessage() {
         List<String> fieldNames = Arrays.stream(PassengerResponse.class.getDeclaredFields())

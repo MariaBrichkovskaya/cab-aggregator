@@ -25,15 +25,15 @@ import java.util.List;
 import java.util.Map;
 
 import static com.modsen.passengerservice.util.Messages.*;
-import static com.modsen.passengerservice.util.TestUtils.*;
+import static com.modsen.passengerservice.util.PassengerTestUtils.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(
         scripts = {
-                "classpath:sql/delete-data.sql",
-                "classpath:sql/insert-data.sql"
+                "classpath:sql/passenger/delete-data.sql",
+                "classpath:sql/passenger/insert-data.sql"
         }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
 
@@ -78,7 +78,7 @@ public class PassengerIntegrationTest {
                 .port(port)
                 .pathParam(ID_PARAM_NAME, NOT_FOUND_ID)
                 .when()
-                .get(FIND_BY_ID_PATH)
+                .get(DEFAULT_ID_PATH)
                 .then()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .extract()
@@ -96,7 +96,7 @@ public class PassengerIntegrationTest {
                 .port(port)
                 .pathParam(ID_PARAM_NAME, DEFAULT_ID)
                 .when()
-                .get(FIND_BY_ID_PATH)
+                .get(DEFAULT_ID_PATH)
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
@@ -178,7 +178,7 @@ public class PassengerIntegrationTest {
     }
 
     @Test
-    void getPassengerPage_shouldReturnBadRequestResponse_whenInvalidOrderByParamPassed() {
+    void findAll_shouldReturnBadRequestResponse_whenInvalidOrderByParamPassed() {
         String errorMessage = getInvalidSortingMessage();
         ExceptionResponse expected = ExceptionResponse.builder()
                 .status(HttpStatus.BAD_REQUEST)
@@ -204,7 +204,7 @@ public class PassengerIntegrationTest {
 
     @Test
     void addPassenger_shouldReturnPassengerResponse_whenDataIsValidAndUnique() {
-        PassengerRequest createRequest = getNewPassengerRequest();
+        PassengerRequest createRequest = getUniquePassengerRequest();
 
         PassengerResponse expected = PassengerResponse.builder()
                 .id(NEW_ID)
@@ -212,7 +212,7 @@ public class PassengerIntegrationTest {
                 .surname(DEFAULT_SURNAME)
                 .email(UNIQUE_EMAIL)
                 .phone(UNIQUE_PHONE)
-                .rating(0.0)
+                .rating(DEFAULT_RATING)
                 .build();
 
         var actual = given()
@@ -260,7 +260,7 @@ public class PassengerIntegrationTest {
                 .email(INVALID_EMAIL)
                 .phone(INVALID_PHONE)
                 .build();
-        ValidationExceptionResponse expected = getValidationExceptionResponse();
+        ValidationExceptionResponse expected = getPassengerValidationExceptionResponse();
 
         var actual = given()
                 .port(port)
@@ -276,5 +276,118 @@ public class PassengerIntegrationTest {
         assertThat(actual).isEqualTo(expected);
     }
 
+    @Test
+    void deleteById_shouldReturnNotFoundResponse_whenPassengerNotExist() {
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(String.format(NOT_FOUND_WITH_ID_MESSAGE, NOT_FOUND_ID))
+                .build();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, NOT_FOUND_ID)
+                .when()
+                .delete(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void deleteById_shouldReturnMessageResponse_whenPassengerExists() {
+        MessageResponse expected = MessageResponse.builder()
+                .message(String.format(DELETE_PASSENGER_MESSAGE, DEFAULT_ID))
+                .build();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, DEFAULT_ID)
+                .when()
+                .delete(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(MessageResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void updateById_shouldReturnNotFoundResponse_whenPassengerNotExist() {
+        PassengerRequest updateRequest = getUniquePassengerRequest();
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(String.format(NOT_FOUND_WITH_ID_MESSAGE, NOT_FOUND_ID))
+                .build();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, NOT_FOUND_ID)
+                .contentType(ContentType.JSON)
+                .body(updateRequest)
+                .when()
+                .put(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void updateById_shouldReturnPassengerResponse_whenDataIsValidAndUnique() {
+
+        PassengerRequest updateRequest = getUniquePassengerRequest();
+
+        PassengerResponse expected = PassengerResponse.builder()
+                .id(DEFAULT_ID)
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(UNIQUE_EMAIL)
+                .phone(UNIQUE_PHONE)
+                .rating(DEFAULT_RATING)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .pathParam(ID_PARAM_NAME, DEFAULT_ID)
+                .body(updateRequest)
+                .when()
+                .put(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(PassengerResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void updateById_shouldReturnConflictResponse_whenDataNotUnique() {
+        PassengerRequest updateRequest = getPassengerRequest();
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(PASSENGER_ALREADY_EXISTS_MESSAGE)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .pathParam(ID_PARAM_NAME, 2L)
+                .body(updateRequest)
+                .when()
+                .put(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.CONFLICT.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
 
 }

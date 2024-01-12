@@ -1,20 +1,16 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.dto.request.PassengerRequest;
-import com.modsen.passengerservice.dto.response.PassengerResponse;
-import com.modsen.passengerservice.dto.response.PassengersListResponse;
-import com.modsen.passengerservice.entity.Passenger;
-import com.modsen.passengerservice.exception.AlreadyExistsException;
-import com.modsen.passengerservice.exception.InvalidRequestException;
-import com.modsen.passengerservice.exception.NotFoundException;
-import com.modsen.passengerservice.repository.PassengerRepository;
-import org.junit.jupiter.api.BeforeAll;
+import com.modsen.passengerservice.dto.request.*;
+import com.modsen.passengerservice.dto.response.*;
+import com.modsen.passengerservice.entity.*;
+import com.modsen.passengerservice.exception.*;
+import com.modsen.passengerservice.mapper.*;
+import com.modsen.passengerservice.repository.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,10 +18,15 @@ import org.springframework.data.domain.PageRequest;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.modsen.passengerservice.util.TestUtils.*;
+import static com.modsen.passengerservice.util.PassengerTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PassengerServiceImplTest {
@@ -33,12 +34,10 @@ class PassengerServiceImplTest {
     @Mock
     private PassengerRepository passengerRepository;
     @Mock
-    private ModelMapper modelMapper;
+    private PassengerMapper passengerMapper;
 
     @InjectMocks
     private PassengerServiceImpl passengerService;
-    @Mock
-    private RatingServiceImpl ratingService;
 
     @Test
     void addPassengerWhenPassengerUnique() {
@@ -54,25 +53,21 @@ class PassengerServiceImplTest {
                 .when(passengerRepository)
                 .existsByPhone(DEFAULT_PHONE);
         doReturn(passengerToSave)
-                .when(modelMapper)
-                .map(createRequest, Passenger.class);
+                .when(passengerMapper)
+                .toEntity(createRequest);
         doReturn(savedPassenger)
                 .when(passengerRepository)
                 .save(passengerToSave);
         doReturn(expected)
-                .when(modelMapper)
-                .map(savedPassenger, PassengerResponse.class);
-        doReturn(getDefaultRating())
-                .when(ratingService)
-                .getAveragePassengerRating(DEFAULT_ID);
+                .when(passengerMapper)
+                .toPassengerResponse(savedPassenger);
         PassengerResponse actual = passengerService.add(createRequest);
 
         verify(passengerRepository).existsByEmail(DEFAULT_EMAIL);
         verify(passengerRepository).existsByPhone(DEFAULT_PHONE);
         verify(passengerRepository).save(passengerToSave);
-        verify(modelMapper).map(createRequest, Passenger.class);
-        verify(modelMapper).map(savedPassenger, PassengerResponse.class);
-        verify(ratingService).getAveragePassengerRating(DEFAULT_ID);
+        verify(passengerMapper).toEntity(createRequest);
+        verify(passengerMapper).toPassengerResponse(savedPassenger);
 
         assertThat(actual).isEqualTo(expected);
 
@@ -127,14 +122,11 @@ class PassengerServiceImplTest {
                 .findById(DEFAULT_ID);
         PassengerResponse expected = getDefaultPassengerResponse();
         doReturn(expected)
-                .when(modelMapper)
-                .map(retrievedPassenger, PassengerResponse.class);
-        doReturn(getDefaultRating())
-                .when(ratingService)
-                .getAveragePassengerRating(DEFAULT_ID);
+                .when(passengerMapper)
+                .toPassengerResponse(retrievedPassenger);
         PassengerResponse actual = passengerService.findById(DEFAULT_ID);
         verify(passengerRepository).findById(DEFAULT_ID);
-        verify(modelMapper).map(retrievedPassenger, PassengerResponse.class);
+        verify(passengerMapper).toPassengerResponse(retrievedPassenger);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -203,8 +195,7 @@ class PassengerServiceImplTest {
         ));
 
         when(passengerRepository.findAll(any(PageRequest.class))).thenReturn(passengerPage);
-        doReturn(getDefaultPassengerResponse()).when(modelMapper).map(any(Passenger.class), eq(PassengerResponse.class));
-        when(ratingService.getAveragePassengerRating(any(Long.class))).thenReturn(getDefaultRating());
+        doReturn(getDefaultPassengersListResponse()).when(passengerMapper).toPassengerResponseList(passengerPage);
 
         PassengersListResponse response = passengerService.findAll(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
 
@@ -240,20 +231,18 @@ class PassengerServiceImplTest {
         when(passengerRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(passengerToUpdate));
         when(passengerRepository.existsByPhone(request.getPhone())).thenReturn(false);
         when(passengerRepository.existsByEmail(request.getEmail())).thenReturn(false);
-        when(modelMapper.map(request, Passenger.class)).thenReturn(passengerToUpdate);
+        when(passengerMapper.toEntity(request)).thenReturn(passengerToUpdate);
         when(passengerRepository.save(passengerToUpdate)).thenReturn(passengerToUpdate);
-        when(modelMapper.map(passengerToUpdate, PassengerResponse.class)).thenReturn(response);
-        when(ratingService.getAveragePassengerRating(DEFAULT_ID)).thenReturn(getDefaultRating());
+        when(passengerMapper.toPassengerResponse(passengerToUpdate)).thenReturn(response);
 
         PassengerResponse result = passengerService.update(request, DEFAULT_ID);
 
         verify(passengerRepository).findById(DEFAULT_ID);
         verify(passengerRepository).existsByEmail(request.getEmail());
         verify(passengerRepository).existsByPhone(request.getPhone());
-        verify(modelMapper).map(request, Passenger.class);
+        verify(passengerMapper).toEntity(request);
         verify(passengerRepository).save(passengerToUpdate);
-        verify(modelMapper).map(passengerToUpdate, PassengerResponse.class);
-        verify(ratingService).getAveragePassengerRating(DEFAULT_ID);
+        verify(passengerMapper).toPassengerResponse(passengerToUpdate);
 
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo(request.getEmail());
