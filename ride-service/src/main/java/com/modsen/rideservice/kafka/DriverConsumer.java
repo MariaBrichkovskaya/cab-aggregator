@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,21 +25,27 @@ public class DriverConsumer {
     @KafkaListener(topics = "${topic.name.driver}", groupId = "${spring.kafka.consumer.group-id.driver}")
     public void consumeMessage(DriverForRideRequest driver) {
         log.info("message consumed {}", driver);
-        if (driver.getRideId() == 0) {
+        if (driver.rideId() == 0) {
             setDriver(driver);
         } else {
-            rideService.setDriver(driver);
+            rideService.sendEditStatus(driver);
         }
 
     }
 
     private void setDriver(DriverForRideRequest driver) {
-        if (!rideRepository.findAll().stream().filter(ride -> ride.getDriverId() == null).toList().isEmpty()) {
-            Ride ride = rideRepository.findAll().stream().filter(rideWithoutDriver -> rideWithoutDriver.getDriverId() == null).toList().get(0);
-            ride.setDriverId(driver.getDriverId());
+        List<Ride> rides = rideRepository.findAll().stream().filter(ride -> ride.getDriverId() == null).toList();
+        if (!rides.isEmpty()) {
+            Ride ride = rideRepository.findAll().stream()
+                    .filter(rideWithoutDriver -> rideWithoutDriver.getDriverId() == null)
+                    .toList()
+                    .get(0);
+            ride.setDriverId(driver.driverId());
             ride.setRideStatus(RideStatus.ACCEPTED);
             rideRepository.save(ride);
-            statusProducer.sendMessage(EditDriverStatusRequest.builder().driverId(driver.getDriverId()).build());
+            statusProducer.sendMessage(EditDriverStatusRequest.builder()
+                    .driverId(driver.driverId())
+                    .build());
         }
     }
 }

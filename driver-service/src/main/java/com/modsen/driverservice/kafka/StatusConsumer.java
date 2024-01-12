@@ -21,14 +21,16 @@ public class StatusConsumer {
     public void consumeMessage(EditDriverStatusRequest message) {
         log.info("message consumed {}", message);
         editStatus(message);
-
     }
 
     private void editStatus(EditDriverStatusRequest editDriverStatusRequest) {
-        driverService.changeStatus(editDriverStatusRequest.getDriverId());
-        DriverResponse driver = driverService.findById(editDriverStatusRequest.getDriverId());
+        driverService.changeStatus(editDriverStatusRequest.driverId());
+        DriverResponse driver = driverService.findById(editDriverStatusRequest.driverId());
         if (driver.getStatus().equals(Status.AVAILABLE)) {
-            driverProducer.sendMessage(DriverForRideRequest.builder().driverId(driver.getId()).build());
+            driverProducer.sendMessage(DriverForRideRequest.builder()
+                    .driverId(driver.getId())
+                    .build()
+            );
         }
     }
 

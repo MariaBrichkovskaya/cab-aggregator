@@ -35,6 +35,7 @@ public class DriverController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<MessageResponse> deleteDriver(@PathVariable Long id) {
         driverService.delete(id);
         return ResponseEntity.ok(MessageResponse.builder().message("Deleting driver with id " + id).build());

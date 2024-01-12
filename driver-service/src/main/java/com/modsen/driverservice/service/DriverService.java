@@ -23,5 +23,5 @@ public interface DriverService {
 
     DriversListResponse findAvailableDrivers(int page, int size, String sortingParam);
 
-    DriverForRideRequest findDriverForRide(RideRequest request);
+    void findDriverForRide(RideRequest request);
 }

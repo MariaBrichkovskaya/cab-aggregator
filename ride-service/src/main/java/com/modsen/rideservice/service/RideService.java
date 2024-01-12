@@ -7,21 +7,17 @@ import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
-import com.modsen.rideservice.entity.Ride;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public interface RideService {
-    RideResponse add(CreateRideRequest request) throws ExecutionException, InterruptedException;
+    RideResponse add(CreateRideRequest request);
 
-    void setDriver(DriverForRideRequest request);
+    void sendEditStatus(DriverForRideRequest request);
 
     RideResponse findById(Long id);
 
     RidesListResponse findAll(int page, int size, String sortingParam);
 
-    void update(UpdateRideRequest request, Long id);
+    RideResponse update(UpdateRideRequest request, Long id);
 
     void delete(Long id);
 
@@ -29,5 +25,5 @@ public interface RideService {
 
     RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy);
 
-    void editStatus(long id, StatusRequest statusRequest);
+    RideResponse editStatus(long id, StatusRequest statusRequest);
 }

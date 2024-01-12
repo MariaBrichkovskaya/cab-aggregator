@@ -6,6 +6,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
@@ -21,18 +22,19 @@ import java.util.Map;
 public class RideProducerConfig {
     @Value("${topic.name.ride}")
     private String rideTopic;
-    private static final int PARTITIONS_COUNT = 1;
-    private static final int REPLICAS_COUNT = 1;
-    private static final String RIDE_MESSAGE = "rideMessage:";
+    @Value("${kafka.partitions.count}")
+    private int PARTITIONS_COUNT;
+    @Value("${kafka.replicas.count}")
+    private int REPLICAS_COUNT;
+    @Value("${kafka.message.ride}")
+    private String RIDE_MESSAGE;
+    private final KafkaProperties kafkaProperties;
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
-        Map<String, Object> configProps = Map.of(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class,
-                JsonSerializer.TYPE_MAPPINGS, RIDE_MESSAGE + RideRequest.class.getName());
-        return new DefaultKafkaProducerFactory<>(configProps);
+        Map<String, Object> properties = kafkaProperties.buildProducerProperties();
+        properties.put(JsonSerializer.TYPE_MAPPINGS, RIDE_MESSAGE + RideRequest.class.getName());
+        return new DefaultKafkaProducerFactory<>(properties);
     }
 
     @Bean

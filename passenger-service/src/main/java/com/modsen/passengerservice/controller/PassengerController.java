@@ -1,8 +1,11 @@
 package com.modsen.passengerservice.controller;
 
-import com.modsen.passengerservice.dto.request.*;
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.service.*;
+
+import com.modsen.passengerservice.dto.request.PassengerRequest;
+import com.modsen.passengerservice.dto.response.MessageResponse;
+import com.modsen.passengerservice.dto.response.PassengerResponse;
+import com.modsen.passengerservice.dto.response.PassengersListResponse;
+import com.modsen.passengerservice.service.PassengerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +38,7 @@ public class PassengerController {
     }
 
     @PostMapping
+
     @ResponseStatus(HttpStatus.CREATED)
     public PassengerResponse createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
         return passengerService.add(passengerRequest);

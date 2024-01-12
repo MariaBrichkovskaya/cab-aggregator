@@ -4,10 +4,13 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Messages {
-    public static final String VALIDATION_FAILED_MESSAGE = "Invalid request";
+    public final String VALIDATION_FAILED_MESSAGE = "Invalid request";
 
-    public static final String NOT_FOUND_WITH_DRIVER_ID_MESSAGE = "Driver with id %d was not found";
-    public static final String DRIVER_WITH_PHONE_EXISTS_MESSAGE = "Driver with phone %s already exists";
-    public static final String INVALID_PAGE_MESSAGE="Page request is not valid";
-    public static final String INVALID_SORTING_MESSAGE="Sorting request is not valid. Acceptable parameters are: %s";
+    public final String NOT_FOUND_WITH_DRIVER_ID_MESSAGE = "Driver with id %d was not found";
+    public final String DRIVER_WITH_PHONE_EXISTS_MESSAGE = "Driver with phone %s already exists";
+    public final String INVALID_PAGE_MESSAGE="Page request is not valid";
+    public final String INVALID_SORTING_MESSAGE="Sorting request is not valid. Acceptable parameters are: %s";
+    public final int RETRYER_PERIOD=100;
+    public final int RETRYER_MAX_PERIOD=1000;
+    public final int RETRYER_MAX_ATTEMPTS=5;
 }

@@ -10,10 +10,9 @@ import com.modsen.rideservice.service.RideService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -31,12 +30,14 @@ public class RideController {
     }
 
     @PostMapping
-    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) throws ExecutionException, InterruptedException {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) {
         RideResponse response = rideService.add(rideRequest);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<MessageResponse> deleteRide(@PathVariable Long id) {
         rideService.delete(id);
         return ResponseEntity.ok(MessageResponse.builder().message("Deleting ride with id " + id).build());
@@ -49,9 +50,9 @@ public class RideController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
-        rideService.update(rideRequest, id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Editing ride with id " + id).build());
+    public ResponseEntity<RideResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
+        RideResponse response = rideService.update(rideRequest, id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/passenger/{passenger_id}")
@@ -71,8 +72,8 @@ public class RideController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<MessageResponse> editStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest statusRequest) {
-        rideService.editStatus(id, statusRequest);
-        return ResponseEntity.ok(MessageResponse.builder().message("Status updated to " + statusRequest.getStatus()).build());
+    public ResponseEntity<RideResponse> editStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest statusRequest) {
+        RideResponse response = rideService.editStatus(id, statusRequest);
+        return ResponseEntity.ok(response);
     }
 }

@@ -29,7 +29,7 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
             <column name="status" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="payment_method" type="varchar(255)">
+            <column name="payment_method" type="varchar(4)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
