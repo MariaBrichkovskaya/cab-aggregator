@@ -1,25 +1,21 @@
-package com.modsen.passengerservice.integration;
+package com.modsen.passengerservice.integration.realization;
 
 import com.modsen.passengerservice.dto.request.*;
 import com.modsen.passengerservice.dto.response.*;
 import com.modsen.passengerservice.entity.*;
+import com.modsen.passengerservice.integration.*;
 import com.modsen.passengerservice.mapper.*;
 import com.modsen.passengerservice.repository.*;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.List;
 import java.util.Map;
@@ -29,43 +25,19 @@ import static com.modsen.passengerservice.util.PassengerTestUtils.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+
 @Sql(
         scripts = {
                 "classpath:sql/passenger/delete-data.sql",
                 "classpath:sql/passenger/insert-data.sql"
         }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
-
-public class PassengerIntegrationTest {
-    @Autowired
-    private PassengerRepository passengerRepository;
-    @Autowired
-    private PassengerMapper passengerMapper;
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class PassengerIntegrationTest extends IntegrationTestStructure {
+    private final PassengerRepository passengerRepository;
+    private final PassengerMapper passengerMapper;
     @LocalServerPort
     private int port;
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            "postgres:15-alpine"
-    );
-
-    @BeforeAll
-    static void beforeAll() {
-        postgres.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        postgres.stop();
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("postgresql.driver", postgres::getDriverClassName);
-    }
-
 
     @Test
     void findById_shouldReturnNotFoundResponse_whenPassengerNotExist() {
@@ -117,8 +89,8 @@ public class PassengerIntegrationTest {
                 .params(Map.of(
                         PAGE_PARAM_NAME, VALID_PAGE,
                         SIZE_PARAM_NAME, VALID_SIZE,
-                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY
-                ))
+                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY)
+                )
                 .when()
                 .get(DEFAULT_PATH)
                 .then()
@@ -141,8 +113,8 @@ public class PassengerIntegrationTest {
                 .params(Map.of(
                         PAGE_PARAM_NAME, INVALID_PAGE,
                         SIZE_PARAM_NAME, VALID_SIZE,
-                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY
-                ))
+                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY)
+                )
                 .when()
                 .get(DEFAULT_PATH)
                 .then()
@@ -232,7 +204,6 @@ public class PassengerIntegrationTest {
     @Test
     void addPassenger_shouldReturnConflictResponse_whenDataNotUnique() {
         PassengerRequest createRequest = getPassengerRequest();
-
         ExceptionResponse expected = ExceptionResponse.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(PASSENGER_ALREADY_EXISTS_MESSAGE)
@@ -340,9 +311,7 @@ public class PassengerIntegrationTest {
 
     @Test
     void updateById_shouldReturnPassengerResponse_whenDataIsValidAndUnique() {
-
         PassengerRequest updateRequest = getUniquePassengerRequest();
-
         PassengerResponse expected = PassengerResponse.builder()
                 .id(DEFAULT_ID)
                 .name(DEFAULT_NAME)

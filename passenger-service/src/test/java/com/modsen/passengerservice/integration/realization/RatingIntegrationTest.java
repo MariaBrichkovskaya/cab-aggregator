@@ -1,24 +1,18 @@
-package com.modsen.passengerservice.integration;
+package com.modsen.passengerservice.integration.realization;
 
 import com.modsen.passengerservice.dto.request.*;
 import com.modsen.passengerservice.dto.response.*;
+import com.modsen.passengerservice.integration.*;
 import com.modsen.passengerservice.repository.*;
 import io.restassured.http.ContentType;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.List;
 
@@ -32,48 +26,23 @@ import static com.modsen.passengerservice.util.RatingTestUtils.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@RequiredArgsConstructor
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(scripts = {"classpath:sql/passenger/delete-data.sql",
         "classpath:sql/passenger/insert-data.sql",
         "classpath:sql/rating/delete-data.sql",
         "classpath:sql/rating/insert-data.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @AutoConfigureWireMock(port = 9002)
-public class RatingIntegrationTest {
-    @Autowired
-    private RatingRepository ratingRepository;
-    @Autowired
-    private PassengerRepository passengerRepository;
-    @Autowired
-    private ModelMapper modelMapper;
+public class RatingIntegrationTest extends IntegrationTestStructure {
+
+    private final RatingRepository ratingRepository;
+
+    private final PassengerRepository passengerRepository;
+
+    private final ModelMapper modelMapper;
     @LocalServerPort
     private int port;
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
 
-    @BeforeAll
-    static void beforeAll() {
-        postgres.start();
-    }
-
-    @BeforeEach
-    public void setUp() {
-        passengerRepository.save(getDefaultPassenger());
-    }
-
-
-    @AfterAll
-    static void afterAll() {
-        postgres.stop();
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("postgresql.driver", postgres::getDriverClassName);
-    }
 
     @Test
     void getAverageRating_shouldReturnNotFoundResponse_whenPassengerNotExist() {
@@ -94,7 +63,10 @@ public class RatingIntegrationTest {
 
     @Test
     void getAverageRating_shouldReturnAveragePassengerRatingResponse_whenPassengerExists() {
-        AveragePassengerRatingResponse expected = AveragePassengerRatingResponse.builder().passengerId(DEFAULT_ID).averageRating(DEFAULT_RATING).build();
+        AveragePassengerRatingResponse expected = AveragePassengerRatingResponse.builder()
+                .passengerId(DEFAULT_ID)
+                .averageRating(DEFAULT_RATING)
+                .build();
 
         var actual = given()
                 .port(port)
@@ -129,7 +101,6 @@ public class RatingIntegrationTest {
 
     @Test
     void ratePassenger_shouldReturnRatingResponse_whenDataValid() {
-
         PassengerRatingRequest request = getDefaultPassengerRatingRequest();
         DriverResponse driverResponse = getDefaultDriverResponse();
         stubFor(get(urlPathMatching(DEFAULT_DRIVER_PATH + DEFAULT_ID))
@@ -138,7 +109,6 @@ public class RatingIntegrationTest {
                         .withHeader("content-type", "application/json")
                         .withBody(fromObjectToString(driverResponse)))
         );
-
         PassengerRatingResponse expected = getDefaultPassengerRatingResponse();
         expected.setId(NEW_ID);
         expected.setDriverResponse(driverResponse);
@@ -160,7 +130,6 @@ public class RatingIntegrationTest {
 
     @Test
     void getRatingsById_shouldReturnPassengerRatingResponse() {
-
         List<PassengerRatingResponse> expected = getAverageRating();
 
         var actual = given()
@@ -197,18 +166,20 @@ public class RatingIntegrationTest {
     }
 
     private List<PassengerRatingResponse> getAverageRating() {
-        List<PassengerRatingResponse> expected = ratingRepository.getRatingsByPassengerId(DEFAULT_ID).stream().map(rating -> {
-            PassengerRatingResponse response = modelMapper.map(rating, PassengerRatingResponse.class);
-            response.setDriverResponse(getDefaultDriverResponse());
-            return response;
-        }).toList();
+        List<PassengerRatingResponse> expected = ratingRepository.getRatingsByPassengerId(DEFAULT_ID).stream()
+                .map(rating -> {
+                    PassengerRatingResponse response = modelMapper.map(rating, PassengerRatingResponse.class);
+                    response.setDriverResponse(getDefaultDriverResponse());
+                    return response;
+                }).toList();
         DriverResponse driverResponse = getDefaultDriverResponse();
         for (int i = 1; i <= expected.size(); i++) {
             stubFor(get(urlPathMatching(DEFAULT_DRIVER_PATH + i))
                     .willReturn(aResponse()
                             .withStatus(HttpStatus.OK.value())
                             .withHeader("content-type", "application/json")
-                            .withBody(fromObjectToString(driverResponse)))
+                            .withBody(fromObjectToString(driverResponse))
+                    )
             );
         }
         return expected;
