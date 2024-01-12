@@ -3,6 +3,7 @@ package com.modsen.rideservice.config.kafka;
 import com.modsen.rideservice.dto.request.DriverForRideRequest;
 import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DriverConsumerConfig {
     private final KafkaProperties kafkaProperties;
-    private static final String DRIVER_MESSAGE = "driverMessage:";
+    @Value("${kafka.message.driver}")
+    private String DRIVER_MESSAGE ;
 
     @Bean
     public ConsumerFactory<String, DriverForRideRequest> consumerFactory() {

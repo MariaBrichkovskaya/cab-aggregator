@@ -13,6 +13,5 @@ import lombok.experimental.FieldDefaults;
 public class CustomerChargeRequest {
     long amount;
     String currency;
-
     long passengerId;
 }

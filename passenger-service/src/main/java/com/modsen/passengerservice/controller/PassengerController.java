@@ -1,5 +1,6 @@
 package com.modsen.passengerservice.controller;
 
+
 import com.modsen.passengerservice.dto.request.PassengerRequest;
 import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
@@ -37,6 +38,7 @@ public class PassengerController {
     }
 
     @PostMapping
+
     @ResponseStatus(HttpStatus.CREATED)
     public PassengerResponse createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
         return passengerService.add(passengerRequest);

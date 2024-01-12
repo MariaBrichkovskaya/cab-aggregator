@@ -12,13 +12,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class RideConsumer {
     private final DriverService driverService;
-    private final DriverProducer driverProducer;
+
 
     @KafkaListener(topics = "${topic.name.ride}", groupId = "${spring.kafka.consumer.group-id.ride}")
     public void consumeMessage(RideRequest message) {
         log.info("message consumed {}", message);
-        driverProducer.sendMessage(driverService.findDriverForRide(message));
-
+        driverService.findDriverForRide(message);
     }
 
 }

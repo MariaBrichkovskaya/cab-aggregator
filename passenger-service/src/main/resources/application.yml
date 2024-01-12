@@ -10,7 +10,7 @@ spring:
       driver: org.postgresql.Driver
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/v.1.0/db.changelog-v.1.0.xml
+    change-log: db/changelog/db.changelog-master.xml
   jpa:
     properties:
       hibernate:
@@ -21,9 +21,10 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
-  cloud:
-    openfeign:
-      client:
-        config:
-          driver:
-            url: http://localhost:9002/api/v1/drivers
+feign:
+  client:
+    config:
+      driver:
+        name: driver
+        url: http://localhost:9002
+        path: /api/v1/drivers
