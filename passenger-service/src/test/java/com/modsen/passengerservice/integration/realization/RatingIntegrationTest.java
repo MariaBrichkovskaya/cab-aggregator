@@ -115,7 +115,7 @@ public class RatingIntegrationTest extends IntegrationTestStructure {
                         .withBody(fromObjectToString(driverResponse)))
         );
         PassengerRatingResponse expected = getDefaultPassengerRatingResponse();
-        expected.setId(NEW_ID);
+        expected.setId(DEFAULT_ID);
         expected.setDriverResponse(driverResponse);
 
         var actual = given()
