@@ -4,24 +4,31 @@ import com.modsen.passengerservice.dto.request.*;
 import com.modsen.passengerservice.dto.response.*;
 import com.modsen.passengerservice.entity.*;
 import lombok.experimental.UtilityClass;
+import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import static com.modsen.passengerservice.util.Messages.*;
 
 @UtilityClass
 public class TestUtils {
     public final long DEFAULT_ID = 1L;
-    public final long NEW_ID = 2L;
+    public final long NEW_ID = 4L;
     public final String DEFAULT_NAME = "Name";
     public final String DEFAULT_SURNAME = "Surname";
-    public final String DEFAULT_EMAIL = "123@example.com";
+    public final String DEFAULT_EMAIL = "maria@example.com";
     public final String DEFAULT_PHONE = "80291234567";
+    public final String INVALID_NAME = null;
+    public final String INVALID_SURNAME = null;
+    public final String INVALID_EMAIL = "maria";
+    public final String INVALID_PHONE = null;
     public final double DEFAULT_RATING = 5.0;
-    public final String UNIQUE_EMAIL = "12356@example.com";
-    public final String UNIQUE_PHONE = "80291237567";
+    public final String UNIQUE_EMAIL = "123@example.com";
+    public final String UNIQUE_PHONE = "80299999999";
     public final Integer DEFAULT_SCORE = 4;
     public final double DEFAULT_AVERAGE_RATING = 4.0;
     public final int INVALID_PAGE = -1;
@@ -36,7 +43,25 @@ public class TestUtils {
     public final String PAGE_PARAM_NAME = "page";
     public final String SIZE_PARAM_NAME = "size";
     public final String ORDER_BY_PARAM_NAME = "order_by";
-    public final String FIND_ALL_PATH = "/api/v1/passengers";
+    public final String DEFAULT_PATH = "/api/v1/passengers";
+    private static final ResourceBundle validationMessages = ResourceBundle.getBundle("CustomValidationMessages");
+
+    public ValidationExceptionResponse getValidationExceptionResponse() {
+        String nameMessage = validationMessages.getString("name.not.empty.message");
+        String surnameMessage = validationMessages.getString("surname.not.empty.message");
+        String emailMessage = validationMessages.getString("invalid.email.message");
+        String phoneMessage = validationMessages.getString("phone.not.empty.message");
+        return ValidationExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(VALIDATION_FAILED_MESSAGE)
+                .errors(Map.of(
+                        "name", nameMessage,
+                        "surname", surnameMessage,
+                        "email", emailMessage,
+                        "phone", phoneMessage
+                ))
+                .build();
+    }
 
     public Passenger getDefaultPassenger() {
         return Passenger.builder()
@@ -89,6 +114,15 @@ public class TestUtils {
                 .surname(DEFAULT_SURNAME)
                 .email(DEFAULT_EMAIL)
                 .phone(DEFAULT_PHONE)
+                .build();
+    }
+
+    public PassengerRequest getNewPassengerRequest() {
+        return PassengerRequest.builder()
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(UNIQUE_EMAIL)
+                .phone(UNIQUE_PHONE)
                 .build();
     }
 

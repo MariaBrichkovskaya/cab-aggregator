@@ -1,9 +1,11 @@
 package com.modsen.passengerservice.integration;
 
+import com.modsen.passengerservice.dto.request.*;
 import com.modsen.passengerservice.dto.response.*;
 import com.modsen.passengerservice.entity.*;
 import com.modsen.passengerservice.mapper.*;
 import com.modsen.passengerservice.repository.*;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,8 +32,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(
         scripts = {
-                "classpath:sql/delete-data.sql"
-                , "classpath:sql/insert-data.sql"
+                "classpath:sql/delete-data.sql",
+                "classpath:sql/insert-data.sql"
         }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
 
@@ -118,7 +120,7 @@ public class PassengerIntegrationTest {
                         ORDER_BY_PARAM_NAME, VALID_ORDER_BY
                 ))
                 .when()
-                .get(FIND_ALL_PATH)
+                .get(DEFAULT_PATH)
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract().body().jsonPath().getList("passengers", PassengerResponse.class);
@@ -142,7 +144,7 @@ public class PassengerIntegrationTest {
                         ORDER_BY_PARAM_NAME, VALID_ORDER_BY
                 ))
                 .when()
-                .get(FIND_ALL_PATH)
+                .get(DEFAULT_PATH)
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .extract()
@@ -166,7 +168,7 @@ public class PassengerIntegrationTest {
                         ORDER_BY_PARAM_NAME, VALID_ORDER_BY
                 ))
                 .when()
-                .get(FIND_ALL_PATH)
+                .get(DEFAULT_PATH)
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .extract()
@@ -191,11 +193,85 @@ public class PassengerIntegrationTest {
                         ORDER_BY_PARAM_NAME, INVALID_ORDER_BY
                 ))
                 .when()
-                .get(FIND_ALL_PATH)
+                .get(DEFAULT_PATH)
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .extract()
                 .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void addPassenger_shouldReturnPassengerResponse_whenDataIsValidAndUnique() {
+        PassengerRequest createRequest = getNewPassengerRequest();
+
+        PassengerResponse expected = PassengerResponse.builder()
+                .id(NEW_ID)
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(UNIQUE_EMAIL)
+                .phone(UNIQUE_PHONE)
+                .rating(0.0)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRequest)
+                .when()
+                .post(DEFAULT_PATH)
+                .then()
+                .statusCode(HttpStatus.CREATED.value())
+                .extract()
+                .as(PassengerResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void addPassenger_shouldReturnConflictResponse_whenDataNotUnique() {
+        PassengerRequest createRequest = getPassengerRequest();
+
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(PASSENGER_ALREADY_EXISTS_MESSAGE)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRequest)
+                .when()
+                .post(DEFAULT_PATH)
+                .then()
+                .statusCode(HttpStatus.CONFLICT.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void addPassenger_shouldReturnBadRequestResponse_whenDataNotValid() {
+        PassengerRequest invalidRequest = PassengerRequest.builder()
+                .name(INVALID_NAME)
+                .surname(INVALID_SURNAME)
+                .email(INVALID_EMAIL)
+                .phone(INVALID_PHONE)
+                .build();
+        ValidationExceptionResponse expected = getValidationExceptionResponse();
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(invalidRequest)
+                .when()
+                .post(DEFAULT_PATH)
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract()
+                .as(ValidationExceptionResponse.class);
 
         assertThat(actual).isEqualTo(expected);
     }

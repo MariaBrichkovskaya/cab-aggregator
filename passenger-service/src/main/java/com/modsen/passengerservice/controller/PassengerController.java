@@ -1,16 +1,23 @@
 package com.modsen.passengerservice.controller;
 
-import com.modsen.passengerservice.dto.request.PassengerRequest;
-import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
-import com.modsen.passengerservice.dto.response.MessageResponse;
-import com.modsen.passengerservice.dto.response.PassengerResponse;
-import com.modsen.passengerservice.dto.response.PassengersListResponse;
-import com.modsen.passengerservice.service.PassengerService;
+import com.modsen.passengerservice.dto.request.*;
+import com.modsen.passengerservice.dto.response.*;
+import com.modsen.passengerservice.service.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,15 +35,15 @@ public class PassengerController {
     }
 
     @PostMapping
-    public ResponseEntity<PassengerResponse> createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
-        PassengerResponse response=passengerService.add(passengerRequest);
-        return ResponseEntity.ok(response);
+    @ResponseStatus(HttpStatus.CREATED)
+    public PassengerResponse createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
+        return passengerService.add(passengerRequest);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<MessageResponse> deletePassenger(@PathVariable Long id) {
         passengerService.delete(id);
-        String message="Deleting passenger with id " + id;
+        String message = "Deleting passenger with id " + id;
         return ResponseEntity.ok(MessageResponse.builder().message(message).build());
     }
 
@@ -48,7 +55,7 @@ public class PassengerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PassengerResponse> updatePassenger(@PathVariable Long id, @RequestBody @Valid PassengerRequest passengerRequest) {
-        PassengerResponse response=passengerService.update(passengerRequest, id);
+        PassengerResponse response = passengerService.update(passengerRequest, id);
         return ResponseEntity.ok(response);
     }
 
