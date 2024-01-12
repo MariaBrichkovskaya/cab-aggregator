@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
@@ -51,7 +50,7 @@ public class DriverHandler {
     @ExceptionHandler(value = {AlreadyExistsException.class})
     public ResponseEntity<Object> handleNotFoundException(AlreadyExistsException alreadyExistsException) {
         ExceptionResponse response =
-                new ExceptionResponse(HttpStatus.BAD_REQUEST,
+                new ExceptionResponse(HttpStatus.CONFLICT,
                         alreadyExistsException.getMessage()
                 );
         return new ResponseEntity<>(response, response.getStatus());

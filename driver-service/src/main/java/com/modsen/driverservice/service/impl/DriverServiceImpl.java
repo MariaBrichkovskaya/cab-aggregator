@@ -5,18 +5,18 @@ import com.modsen.driverservice.dto.request.DriverRequest;
 import com.modsen.driverservice.dto.request.RideRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
 import com.modsen.driverservice.dto.response.DriversListResponse;
+import com.modsen.driverservice.dto.response.MessageResponse;
 import com.modsen.driverservice.entity.Driver;
 import com.modsen.driverservice.enums.Status;
 import com.modsen.driverservice.exception.AlreadyExistsException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.kafka.DriverProducer;
+import com.modsen.driverservice.mapper.DriverMapper;
 import com.modsen.driverservice.repository.DriverRepository;
 import com.modsen.driverservice.service.DriverService;
-import com.modsen.driverservice.service.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,21 +36,11 @@ import static com.modsen.driverservice.util.Messages.*;
 @Slf4j
 @Transactional
 public class DriverServiceImpl implements DriverService {
-    private final ModelMapper modelMapper;
+    private final DriverMapper driverMapper;
     private final DriverRepository driverRepository;
-    private final RatingService ratingService;
+    ;
     private final DriverProducer driverProducer;
 
-    private DriverResponse fromEntityToDriverResponse(Driver driver) {
-        DriverResponse response = modelMapper.map(driver, DriverResponse.class);
-        response.setRating(ratingService.getAverageDriverRating(response.getId()).getAverageRating());
-
-        return response;
-    }
-
-    private Driver toEntity(DriverRequest request) {
-        return modelMapper.map(request, Driver.class);
-    }
 
     @Override
     public DriverResponse add(DriverRequest request) {
@@ -60,7 +50,7 @@ public class DriverServiceImpl implements DriverService {
         }
         log.info("Create driver with surname {}", request.getSurname());
 
-        return fromEntityToDriverResponse(driverRepository.save(toEntity(request)));
+        return driverMapper.toDriverResponse((driverRepository.save(driverMapper.toEntity(request))));
     }
 
 
@@ -71,7 +61,7 @@ public class DriverServiceImpl implements DriverService {
                 .orElseThrow(() -> new NotFoundException(id));
         log.info("Retrieving driver by id {}", id);
 
-        return fromEntityToDriverResponse(driver);
+        return driverMapper.toDriverResponse(driver);
     }
 
     @Override
@@ -84,7 +74,7 @@ public class DriverServiceImpl implements DriverService {
 
     private DriversListResponse getDriversListResponse(Page<Driver> driversPage) {
         List<DriverResponse> drivers = driversPage.getContent().stream()
-                .map(this::fromEntityToDriverResponse)
+                .map(driverMapper::toDriverResponse)
                 .toList();
 
         return DriversListResponse.builder()
@@ -122,11 +112,11 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public DriverResponse update(DriverRequest request, Long id) {
         checkDriverUnique(request, id);
-        Driver updatedDriver = toEntity(request);
+        Driver updatedDriver = driverMapper.toEntity(request);
         updatedDriver.setId(id);
         log.info("Update driver with id {}", id);
 
-        return fromEntityToDriverResponse(driverRepository.save(updatedDriver));
+        return driverMapper.toDriverResponse(driverRepository.save(updatedDriver));
     }
 
     private void checkDriverUnique(DriverRequest request, Long id) {
@@ -142,14 +132,16 @@ public class DriverServiceImpl implements DriverService {
 
 
     @Override
-    public void delete(Long id) {
+    public MessageResponse delete(Long id) {
         if (!driverRepository.existsById(id)) {
             log.error("Driver with id {} was not found", id);
             throw new NotFoundException(id);
         }
         driverRepository.deleteById(id);
         log.info("Delete driver with id {}", id);
-
+        return MessageResponse.builder()
+                .message(String.format(DELETE_DRIVER_MESSAGE, id))
+                .build();
     }
 
     @Override

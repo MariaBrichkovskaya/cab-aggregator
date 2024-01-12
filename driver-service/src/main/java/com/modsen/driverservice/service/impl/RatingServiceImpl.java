@@ -67,7 +67,7 @@ public class RatingServiceImpl implements RatingService {
                 .stream()
                 .mapToDouble(Rating::getScore)
                 .average()
-                .orElse(0.0);
+                .orElse(5.0);
         log.info("Retrieving average for driver {}", driverId);
         return AverageDriverRatingResponse.builder()
                 .averageRating(Math.round(averageRating * 100.0) / 100.0)

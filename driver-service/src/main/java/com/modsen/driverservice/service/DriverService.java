@@ -1,12 +1,10 @@
 package com.modsen.driverservice.service;
 
-import com.modsen.driverservice.dto.request.DriverForRideRequest;
 import com.modsen.driverservice.dto.request.DriverRequest;
 import com.modsen.driverservice.dto.request.RideRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
 import com.modsen.driverservice.dto.response.DriversListResponse;
-
-import java.util.List;
+import com.modsen.driverservice.dto.response.MessageResponse;
 
 public interface DriverService {
     DriverResponse add(DriverRequest request);
@@ -17,7 +15,7 @@ public interface DriverService {
 
     DriverResponse update(DriverRequest request, Long id);
 
-    void delete(Long id);
+    MessageResponse delete(Long id);
 
     void changeStatus(Long id);
 

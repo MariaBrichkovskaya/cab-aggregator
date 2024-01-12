@@ -21,7 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.modsen.driverservice.util.TestUtils.*;
+import static com.modsen.driverservice.util.DriverTestUtils.*;
+import static com.modsen.driverservice.util.RatingTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;

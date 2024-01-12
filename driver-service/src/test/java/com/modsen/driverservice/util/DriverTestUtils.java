@@ -1,21 +1,28 @@
 package com.modsen.driverservice.util;
 
-import com.modsen.driverservice.dto.request.DriverRatingRequest;
 import com.modsen.driverservice.dto.request.DriverRequest;
 import com.modsen.driverservice.dto.request.RideRequest;
-import com.modsen.driverservice.dto.response.AverageDriverRatingResponse;
-import com.modsen.driverservice.dto.response.DriverRatingResponse;
 import com.modsen.driverservice.dto.response.DriverResponse;
 import com.modsen.driverservice.dto.response.PassengerResponse;
+import com.modsen.driverservice.dto.response.ValidationExceptionResponse;
 import com.modsen.driverservice.entity.Driver;
-import com.modsen.driverservice.entity.Rating;
 import com.modsen.driverservice.enums.Status;
 import lombok.experimental.UtilityClass;
+import org.springframework.http.HttpStatus;
+
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import static com.modsen.driverservice.util.Messages.*;
 
 @UtilityClass
-public class TestUtils {
+public class DriverTestUtils {
     public final long DEFAULT_ID = 1L;
-    public final long NEW_ID = 2L;
+    public final long NEW_ID = 4L;
+    public final long NOT_FOUND_ID = 100L;
     public final String DEFAULT_NAME = "Name";
     public final String DEFAULT_SURNAME = "Surname";
     public final String DEFAULT_PHONE = "80291234567";
@@ -30,6 +37,31 @@ public class TestUtils {
     public final int VALID_SIZE = 10;
     public final String INVALID_ORDER_BY = "qwerty";
     public final String VALID_ORDER_BY = "id";
+    public final String ID_PARAM_NAME = "id";
+    public final String DEFAULT_ID_PATH = "/api/v1/drivers/{id}";
+    public final String PAGE_PARAM_NAME = "page";
+    public final String SIZE_PARAM_NAME = "size";
+    public final String ORDER_BY_PARAM_NAME = "order_by";
+    public final String DEFAULT_PATH = "/api/v1/drivers";
+    public final String INVALID_NAME = null;
+    public final String INVALID_SURNAME = null;
+    public final String INVALID_PHONE = null;
+    private static final ResourceBundle validationMessages = ResourceBundle.getBundle("CustomValidationMessages");
+
+    public ValidationExceptionResponse getDriverValidationExceptionResponse() {
+        String nameMessage = validationMessages.getString("name.not.empty.message");
+        String surnameMessage = validationMessages.getString("surname.not.empty.message");
+        String phoneMessage = validationMessages.getString("phone.not.empty.message");
+        return ValidationExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(VALIDATION_FAILED_MESSAGE)
+                .errors(Map.of(
+                        "name", nameMessage,
+                        "surname", surnameMessage,
+                        "phone", phoneMessage
+                ))
+                .build();
+    }
 
     public Driver getDefaultDriver() {
         return Driver.builder()
@@ -61,12 +93,6 @@ public class TestUtils {
                 .build();
     }
 
-    public AverageDriverRatingResponse getDefaultRating() {
-        return AverageDriverRatingResponse.builder()
-                .driverId(DEFAULT_ID)
-                .averageRating(DEFAULT_RATING)
-                .build();
-    }
 
     public Driver getNotSavedDriver() {
         return Driver.builder()
@@ -84,6 +110,14 @@ public class TestUtils {
                 .build();
     }
 
+    public DriverRequest getUniqueRequest() {
+        return DriverRequest.builder()
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .phone(UNIQUE_PHONE)
+                .build();
+    }
+
     public Driver getUpdateDriver() {
         return Driver.builder()
                 .name(DEFAULT_NAME)
@@ -92,45 +126,6 @@ public class TestUtils {
                 .build();
     }
 
-    public Rating getDefaultDriverRating() {
-        return Rating.builder()
-                .driver(getDefaultDriver())
-                .score(DEFAULT_SCORE)
-                .passengerId(DEFAULT_ID)
-                .build();
-    }
-
-    public Rating getSavedDriverRating() {
-        return Rating.builder()
-                .driver(getDefaultDriver())
-                .id(DEFAULT_ID)
-                .score(DEFAULT_SCORE)
-                .passengerId(DEFAULT_ID)
-                .build();
-    }
-
-    public Rating getNewSavedDriverRating() {
-        return Rating.builder()
-                .driver(getDefaultDriver())
-                .id(NEW_ID)
-                .score(DEFAULT_SCORE)
-                .passengerId(DEFAULT_ID)
-                .build();
-    }
-
-    public DriverRatingRequest getDefaultDriverRatingRequest() {
-        return DriverRatingRequest.builder()
-                .score(DEFAULT_SCORE)
-                .passengerId(DEFAULT_ID)
-                .build();
-    }
-
-    public DriverRatingResponse getDefaultDriverRatingResponse() {
-        return DriverRatingResponse.builder()
-                .driverId(DEFAULT_ID)
-                .score(DEFAULT_SCORE)
-                .build();
-    }
 
     public PassengerResponse getDefaultPassengerResponse() {
         return PassengerResponse.builder()
@@ -147,6 +142,14 @@ public class TestUtils {
         return RideRequest.builder()
                 .id(DEFAULT_ID)
                 .build();
+    }
+
+    public String getInvalidSortingMessage() {
+        List<String> fieldNames = Arrays.stream(DriverResponse.class.getDeclaredFields())
+                .map(Field::getName)
+                .toList();
+
+        return String.format(INVALID_SORTING_MESSAGE, fieldNames);
     }
 
 }

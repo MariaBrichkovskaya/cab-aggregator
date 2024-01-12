@@ -15,10 +15,12 @@
     <description>driver-service</description>
     <properties>
         <java.version>17</java.version>
-        <openfeign.version>4.1.0</openfeign.version>
+        <cloud.version>4.1.0</cloud.version>
         <mapper.version>3.1.1</mapper.version>
         <swagger.version>2.2.0</swagger.version>
         <kafka.version>3.1.1</kafka.version>
+        <rest-assured.version>5.4.0</rest-assured.version>
+        <test-conteiners.version>1.19.3</test-conteiners.version>
     </properties>
     <dependencies>
         <dependency>
@@ -65,9 +67,32 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>${openfeign.version}</version>
+            <version>${cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${test-conteiners.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${test-conteiners.version}</version>
+            <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-wiremock</artifactId>
+            <version>${cloud.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
