@@ -1,12 +1,16 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.client.*;
-import com.modsen.passengerservice.dto.request.*;
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.entity.*;
-import com.modsen.passengerservice.exception.*;
-import com.modsen.passengerservice.repository.*;
-import com.modsen.passengerservice.service.*;
+import com.modsen.passengerservice.client.DriverFeignClient;
+import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
+import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.DriverResponse;
+import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
+import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
+import com.modsen.passengerservice.entity.Rating;
+import com.modsen.passengerservice.exception.NotFoundException;
+import com.modsen.passengerservice.repository.PassengerRepository;
+import com.modsen.passengerservice.repository.RatingRepository;
+import com.modsen.passengerservice.service.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

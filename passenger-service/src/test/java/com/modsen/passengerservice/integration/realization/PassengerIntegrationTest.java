@@ -1,11 +1,14 @@
 package com.modsen.passengerservice.integration.realization;
 
-import com.modsen.passengerservice.dto.request.*;
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.entity.*;
-import com.modsen.passengerservice.integration.*;
-import com.modsen.passengerservice.mapper.*;
-import com.modsen.passengerservice.repository.*;
+import com.modsen.passengerservice.dto.request.PassengerRequest;
+import com.modsen.passengerservice.dto.response.ExceptionResponse;
+import com.modsen.passengerservice.dto.response.MessageResponse;
+import com.modsen.passengerservice.dto.response.PassengerResponse;
+import com.modsen.passengerservice.dto.response.ValidationExceptionResponse;
+import com.modsen.passengerservice.entity.Passenger;
+import com.modsen.passengerservice.integration.IntegrationTestStructure;
+import com.modsen.passengerservice.mapper.PassengerMapper;
+import com.modsen.passengerservice.repository.PassengerRepository;
 import io.restassured.http.ContentType;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;

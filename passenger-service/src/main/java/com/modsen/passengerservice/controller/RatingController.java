@@ -2,14 +2,18 @@ package com.modsen.passengerservice.controller;
 
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
-import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
 import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
 import com.modsen.passengerservice.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/passengers/{id}/rating")
@@ -19,8 +23,8 @@ public class RatingController {
 
     @PostMapping
     public ResponseEntity<PassengerRatingResponse> ratePassenger(@Valid @RequestBody PassengerRatingRequest passengerRatingRequest,
-                                                         @PathVariable("id") long passengerId) {
-        PassengerRatingResponse response=ratingService.ratePassenger(passengerRatingRequest, passengerId);
+                                                                 @PathVariable("id") long passengerId) {
+        PassengerRatingResponse response = ratingService.ratePassenger(passengerRatingRequest, passengerId);
         return ResponseEntity.ok(response);
     }
 
