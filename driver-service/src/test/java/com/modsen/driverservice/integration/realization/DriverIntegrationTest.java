@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 import java.util.Map;
@@ -31,12 +30,6 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 
-@Sql(
-        scripts = {
-                "classpath:sql/driver/delete-data.sql",
-                "classpath:sql/driver/insert-data.sql"
-        }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DriverIntegrationTest extends IntegrationTestStructure {
     private final DriverRepository driverRepository;

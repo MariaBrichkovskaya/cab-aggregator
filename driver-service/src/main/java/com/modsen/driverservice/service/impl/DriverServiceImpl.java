@@ -38,7 +38,6 @@ import static com.modsen.driverservice.util.Messages.*;
 public class DriverServiceImpl implements DriverService {
     private final DriverMapper driverMapper;
     private final DriverRepository driverRepository;
-    ;
     private final DriverProducer driverProducer;
 
 

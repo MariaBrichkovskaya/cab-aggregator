@@ -1,7 +1,13 @@
 package com.modsen.rideservice.dto.response;
 
 import com.modsen.rideservice.enums.RideStatus;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
@@ -11,6 +17,8 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class RideResponse {
     Long id;
     String pickUpAddress;

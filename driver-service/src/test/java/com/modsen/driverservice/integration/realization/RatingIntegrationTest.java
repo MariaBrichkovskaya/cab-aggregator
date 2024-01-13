@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
@@ -33,11 +32,6 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Sql(scripts = {"classpath:sql/driver/delete-data.sql",
-        "classpath:sql/driver/insert-data.sql",
-        "classpath:sql/rating/delete-data.sql",
-        "classpath:sql/rating/insert-data.sql"},
-        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @AutoConfigureWireMock(port = 9001)
 public class RatingIntegrationTest extends IntegrationTestStructure {
 

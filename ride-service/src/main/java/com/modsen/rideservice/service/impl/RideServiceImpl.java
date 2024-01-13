@@ -3,7 +3,14 @@ package com.modsen.rideservice.service.impl;
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
-import com.modsen.rideservice.dto.request.*;
+import com.modsen.rideservice.dto.request.CreateRideRequest;
+import com.modsen.rideservice.dto.request.CustomerChargeRequest;
+import com.modsen.rideservice.dto.request.CustomerRequest;
+import com.modsen.rideservice.dto.request.DriverForRideRequest;
+import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
+import com.modsen.rideservice.dto.request.RideRequest;
+import com.modsen.rideservice.dto.request.StatusRequest;
+import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.DriverResponse;
 import com.modsen.rideservice.dto.response.PassengerResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
@@ -11,7 +18,11 @@ import com.modsen.rideservice.dto.response.RidesListResponse;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
-import com.modsen.rideservice.exception.*;
+import com.modsen.rideservice.exception.AlreadyFinishedRideException;
+import com.modsen.rideservice.exception.BalanceException;
+import com.modsen.rideservice.exception.DriverIsEmptyException;
+import com.modsen.rideservice.exception.InvalidRequestException;
+import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.kafka.RideProducer;
 import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
@@ -31,7 +42,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static com.modsen.rideservice.util.Messages.*;
+import static com.modsen.rideservice.util.Messages.CURRENCY;
+import static com.modsen.rideservice.util.Messages.EMPTY_DRIVER_MESSAGE;
+import static com.modsen.rideservice.util.Messages.INVALID_PAGE_MESSAGE;
+import static com.modsen.rideservice.util.Messages.INVALID_SORTING_MESSAGE;
 
 
 @Service
@@ -51,7 +65,7 @@ public class RideServiceImpl implements RideService {
     @Override
     public RideResponse add(CreateRideRequest request) {
         Ride ride = toEntity(request);
-        PassengerResponse passengerResponse = validatePassenger(ride.getPassengerId());
+        validatePassenger(ride.getPassengerId());
         setAdditionalFields(ride);
         checkBalance(ride);
         Ride rideToSave = rideRepository.save(ride);
@@ -60,7 +74,7 @@ public class RideServiceImpl implements RideService {
                 .build()
         );
         log.info("Created ride");
-        return createRideResponse(rideToSave, passengerResponse);
+        return createRideResponse(rideToSave);
     }
 
 
@@ -225,14 +239,14 @@ public class RideServiceImpl implements RideService {
         return modelMapper.map(request, Ride.class);
     }
 
-    private RideResponse createRideResponse(Ride rideToSave, PassengerResponse passengerResponse) {
+    private RideResponse createRideResponse(Ride rideToSave) {
 
         return fromEntityToRideResponse(rideToSave);
     }
 
-    private PassengerResponse validatePassenger(long passengerId) {
+    private void validatePassenger(long passengerId) {
         try {
-            return getPassengerById(passengerId);
+            getPassengerById(passengerId);
         } catch (NotFoundException exception) {
             throw new InvalidRequestException("Passenger does not exist");
         }
