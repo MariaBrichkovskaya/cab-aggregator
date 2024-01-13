@@ -290,12 +290,13 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
         assertThat(actual).isEqualTo(expected);
     }
 
-    /*@Test
-    void updateById_shouldReturnNotFoundResponse_whenPassengerNotExist() {
-        PassengerRequest updateRequest = getUniquePassengerRequest();
+
+    @Test
+    void updateById_shouldReturnNotFoundResponse_whenDriverNotExist() {
+        DriverRequest updateRequest = getUniqueRequest();
         ExceptionResponse expected = ExceptionResponse.builder()
                 .status(HttpStatus.NOT_FOUND)
-                .message(String.format(NOT_FOUND_WITH_ID_MESSAGE, NOT_FOUND_ID))
+                .message(String.format(NOT_FOUND_WITH_DRIVER_ID_MESSAGE, NOT_FOUND_ID))
                 .build();
 
         var actual = given()
@@ -314,15 +315,15 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
     }
 
     @Test
-    void updateById_shouldReturnPassengerResponse_whenDataIsValidAndUnique() {
-        PassengerRequest updateRequest = getUniquePassengerRequest();
-        PassengerResponse expected = PassengerResponse.builder()
+    void updateById_shouldReturnDriverResponse_whenDataIsValidAndUnique() {
+        DriverRequest updateRequest = getUniqueRequest();
+        DriverResponse expected = DriverResponse.builder()
                 .id(DEFAULT_ID)
                 .name(DEFAULT_NAME)
                 .surname(DEFAULT_SURNAME)
-                .email(UNIQUE_EMAIL)
                 .phone(UNIQUE_PHONE)
                 .rating(DEFAULT_RATING)
+                .status(Status.AVAILABLE)
                 .build();
 
         var actual = given()
@@ -335,17 +336,17 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
-                .as(PassengerResponse.class);
+                .as(DriverResponse.class);
 
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void updateById_shouldReturnConflictResponse_whenDataNotUnique() {
-        PassengerRequest updateRequest = getPassengerRequest();
+        DriverRequest updateRequest = getDriverRequest();
         ExceptionResponse expected = ExceptionResponse.builder()
                 .status(HttpStatus.CONFLICT)
-                .message(PASSENGER_ALREADY_EXISTS_MESSAGE)
+                .message(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, updateRequest.getPhone()))
                 .build();
 
         var actual = given()
@@ -361,6 +362,143 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
                 .as(ExceptionResponse.class);
 
         assertThat(actual).isEqualTo(expected);
-    }*/
+    }
+
+    @Test
+    void changeStatus_shouldReturnNotFoundResponse_whenDriverNotExist() {
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(String.format(NOT_FOUND_WITH_DRIVER_ID_MESSAGE, NOT_FOUND_ID))
+                .build();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, NOT_FOUND_ID)
+                .contentType(ContentType.JSON)
+                .when()
+                .put(CHANGE_STATUS_PATH)
+                .then()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void changeStatus_shouldReturnMessageResponse() {
+        MessageResponse expected = MessageResponse.builder()
+                .message(String.format(EDIT_DRIVER_STATUS_MESSAGE, DEFAULT_ID))
+                .build();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, DEFAULT_ID)
+                .contentType(ContentType.JSON)
+                .when()
+                .put(CHANGE_STATUS_PATH)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(MessageResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void findAvailable_whenValidParamsPassed() {
+        Page<Driver> driverPage = driverRepository.findByStatus(
+                Status.AVAILABLE, PageRequest.of(VALID_PAGE - 1, VALID_SIZE, Sort.by(VALID_ORDER_BY))
+        );
+        List<DriverResponse> expected = driverMapper.toDriverResponseList(driverPage);
+
+        var actual = given()
+                .port(port)
+                .params(Map.of(
+                        PAGE_PARAM_NAME, VALID_PAGE,
+                        SIZE_PARAM_NAME, VALID_SIZE,
+                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY)
+                )
+                .when()
+                .get(AVAILABLE_PATH)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract().body().jsonPath().getList("drivers", DriverResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void findAvailable_shouldReturnBadRequestResponse_whenInvalidPagePassed() {
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(INVALID_PAGE_MESSAGE)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .params(Map.of(
+                        PAGE_PARAM_NAME, INVALID_PAGE,
+                        SIZE_PARAM_NAME, VALID_SIZE,
+                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY)
+                )
+                .when()
+                .get(AVAILABLE_PATH)
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void findAvailable_shouldReturnBadRequestResponse_whenInvalidSizePassed() {
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(INVALID_PAGE_MESSAGE)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .params(Map.of(
+                        PAGE_PARAM_NAME, VALID_PAGE,
+                        SIZE_PARAM_NAME, INVALID_SIZE,
+                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY
+                ))
+                .when()
+                .get(AVAILABLE_PATH)
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void findAvailable_shouldReturnBadRequestResponse_whenInvalidOrderByParamPassed() {
+        String errorMessage = getInvalidSortingMessage();
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(errorMessage)
+                .build();
+
+        var actual = given()
+                .port(port)
+                .params(Map.of(
+                        PAGE_PARAM_NAME, VALID_PAGE,
+                        SIZE_PARAM_NAME, VALID_SIZE,
+                        ORDER_BY_PARAM_NAME, INVALID_ORDER_BY
+                ))
+                .when()
+                .get(AVAILABLE_PATH)
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
 
 }

@@ -17,7 +17,7 @@ public interface DriverService {
 
     MessageResponse delete(Long id);
 
-    void changeStatus(Long id);
+    MessageResponse changeStatus(Long id);
 
     DriversListResponse findAvailableDrivers(int page, int size, String sortingParam);
 

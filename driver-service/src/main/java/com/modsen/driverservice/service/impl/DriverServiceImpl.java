@@ -145,16 +145,22 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void changeStatus(Long id) {
+    public MessageResponse changeStatus(Long id) {
         Driver driver = driverRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id));
         if (driver.getStatus().equals(Status.AVAILABLE)) {
             driver.setStatus(Status.UNAVAILABLE);
         } else {
             driver.setStatus(Status.AVAILABLE);
+            driverProducer.sendMessage(DriverForRideRequest.builder()
+                    .driverId(driver.getId())
+                    .build()
+            );
         }
-
         driverRepository.save(driver);
+        return MessageResponse.builder()
+                .message(String.format(EDIT_DRIVER_STATUS_MESSAGE, id))
+                .build();
     }
 
 

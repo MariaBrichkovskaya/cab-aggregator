@@ -61,9 +61,8 @@ public class DriverController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<MessageResponse> changeStatus(@PathVariable Long id) {
-        driverService.changeStatus(id);
-        return ResponseEntity.ok(MessageResponse.builder().message("Status changed").build());
+    public MessageResponse changeStatus(@PathVariable Long id) {
+        return driverService.changeStatus(id);
     }
 
     @GetMapping("/available")

@@ -43,6 +43,8 @@ public class DriverTestUtils {
     public final String SIZE_PARAM_NAME = "size";
     public final String ORDER_BY_PARAM_NAME = "order_by";
     public final String DEFAULT_PATH = "/api/v1/drivers";
+    public final String CHANGE_STATUS_PATH = "/api/v1/drivers/{id}/status";
+    public final String AVAILABLE_PATH = "/api/v1/drivers/available";
     public final String INVALID_NAME = null;
     public final String INVALID_SURNAME = null;
     public final String INVALID_PHONE = null;
