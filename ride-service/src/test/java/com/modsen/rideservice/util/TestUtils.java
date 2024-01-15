@@ -1,5 +1,7 @@
 package com.modsen.rideservice.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.DriverForRideRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
@@ -11,12 +13,27 @@ import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
 import lombok.experimental.UtilityClass;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.modsen.rideservice.util.Messages.*;
 
 @UtilityClass
 public class TestUtils {
     public final long DEFAULT_ID = 1L;
     public final long NEW_ID = 2L;
+    public final long NOT_FOUND_ID = 1000L;
+    public final String ID_PARAM_NAME = "id";
+    public final String DEFAULT_ID_PATH = "api/v1/rides/{id}";
+    public final String STATUS_PATH = "api/v1/rides/{id}/status";
+    public final String PAGE_PARAM_NAME = "page";
+    public final String SIZE_PARAM_NAME = "size";
+    public final String ORDER_BY_PARAM_NAME = "order_by";
+    public final String DEFAULT_PATH = "/api/v1/rides";
+    public final String GET_BY_PASSENGER_ID_PATH = "/api/v1/rides/passenger/{passenger_id}";
+    public final String PASSENGER_PARAM_NAME = "passenger_id";
     public final RideStatus DEFAULT_STATUS = RideStatus.CREATED;
     public final double DEFAULT_PRICE = 5.0;
     public final String DEFAULT_DESTINATION_ADDRESS = "home";
@@ -161,5 +178,23 @@ public class TestUtils {
                 .rideId(DEFAULT_ID)
                 .driverId(DEFAULT_ID)
                 .build();
+    }
+
+    public static <T> String fromObjectToString(T object) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getInvalidSortingMessage() {
+        List<String> fieldNames = Arrays.stream(RideResponse.class.getDeclaredFields())
+                .map(Field::getName)
+                .toList();
+
+        return String.format(INVALID_SORTING_MESSAGE, fieldNames);
     }
 }

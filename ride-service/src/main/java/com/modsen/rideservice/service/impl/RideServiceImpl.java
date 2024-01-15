@@ -12,6 +12,7 @@ import com.modsen.rideservice.dto.request.RideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.DriverResponse;
+import com.modsen.rideservice.dto.response.MessageResponse;
 import com.modsen.rideservice.dto.response.PassengerResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
@@ -42,10 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static com.modsen.rideservice.util.Messages.CURRENCY;
-import static com.modsen.rideservice.util.Messages.EMPTY_DRIVER_MESSAGE;
-import static com.modsen.rideservice.util.Messages.INVALID_PAGE_MESSAGE;
-import static com.modsen.rideservice.util.Messages.INVALID_SORTING_MESSAGE;
+import static com.modsen.rideservice.util.Messages.*;
 
 
 @Service
@@ -129,13 +127,16 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public void delete(Long id) {
+    public MessageResponse delete(Long id) {
         if (!rideRepository.existsById(id)) {
             log.error("Ride with id {} was not found", id);
             throw new NotFoundException(id);
         }
         rideRepository.deleteById(id);
         log.info("Delete ride with id {}", id);
+        return MessageResponse.builder()
+                .message(String.format(DELETE_MESSAGE, id))
+                .build();
     }
 
     @Override
@@ -181,7 +182,7 @@ public class RideServiceImpl implements RideService {
             throw new DriverIsEmptyException(EMPTY_DRIVER_MESSAGE);
         }
         if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
-            throw new AlreadyFinishedRideException("Ride already finished");
+            throw new AlreadyFinishedRideException(ALREADY_FINISHED_MESSAGE);
         }
         if (RideStatus.FINISHED.toString().equals(statusRequest.getStatus())) {
             EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest.builder()
