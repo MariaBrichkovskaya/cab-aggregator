@@ -3,13 +3,24 @@ package com.modsen.rideservice.service.impl;
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
-import com.modsen.rideservice.dto.request.*;
+import com.modsen.rideservice.dto.request.CreateRideRequest;
+import com.modsen.rideservice.dto.request.CustomerChargeRequest;
+import com.modsen.rideservice.dto.request.CustomerRequest;
+import com.modsen.rideservice.dto.request.DriverForRideRequest;
+import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
+import com.modsen.rideservice.dto.request.RideRequest;
+import com.modsen.rideservice.dto.request.StatusRequest;
+import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
-import com.modsen.rideservice.exception.*;
+import com.modsen.rideservice.exception.AlreadyFinishedRideException;
+import com.modsen.rideservice.exception.BalanceException;
+import com.modsen.rideservice.exception.DriverIsEmptyException;
+import com.modsen.rideservice.exception.InvalidRequestException;
+import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.kafka.RideProducer;
 import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
@@ -30,10 +41,17 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static com.modsen.rideservice.util.TestUtils.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RideServiceImplTest {
@@ -198,14 +216,14 @@ class RideServiceImplTest {
 
     @Test
     void updateWhenRideNotFound() {
-        doReturn(false)
+        doReturn(Optional.empty())
                 .when(rideRepository)
-                .existsById(DEFAULT_ID);
+                .findById(DEFAULT_ID);
         assertThrows(
                 NotFoundException.class,
-                () -> rideService.delete(DEFAULT_ID)
+                () -> rideService.update(getDefaultUpdateRideRequest(), DEFAULT_ID)
         );
-        verify(rideRepository).existsById(DEFAULT_ID);
+        verify(rideRepository).findById(DEFAULT_ID);
     }
 
     @Test
@@ -214,9 +232,9 @@ class RideServiceImplTest {
         UpdateRideRequest updateRideRequest = getDefaultUpdateRideRequest();
         Ride savedRide = getDefaultRide();
         RideResponse response = getDefaultRideResponse();
-        doReturn(true)
+        doReturn(Optional.of(getDefaultRide()))
                 .when(rideRepository)
-                .existsById(DEFAULT_ID);
+                .findById(DEFAULT_ID);
         doReturn(ride)
                 .when(modelMapper)
                 .map(updateRideRequest, Ride.class);
@@ -230,7 +248,7 @@ class RideServiceImplTest {
 
         rideService.update(updateRideRequest, DEFAULT_ID);
 
-        verify(rideRepository).existsById(DEFAULT_ID);
+        verify(rideRepository).findById(DEFAULT_ID);
         verify(modelMapper).map(updateRideRequest, Ride.class);
         verify(rideRepository).save(ride);
         verify(modelMapper).map(savedRide, RideResponse.class);

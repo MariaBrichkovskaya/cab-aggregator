@@ -113,13 +113,15 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponse update(UpdateRideRequest request, Long id) {
-        if (!rideRepository.existsById(id)) {
-            log.error("Ride with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
+        Ride rideToUpdate = rideRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
 
         Ride ride = modelMapper.map(request, Ride.class);
         ride.setId(id);
+        ride.setDate(rideToUpdate.getDate());
+        ride.setRideStatus(rideToUpdate.getRideStatus());
+        ride.setPaymentMethod(rideToUpdate.getPaymentMethod());
+        ride.setDriverId(rideToUpdate.getDriverId());
+        ride.setPassengerId(rideToUpdate.getPassengerId());
         Ride savedRide = rideRepository.save(ride);
         log.info("Update ride with id {}", id);
 

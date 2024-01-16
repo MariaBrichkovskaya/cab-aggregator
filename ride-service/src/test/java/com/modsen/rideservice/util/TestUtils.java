@@ -8,15 +8,19 @@ import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.DriverResponse;
 import com.modsen.rideservice.dto.response.PassengerResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
+import com.modsen.rideservice.dto.response.ValidationExceptionResponse;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
 import lombok.experimental.UtilityClass;
+import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import static com.modsen.rideservice.util.Messages.*;
 
@@ -38,6 +42,8 @@ public class TestUtils {
     public final double DEFAULT_PRICE = 5.0;
     public final String DEFAULT_DESTINATION_ADDRESS = "home";
     public final String DEFAULT_PICKUP_ADDRESS = "university";
+    public final String DRIVER_PATH = "/api/v1/drivers/" + DEFAULT_ID;
+    public final String PASSENGER_PATH = "/api/v1/passengers/" + DEFAULT_ID;
     public final PaymentMethod DEFAULT_PAYMENT_METHOD = PaymentMethod.CARD;
     public final String DEFAULT_NAME = "Name";
     public final String DEFAULT_SURNAME = "Surname";
@@ -50,6 +56,7 @@ public class TestUtils {
     public final int VALID_SIZE = 10;
     public final String INVALID_ORDER_BY = "qwerty";
     public final String VALID_ORDER_BY = "id";
+    private static final ResourceBundle validationMessages = ResourceBundle.getBundle("CustomValidationMessages");
 
     public Ride getDefaultRide() {
         return Ride.builder()
@@ -126,6 +133,36 @@ public class TestUtils {
                 .pickUpAddress(DEFAULT_PICKUP_ADDRESS)
                 .passengerId(DEFAULT_ID)
                 .price(DEFAULT_PRICE)
+                .build();
+    }
+
+    public RideResponse getUpdatedRideResponse() {
+        return RideResponse.builder()
+                .id(DEFAULT_ID)
+                .rideStatus(RideStatus.ACCEPTED)
+                .date(LocalDateTime.of(2024, 1, 13, 20, 32, 24, 470081000))
+                .price(DEFAULT_PRICE)
+                .destinationAddress(DEFAULT_DESTINATION_ADDRESS)
+                .pickUpAddress(DEFAULT_PICKUP_ADDRESS)
+                .paymentMethod(PaymentMethod.CASH.name())
+                .build();
+    }
+
+    public ValidationExceptionResponse getRideValidationExceptionResponse() {
+        String address = validationMessages.getString("address.not.empty.message");
+        String price = validationMessages.getString("min.value.message");
+        String passengerId = validationMessages.getString("min.value.message");
+        return ValidationExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(VALIDATION_FAILED_MESSAGE)
+                .errors(Map.of(
+                        "passengerId", passengerId,
+                        "destinationAddress", address,
+                        "pickUpAddress", address,
+                        "price", price
+
+
+                ))
                 .build();
     }
 

@@ -3,11 +3,13 @@ package com.modsen.rideservice.integration.realization;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.modsen.rideservice.dto.request.StatusRequest;
+import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.DriverResponse;
 import com.modsen.rideservice.dto.response.ExceptionResponse;
 import com.modsen.rideservice.dto.response.MessageResponse;
 import com.modsen.rideservice.dto.response.PassengerResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
+import com.modsen.rideservice.dto.response.ValidationExceptionResponse;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.RideStatus;
 import com.modsen.rideservice.integration.IntegrationTest;
@@ -57,6 +59,9 @@ public class RideIntegrationTest extends IntegrationTest {
 
         passengerServer = new WireMockServer(9001);
         passengerServer.start();
+        driverServer.stubFor(get(urlPathMatching(DRIVER_PATH)).willReturn(aResponse().withStatus(HttpStatus.OK.value()).withHeader("content-type", "application/json").withBody(fromObjectToString(driverResponse))));
+
+        passengerServer.stubFor(get(urlPathMatching(PASSENGER_PATH)).willReturn(aResponse().withStatus(HttpStatus.OK.value()).withHeader("content-type", "application/json").withBody(fromObjectToString(passengerResponse))));
 
     }
 
@@ -88,19 +93,6 @@ public class RideIntegrationTest extends IntegrationTest {
 
     @Test
     void findById_shouldReturnDriverResponse_whenDriverExists() {
-        driverServer.stubFor(get(urlPathMatching("/api/v1/drivers/" + DEFAULT_ID))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("content-type", "application/json")
-                        .withBody(fromObjectToString(driverResponse)))
-        );
-
-        passengerServer.stubFor(get(urlPathMatching("/api/v1/passengers/" + DEFAULT_ID))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("content-type", "application/json")
-                        .withBody(fromObjectToString(passengerResponse)))
-        );
         Ride ride = rideRepository.findById(DEFAULT_ID).get();
         RideResponse expected = modelMapper.map(ride, RideResponse.class);
         expected.setDriverResponse(driverResponse);
@@ -120,12 +112,16 @@ public class RideIntegrationTest extends IntegrationTest {
 
     @Test
     void getRidesByPassengerId_whenValidParamsPassed() {
-        Page<Ride> ridePage = rideRepository.findAllByPassengerId(DEFAULT_ID,
-                PageRequest.of(VALID_PAGE - 1, VALID_SIZE, Sort.by(VALID_ORDER_BY))
-        );
+        Page<Ride> ridePage = rideRepository.findAllByPassengerId(DEFAULT_ID, PageRequest.of(VALID_PAGE - 1, VALID_SIZE, Sort.by(VALID_ORDER_BY)));
         List<RideResponse> expected = ridePage.stream()
                 .map(ride -> modelMapper.map(ride, RideResponse.class))
-                .toList();
+                .peek(response -> {
+                    response.setPassengerResponse(passengerResponse);
+                    if (rideRepository.findById(response.getId()).get().getDriverId() != null) {
+                        response.setDriverResponse(driverResponse);
+                    }
+
+                }).toList();
 
         var actual = given()
                 .port(port)
@@ -140,7 +136,6 @@ public class RideIntegrationTest extends IntegrationTest {
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract().body().jsonPath().getList("rides", RideResponse.class);
-
         assertThat(actual).isEqualTo(expected);
         assertThat(rideRepository.findAll().size()).isEqualTo(3);
     }
@@ -223,25 +218,27 @@ public class RideIntegrationTest extends IntegrationTest {
 
     @Test
     void findAll_whenValidParamsPassed() {
-        Page<Ride> ridePage = rideRepository.findAll(
-                PageRequest.of(VALID_PAGE - 1, VALID_SIZE, Sort.by(VALID_ORDER_BY))
-        );
+        Page<Ride> ridePage = rideRepository.findAll(PageRequest.of(VALID_PAGE - 1, VALID_SIZE, Sort.by(VALID_ORDER_BY)));
         List<RideResponse> expected = ridePage.stream()
                 .map(ride -> modelMapper.map(ride, RideResponse.class))
-                .toList();
+                .peek(response -> {
+                    response.setPassengerResponse(passengerResponse);
+                    if (rideRepository.findById(response.getId()).get().getDriverId() != null) {
+                        response.setDriverResponse(driverResponse);
+                    }
+
+                }).toList();
 
         var actual = given()
                 .port(port)
-                .params(Map.of(
-                        PAGE_PARAM_NAME, VALID_PAGE,
-                        SIZE_PARAM_NAME, VALID_SIZE,
-                        ORDER_BY_PARAM_NAME, VALID_ORDER_BY)
-                )
-                .when()
-                .get(DEFAULT_PATH)
+                .params(Map.of(PAGE_PARAM_NAME, VALID_PAGE, SIZE_PARAM_NAME, VALID_SIZE, ORDER_BY_PARAM_NAME, VALID_ORDER_BY))
+                .when().get(DEFAULT_PATH)
                 .then()
                 .statusCode(HttpStatus.OK.value())
-                .extract().body().jsonPath().getList("rides", RideResponse.class);
+                .extract()
+                .body()
+                .jsonPath()
+                .getList("rides", RideResponse.class);
 
         assertThat(actual).isEqualTo(expected);
         assertThat(rideRepository.findAll().size()).isEqualTo(3);
@@ -442,23 +439,10 @@ public class RideIntegrationTest extends IntegrationTest {
     @Test
     void editStatusById_shouldReturnRideResponse() {
         StatusRequest request = StatusRequest.builder()
-                .status(RideStatus.FINISHED.name())
+                .status(RideStatus.REJECTED.name())
                 .build();
         RideResponse expected = modelMapper.map(rideRepository.findById(DEFAULT_ID), RideResponse.class);
-        driverServer.stubFor(get(urlPathMatching("/api/v1/drivers/" + DEFAULT_ID))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("content-type", "application/json")
-                        .withBody(fromObjectToString(driverResponse)))
-        );
-
-        passengerServer.stubFor(get(urlPathMatching("/api/v1/passengers/" + DEFAULT_ID))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("content-type", "application/json")
-                        .withBody(fromObjectToString(passengerResponse)))
-        );
-        expected.setRideStatus(RideStatus.FINISHED);
+        expected.setRideStatus(RideStatus.REJECTED);
         expected.setPassengerResponse(passengerResponse);
         expected.setDriverResponse(driverResponse);
 
@@ -466,9 +450,7 @@ public class RideIntegrationTest extends IntegrationTest {
                 .port(port)
                 .contentType(ContentType.JSON)
                 .pathParam(ID_PARAM_NAME, DEFAULT_ID)
-                .body(request)
-                .when()
-                .put(STATUS_PATH)
+                .body(request).when().put(STATUS_PATH)
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
@@ -477,5 +459,74 @@ public class RideIntegrationTest extends IntegrationTest {
         assertThat(actual).isEqualTo(expected);
     }
 
+    @Test
+    void updateById_shouldReturnNotFoundResponse_whenRideNotExist() {
+        UpdateRideRequest updateRequest = getDefaultUpdateRideRequest();
+        ExceptionResponse expected = ExceptionResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(String.format(NOT_FOUND_WITH_ID_MESSAGE, NOT_FOUND_ID))
+                .build();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, NOT_FOUND_ID)
+                .contentType(ContentType.JSON)
+                .body(updateRequest)
+                .when()
+                .put(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .extract()
+                .as(ExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void updateById_shouldReturnRideResponse_whenDataIsValid() {
+        UpdateRideRequest updateRequest = getDefaultUpdateRideRequest();
+        RideResponse expected = getUpdatedRideResponse();
+        expected.setPassengerResponse(passengerResponse);
+        expected.setDriverResponse(driverResponse);
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .pathParam(ID_PARAM_NAME, DEFAULT_ID)
+                .body(updateRequest)
+                .when()
+                .put(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(RideResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void updateRide_shouldReturnBadRequestResponse_whenDataNotValid() {
+        UpdateRideRequest invalidRequest = UpdateRideRequest.builder()
+                .destinationAddress(null)
+                .pickUpAddress(null)
+                .passengerId(-7L)
+                .price(-78.0)
+                .build();
+        ValidationExceptionResponse expected = getRideValidationExceptionResponse();
+
+        var actual = given()
+                .port(port)
+                .pathParam(ID_PARAM_NAME, DEFAULT_ID)
+                .contentType(ContentType.JSON)
+                .body(invalidRequest)
+                .when()
+                .put(DEFAULT_ID_PATH)
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract()
+                .as(ValidationExceptionResponse.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
 
 }
