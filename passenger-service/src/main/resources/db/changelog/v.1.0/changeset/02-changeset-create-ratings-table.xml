@@ -17,7 +17,8 @@
             </column>
         </createTable>
         <addForeignKeyConstraint baseTableName="ratings" baseColumnNames="passenger_id"
-                                 referencedTableName="passengers" referencedColumnNames="id" constraintName="FK_rating_passenger"
+                                 referencedTableName="passengers" referencedColumnNames="id"
+                                 constraintName="FK_rating_passenger"
                                  deleteCascade="true"/>
     </changeSet>
 </databaseChangeLog>

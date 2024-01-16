@@ -15,10 +15,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PassengerRatingRequest {
     @NotNull(message = "{score.not.empty.message}")
-    @Min(value = 1,message = "{min.value.message}")
-    @Max(value = 5,message = "{max.value.message}")
+    @Min(value = 1, message = "{min.value.message}")
+    @Max(value = 5, message = "{max.value.message}")
     Integer score;
     @NotNull(message = "{driver.not.empty.message}")
-    @Min(value = 1,message = "{min.value.message}")
+    @Min(value = 1, message = "{min.value.message}")
     Long driverId;
 }

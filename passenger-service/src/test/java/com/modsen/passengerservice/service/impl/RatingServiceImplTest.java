@@ -1,15 +1,12 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.client.DriverFeignClient;
-import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
-import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
-import com.modsen.passengerservice.dto.response.DriverResponse;
-import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
-import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
-import com.modsen.passengerservice.entity.Rating;
-import com.modsen.passengerservice.exception.NotFoundException;
-import com.modsen.passengerservice.repository.PassengerRepository;
-import com.modsen.passengerservice.repository.RatingRepository;
+import com.modsen.passengerservice.client.*;
+import com.modsen.passengerservice.dto.request.*;
+import com.modsen.passengerservice.dto.response.*;
+import com.modsen.passengerservice.entity.*;
+import com.modsen.passengerservice.exception.*;
+import com.modsen.passengerservice.repository.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,11 +18,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static com.modsen.passengerservice.util.TestUtils.*;
+import static com.modsen.passengerservice.util.PassengerTestUtils.*;
+import static com.modsen.passengerservice.util.RatingTestUtils.*;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)

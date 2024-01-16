@@ -6,10 +6,15 @@ import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
 import com.modsen.passengerservice.dto.response.PassengersListResponse;
 
+
 public interface PassengerService {
     PassengerResponse add(PassengerRequest request);
+
     PassengerResponse findById(Long id);
+
     PassengersListResponse findAll(int page, int size, String sortingParam);
-    PassengerResponse update(PassengerRequest request,Long id);
+
+    PassengerResponse update(PassengerRequest request, Long id);
+
     MessageResponse delete(Long id);
 }
