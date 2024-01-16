@@ -2,9 +2,12 @@ package com.modsen.driverservice.component;
 
 import com.modsen.driverservice.dto.request.DriverRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
+import com.modsen.driverservice.dto.response.DriversListResponse;
 import com.modsen.driverservice.dto.response.MessageResponse;
 import com.modsen.driverservice.entity.Driver;
+import com.modsen.driverservice.enums.Status;
 import com.modsen.driverservice.exception.AlreadyExistsException;
+import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.mapper.DriverMapper;
 import com.modsen.driverservice.repository.DriverRepository;
@@ -18,14 +21,21 @@ import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static com.modsen.driverservice.util.DriverTestUtils.*;
 import static com.modsen.driverservice.util.Messages.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @RequiredArgsConstructor
 @CucumberContextConfiguration
@@ -43,6 +53,7 @@ public class DriverComponentTest {
     private DriverResponse driverResponse;
     private Exception exception;
     private MessageResponse messageResponse;
+    private DriversListResponse driversListResponse;
 
     @Before
     public void setUp() {
@@ -246,5 +257,48 @@ public class DriverComponentTest {
         assertThat(actual).isEqualTo(messageResponse);
     }
 
+    @Given("A list of available drivers")
+    public void givenAListOfAvailableDrivers() {
+        Page<Driver> driverPage = new PageImpl<>(Arrays.asList(getDefaultDriver(), getSecondDriver()));
+        when(driverRepository.findByStatus(any(Status.class), any(PageRequest.class))).thenReturn(driverPage);
+        doReturn(getDefaultDriverResponse()).when(driverMapper).toDriverResponse(any(Driver.class));
+    }
+
+    @Given("A list of drivers")
+    public void givenAListOfDrivers() {
+        Page<Driver> driverPage = new PageImpl<>(Arrays.asList(getDefaultDriver(), getSecondDriver()));
+        when(driverRepository.findAll(any(PageRequest.class))).thenReturn(driverPage);
+        doReturn(getDefaultDriverResponse()).when(driverMapper).toDriverResponse(any(Driver.class));
+    }
+
+    @When("The findAvailableDrivers method is called with valid parameters")
+    public void whenTheFindAvailableDriversMethodIsCalledWithValidParameters() {
+        driversListResponse = driverService.findAvailableDrivers(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
+    }
+
+    @When("The findAll method is called with valid parameters")
+    public void whenTheFindAllMethodIsCalledWithValidParameters() {
+        driversListResponse = driverService.findAll(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
+    }
+
+    @Then("A list of drivers is returned")
+    public void thenAListOfAvailableDriversIsReturned() {
+        assertNotNull(driversListResponse);
+        assertEquals(driversListResponse.getDrivers().size(), 2);
+    }
+
+    @When("The findAll method is called with invalid page")
+    public void whenTheFindAllMethodIsCalledWithInValidPage() {
+        try {
+            driversListResponse = driverService.findAll(INVALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
+        } catch (InvalidRequestException e) {
+            exception = e;
+        }
+    }
+
+    @Then("The InvalidRequestException should be thrown for invalid page")
+    public void invalidRequestExceptionWithPageThrow() {
+        assertThat(exception.getMessage()).isEqualTo(INVALID_PAGE_MESSAGE);
+    }
 }
 

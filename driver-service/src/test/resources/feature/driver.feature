@@ -49,3 +49,18 @@ Feature: Driver Service
     Given A driver with id 1 exists
     When Driver id 1 is passed to the changeStatus method
     Then The response should contain status message with id 1
+
+  Scenario: Find available drivers
+    Given A list of available drivers
+    When The findAvailableDrivers method is called with valid parameters
+    Then A list of drivers is returned
+
+  Scenario: Find all drivers
+    Given A list of drivers
+    When The findAll method is called with valid parameters
+    Then A list of drivers is returned
+
+  Scenario: Find all drivers with invalid parameters
+    Given A list of drivers
+    When The findAll method is called with invalid page
+    Then The InvalidRequestException should be thrown for invalid page
