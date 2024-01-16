@@ -32,23 +32,21 @@ public class RideProducerTest extends IntegrationTest {
     @Value("${topic.name.ride}")
     private String topic;
     private final RideService rideService;
-    private final ConsumerFactory<String, Object> testConsumerFactory;
+    private final ConsumerFactory<String, Object> testRideConsumerFactory;
 
     @Test
     public void sendRideMessage_WhenRideCreated() {
         PassengerResponse passengerResponse = getDefaultPassengerResponse();
-        stubFor(get(urlPathMatching("/api/v1/passengers/1"))
+        stubFor(get(urlPathMatching(PASSENGER_PATH))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("content-type", "application/json")
                         .withBody(fromObjectToString(passengerResponse)))
         );
         rideService.add(getRideRequestWhitCash());
-        Consumer<String, Object> consumer = testConsumerFactory.createConsumer();
+        Consumer<String, Object> consumer = testRideConsumerFactory.createConsumer();
         consumer.subscribe(Collections.singleton(topic));
-
         ConsumerRecords<String, Object> records = consumer.poll(Duration.ofMillis(10000L));
-
         for (ConsumerRecord<String, Object> record : records) {
             ObjectMapper objectMapper = new ObjectMapper();
             RideRequest request = objectMapper.convertValue(record.value(), RideRequest.class);

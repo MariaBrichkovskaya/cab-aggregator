@@ -56,12 +56,15 @@ public class RideIntegrationTest extends IntegrationTest {
     public void setup() {
         driverServer = new WireMockServer(9002);
         driverServer.start();
-
         passengerServer = new WireMockServer(9001);
         passengerServer.start();
         driverServer.stubFor(get(urlPathMatching(DRIVER_PATH)).willReturn(aResponse().withStatus(HttpStatus.OK.value()).withHeader("content-type", "application/json").withBody(fromObjectToString(driverResponse))));
-
-        passengerServer.stubFor(get(urlPathMatching(PASSENGER_PATH)).willReturn(aResponse().withStatus(HttpStatus.OK.value()).withHeader("content-type", "application/json").withBody(fromObjectToString(passengerResponse))));
+        passengerServer
+                .stubFor(get(urlPathMatching(PASSENGER_PATH))
+                        .willReturn(aResponse()
+                                .withStatus(HttpStatus.OK.value())
+                                .withHeader("content-type", "application/json")
+                                .withBody(fromObjectToString(passengerResponse))));
 
     }
 
@@ -97,6 +100,7 @@ public class RideIntegrationTest extends IntegrationTest {
         RideResponse expected = modelMapper.map(ride, RideResponse.class);
         expected.setDriverResponse(driverResponse);
         expected.setPassengerResponse(passengerResponse);
+
         var actual = given()
                 .port(port)
                 .pathParam(ID_PARAM_NAME, DEFAULT_ID)
@@ -135,7 +139,11 @@ public class RideIntegrationTest extends IntegrationTest {
                 .get(GET_BY_PASSENGER_ID_PATH)
                 .then()
                 .statusCode(HttpStatus.OK.value())
-                .extract().body().jsonPath().getList("rides", RideResponse.class);
+                .extract()
+                .body()
+                .jsonPath()
+                .getList("rides", RideResponse.class);
+
         assertThat(actual).isEqualTo(expected);
         assertThat(rideRepository.findAll().size()).isEqualTo(3);
     }
@@ -226,7 +234,6 @@ public class RideIntegrationTest extends IntegrationTest {
                     if (rideRepository.findById(response.getId()).get().getDriverId() != null) {
                         response.setDriverResponse(driverResponse);
                     }
-
                 }).toList();
 
         var actual = given()
@@ -507,10 +514,10 @@ public class RideIntegrationTest extends IntegrationTest {
     @Test
     void updateRide_shouldReturnBadRequestResponse_whenDataNotValid() {
         UpdateRideRequest invalidRequest = UpdateRideRequest.builder()
-                .destinationAddress(null)
-                .pickUpAddress(null)
-                .passengerId(-7L)
-                .price(-78.0)
+                .destinationAddress(INVALID_ADDRESS)
+                .pickUpAddress(INVALID_ADDRESS)
+                .passengerId(INVALID_ID)
+                .price(INVALID_PRICE)
                 .build();
         ValidationExceptionResponse expected = getRideValidationExceptionResponse();
 

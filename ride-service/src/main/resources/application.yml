@@ -31,6 +31,7 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    bootstrap-servers: localhost:9092
 feign:
   client:
     config:
@@ -56,7 +57,3 @@ kafka:
     count: 1
   replicas:
     count: 1
-  message:
-    driver: "driverMessage:"
-    ride: "rideMessage:"
-    status: "statusMessage:"

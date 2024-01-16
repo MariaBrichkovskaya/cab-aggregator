@@ -44,6 +44,9 @@ public class TestUtils {
     public final String DEFAULT_PICKUP_ADDRESS = "university";
     public final String DRIVER_PATH = "/api/v1/drivers/" + DEFAULT_ID;
     public final String PASSENGER_PATH = "/api/v1/passengers/" + DEFAULT_ID;
+    public final String INVALID_ADDRESS = null;
+    public final long INVALID_ID = -19L;
+    public final double INVALID_PRICE = -15.9;
     public final PaymentMethod DEFAULT_PAYMENT_METHOD = PaymentMethod.CARD;
     public final String DEFAULT_NAME = "Name";
     public final String DEFAULT_SURNAME = "Surname";

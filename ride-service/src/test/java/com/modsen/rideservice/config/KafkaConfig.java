@@ -1,6 +1,8 @@
 package com.modsen.rideservice.config;
 
 import com.modsen.rideservice.dto.request.DriverForRideRequest;
+import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
+import com.modsen.rideservice.dto.request.RideRequest;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -39,23 +41,42 @@ public class KafkaConfig {
         return Map.of(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class,
+                JsonSerializer.ADD_TYPE_INFO_HEADERS, false
         );
     }
 
     @Bean
-    public Map<String, Object> kafkaConsumerConfigs() {
+    public Map<String, Object> kafkaRideConsumerConfigs() {
         return Map.of(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class,
-                ConsumerConfig.GROUP_ID_CONFIG, "ride-creation-group",
-                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+                JsonDeserializer.VALUE_DEFAULT_TYPE, RideRequest.class,
+                ConsumerConfig.GROUP_ID_CONFIG, "ride-creation-group"
         );
     }
 
     @Bean
-    public ConsumerFactory<String, Object> testConsumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(kafkaConsumerConfigs());
+    public ConsumerFactory<String, Object> testRideConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(kafkaRideConsumerConfigs());
+    }
+
+    @Bean
+    public Map<String, Object> kafkaStatusConsumerConfigs() {
+        return Map.of(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class,
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+                JsonDeserializer.VALUE_DEFAULT_TYPE, EditDriverStatusRequest.class,
+                ConsumerConfig.GROUP_ID_CONFIG, "edit-status-group"
+        );
+    }
+
+    @Bean
+    public ConsumerFactory<String, Object> testStatusConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(kafkaStatusConsumerConfigs());
     }
 }

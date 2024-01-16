@@ -1,6 +1,6 @@
 package com.modsen.rideservice.dto.request;
 
-import lombok.*;
+import lombok.Builder;
 
 @Builder
 public record EditDriverStatusRequest(

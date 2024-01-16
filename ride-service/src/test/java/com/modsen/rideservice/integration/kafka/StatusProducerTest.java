@@ -38,7 +38,7 @@ public class StatusProducerTest extends IntegrationTest {
     @Value("${topic.name.status}")
     private String topic;
     private final RideService rideService;
-    private final ConsumerFactory<String, Object> testConsumerFactory;
+    private final ConsumerFactory<String, Object> testStatusConsumerFactory;
     private WireMockServer driverServer;
     private WireMockServer passengerServer;
 
@@ -46,7 +46,6 @@ public class StatusProducerTest extends IntegrationTest {
     public void setup() {
         driverServer = new WireMockServer(9002);
         driverServer.start();
-
         passengerServer = new WireMockServer(9001);
         passengerServer.start();
     }
@@ -59,28 +58,13 @@ public class StatusProducerTest extends IntegrationTest {
 
     @Test
     public void sendStatusMessage_WhenStatusChangedToFinished() {
-        DriverResponse driverResponse = getDefaultDriverResponse();
-        driverServer.stubFor(get(urlPathMatching("/api/v1/drivers/" + DEFAULT_ID))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("content-type", "application/json")
-                        .withBody(fromObjectToString(driverResponse)))
-        );
-        PassengerResponse passengerResponse = getDefaultPassengerResponse();
-        passengerServer.stubFor(get(urlPathMatching("/api/v1/passengers/" + DEFAULT_ID))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("content-type", "application/json")
-                        .withBody(fromObjectToString(passengerResponse)))
-        );
+
         rideService.editStatus(DEFAULT_ID, StatusRequest.builder()
                 .status(RideStatus.FINISHED.toString())
                 .build());
-        Consumer<String, Object> consumer = testConsumerFactory.createConsumer();
+        Consumer<String, Object> consumer = testStatusConsumerFactory.createConsumer();
         consumer.subscribe(Collections.singleton(topic));
-
         ConsumerRecords<String, Object> records = consumer.poll(Duration.ofMillis(10000L));
-
         for (ConsumerRecord<String, Object> record : records) {
             ObjectMapper objectMapper = new ObjectMapper();
             EditDriverStatusRequest request = objectMapper.convertValue(record.value(), EditDriverStatusRequest.class);
@@ -90,5 +74,22 @@ public class StatusProducerTest extends IntegrationTest {
         }
         consumer.close();
 
+    }
+
+    private void setWireMocks() {
+        DriverResponse driverResponse = getDefaultDriverResponse();
+        driverServer.stubFor(get(urlPathMatching(DRIVER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("content-type", "application/json")
+                        .withBody(fromObjectToString(driverResponse)))
+        );
+        PassengerResponse passengerResponse = getDefaultPassengerResponse();
+        passengerServer.stubFor(get(urlPathMatching(PASSENGER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("content-type", "application/json")
+                        .withBody(fromObjectToString(passengerResponse)))
+        );
     }
 }

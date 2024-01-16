@@ -41,10 +41,6 @@ kafka:
     count: 1
   replicas:
     count: 1
-  message:
-    driver: "driverMessage:"
-    ride: "rideMessage:"
-    status: "statusMessage:"
 feign:
   client:
     config:

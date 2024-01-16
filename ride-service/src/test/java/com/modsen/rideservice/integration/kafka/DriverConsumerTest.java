@@ -1,6 +1,5 @@
 package com.modsen.rideservice.integration.kafka;
 
-import com.modsen.rideservice.config.KafkaConfig;
 import com.modsen.rideservice.dto.request.DriverForRideRequest;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.integration.IntegrationTest;
@@ -10,7 +9,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.time.Duration;
@@ -21,7 +19,6 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Import(KafkaConfig.class)
 public class DriverConsumerTest extends IntegrationTest {
     @Value("${topic.name.driver}")
     private String topic;
