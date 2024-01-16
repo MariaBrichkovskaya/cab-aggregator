@@ -20,7 +20,6 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-
 public class ConsumerIntegrationTest extends IntegrationTestStructure {
     @Value("${topic.name.status}")
     private String topic;

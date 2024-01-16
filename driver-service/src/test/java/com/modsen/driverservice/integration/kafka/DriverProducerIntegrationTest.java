@@ -31,9 +31,7 @@ public class DriverProducerIntegrationTest extends IntegrationTestStructure {
         driverService.changeStatus(2L);
         Consumer<String, DriverForRideRequest> consumer = testConsumerFactory.createConsumer();
         consumer.subscribe(Collections.singleton(topic));
-
         ConsumerRecords<String, DriverForRideRequest> records = consumer.poll(Duration.ofMillis(10000L));
-
         for (ConsumerRecord<String, DriverForRideRequest> record : records) {
             DriverForRideRequest receivedMessage = record.value();
             assertEquals((DriverForRideRequest.builder().driverId(2L).rideId(0).build()), receivedMessage);
