@@ -173,7 +173,7 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
     }
 
     @Test
-    void addPassenger_shouldReturnDriverResponse_whenDataIsValidAndUnique() {
+    void addDriver_shouldReturnDriverResponse_whenDataIsValidAndUnique() {
         DriverRequest createRequest = getUniqueRequest();
 
         DriverResponse expected = DriverResponse.builder()

@@ -2,6 +2,7 @@ package com.modsen.rideservice.integration.realization;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.DriverResponse;
@@ -534,6 +535,26 @@ public class RideIntegrationTest extends IntegrationTest {
                 .as(ValidationExceptionResponse.class);
 
         assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void addDriver_shouldReturnRideResponse_whenDataIsValid() {
+        CreateRideRequest createRequest = getRideRequestWhitCash();
+        RideResponse expected = getDefaultRideResponse();
+
+        var actual = given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(createRequest)
+                .when()
+                .post(DEFAULT_PATH)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(RideResponse.class);
+
+        assertThat(actual.getDestinationAddress()).isEqualTo(expected.getDestinationAddress());
+        assertThat(actual.getPickUpAddress()).isEqualTo(expected.getPickUpAddress());
     }
 
 }
