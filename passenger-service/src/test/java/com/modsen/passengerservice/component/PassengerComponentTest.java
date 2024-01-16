@@ -3,8 +3,10 @@ package com.modsen.passengerservice.component;
 import com.modsen.passengerservice.dto.request.PassengerRequest;
 import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
+import com.modsen.passengerservice.dto.response.PassengersListResponse;
 import com.modsen.passengerservice.entity.Passenger;
 import com.modsen.passengerservice.exception.AlreadyExistsException;
+import com.modsen.passengerservice.exception.InvalidRequestException;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.mapper.PassengerMapper;
 import com.modsen.passengerservice.repository.PassengerRepository;
@@ -20,14 +22,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static com.modsen.passengerservice.util.Messages.*;
 import static com.modsen.passengerservice.util.PassengerTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @RequiredArgsConstructor
 @CucumberContextConfiguration
@@ -46,6 +55,7 @@ public class PassengerComponentTest {
     private PassengerResponse passengerResponse;
     private Exception exception;
     private MessageResponse messageResponse;
+    private PassengersListResponse passengersListResponse;
 
     @Before
     public void setUp() {
@@ -258,6 +268,42 @@ public class PassengerComponentTest {
     public void responseContainsUpdatedPassenger(long id) {
         PassengerResponse actual = passengerMapper.toPassengerResponse(passengerRepository.findById(id).get());
         assertThat(actual).isEqualTo(passengerResponse);
+    }
+
+    @Given("A list of passengers")
+    public void givenAListOfPassengers() {
+        Page<Passenger> passengerPage = new PageImpl<>(Arrays.asList(
+                getDefaultPassenger(),
+                getSecondPassenger()
+        ));
+        when(passengerRepository.findAll(any(PageRequest.class))).thenReturn(passengerPage);
+        doReturn(getDefaultPassengersListResponse()).when(passengerMapper).toPassengerResponseList(passengerPage);
+    }
+
+
+    @When("The findAll method is called with valid parameters")
+    public void whenTheFindAllMethodIsCalledWithValidParameters() {
+        passengersListResponse = passengerService.findAll(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
+    }
+
+    @Then("A list of passengers is returned")
+    public void thenAListOfPassengersIsReturned() {
+        assertNotNull(passengersListResponse);
+        assertEquals(passengersListResponse.getPassengers().size(), 2);
+    }
+
+    @When("The findAll method is called with invalid page")
+    public void whenTheFindAllMethodIsCalledWithInValidPage() {
+        try {
+            passengersListResponse = passengerService.findAll(INVALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
+        } catch (InvalidRequestException e) {
+            exception = e;
+        }
+    }
+
+    @Then("The InvalidRequestException should be thrown for invalid page")
+    public void invalidRequestExceptionWithPageThrow() {
+        assertThat(exception.getMessage()).isEqualTo(INVALID_PAGE_MESSAGE);
     }
 
 

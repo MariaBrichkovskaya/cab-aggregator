@@ -43,4 +43,14 @@ Feature: Passenger Service
   Scenario: Update passenger with unique data
     Given A passenger with id 1 exists when email "maria@example.com" and phone "80291234567" doesn't exist
     When An update request with email "maria@example.com", phone "80291234567" for passenger with id 1 is passed to the update method
-    Then The response should contain updated passenger with id 1 
+    Then The response should contain updated passenger with id 1
+
+  Scenario: Find all passengers
+    Given A list of passengers
+    When The findAll method is called with valid parameters
+    Then A list of passengers is returned
+
+  Scenario: Find all passenger with invalid parameters
+    Given A list of passengers
+    When The findAll method is called with invalid page
+    Then The InvalidRequestException should be thrown for invalid page
