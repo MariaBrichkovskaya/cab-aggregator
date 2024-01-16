@@ -27,7 +27,6 @@ import static com.modsen.passengerservice.util.Messages.*;
 import static com.modsen.passengerservice.util.PassengerTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
 @RequiredArgsConstructor
@@ -126,7 +125,6 @@ public class PassengerComponentTest {
         PassengerResponse expected = getDefaultPassengerResponse();
         Passenger passengerToSave = getNotSavedPassenger();
         Passenger savedPassenger = getDefaultPassenger();
-        PassengerRequest createRequest = getPassengerRequest();
 
         doReturn(false)
                 .when(passengerRepository)
@@ -136,13 +134,13 @@ public class PassengerComponentTest {
                 .existsByPhone(phone);
         doReturn(passengerToSave)
                 .when(passengerMapper)
-                .toEntity(createRequest);
+                .toEntity(any(PassengerRequest.class));
         doReturn(savedPassenger)
                 .when(passengerRepository)
                 .save(passengerToSave);
         doReturn(expected)
                 .when(passengerMapper)
-                .toPassengerResponse(savedPassenger);
+                .toPassengerResponse(any(Passenger.class));
 
     }
 
@@ -188,7 +186,7 @@ public class PassengerComponentTest {
 
     @Then("The response should contain created passenger")
     public void responseContainsCreatedPassenger() {
-        PassengerResponse expected = passengerMapper.toPassengerResponse(passengerRepository.save(getDefaultPassenger()));
+        var expected = getDefaultPassengerResponse();
         assertThat(passengerResponse).isEqualTo(expected);
     }
 
@@ -200,34 +198,45 @@ public class PassengerComponentTest {
     @Given("A passenger with id {long} exists when email {string} and phone {string} doesn't exist")
     public void UpdatePassengerWithUniqueData(long id, String email, String phone) {
 
-        PassengerResponse expected = getDefaultPassengerResponse();
         Passenger passengerToUpdate = Passenger.builder()
                 .name(DEFAULT_NAME)
                 .surname(DEFAULT_SURNAME)
-                .phone(phone)
                 .email(email)
+                .phone(phone)
                 .build();
-        Passenger retrievedPassenger = getDefaultPassenger();
-
-        doReturn(Optional.of(retrievedPassenger))
+        PassengerResponse notSavedPassenger = PassengerResponse.builder()
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(email)
+                .phone(phone)
+                .build();
+        Passenger savedPassenger = Passenger.builder()
+                .id(id)
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(email)
+                .phone(phone)
+                .build();
+        doReturn(Optional.of(passengerToUpdate))
                 .when(passengerRepository)
                 .findById(id);
         doReturn(false)
                 .when(passengerRepository)
-                .existsByEmail(email);
+                .existsByPhone(phone);
         doReturn(false)
                 .when(passengerRepository)
-                .existsByPhone(phone);
-
-        // Mock the update method to return the updated passenger entity
-        doAnswer(invocation -> {
-            Passenger updatedPassenger = invocation.getArgument(1);
-            return updatedPassenger;
-        }).when(passengerRepository).save(any(Passenger.class));
-
-        doReturn(expected)
+                .existsByEmail(email);
+        doReturn(passengerToUpdate)
+                .when(passengerMapper)
+                .toEntity(any(PassengerRequest.class));
+        doReturn(savedPassenger)
+                .when(passengerRepository)
+                .save(any(Passenger.class));
+        notSavedPassenger.setId(id);
+        doReturn(notSavedPassenger)
                 .when(passengerMapper)
                 .toPassengerResponse(any(Passenger.class));
+
     }
 
     @When("An update request with email {string}, phone {string} for passenger with id {long} is passed to the update method")
@@ -247,20 +256,8 @@ public class PassengerComponentTest {
 
     @Then("The response should contain updated passenger with id {long}")
     public void responseContainsUpdatedPassenger(long id) {
-       /* var passenger = Passenger.builder()
-                .id(id)
-                .name(DEFAULT_NAME)
-                .surname(DEFAULT_SURNAME)
-                .email(DEFAULT_EMAIL)
-                .phone(DEFAULT_PHONE)
-                .build();
-
-        doReturn(Optional.of(passenger))
-                .when(passengerRepository)
-                .findById(id);*//*
-
-        var actual = passengerRepository.findById(id).get();
-        assertThat(actual).isEqualTo(passengerResponse);*/
+        PassengerResponse actual = passengerMapper.toPassengerResponse(passengerRepository.findById(id).get());
+        assertThat(actual).isEqualTo(passengerResponse);
     }
 
 
