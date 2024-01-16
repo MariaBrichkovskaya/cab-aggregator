@@ -28,6 +28,7 @@ public class RatingServiceImpl implements RatingService {
     private final PassengerRepository passengerRepository;
     private final ModelMapper modelMapper;
     private final DriverFeignClient driverFeignClient;
+    private final double DEFAULT_RATING = 5.0;
 
     private DriverResponse getDriver(long id) {
         return driverFeignClient.getDriver(id);
@@ -65,7 +66,7 @@ public class RatingServiceImpl implements RatingService {
                 .stream()
                 .mapToDouble(Rating::getScore)
                 .average()
-                .orElse(5.0);
+                .orElse(DEFAULT_RATING);
         log.info("Retrieving average rating for passenger {}", passengerId);
         return AveragePassengerRatingResponse.builder()
                 .averageRating(Math.round(averageRating * 100.0) / 100.0)

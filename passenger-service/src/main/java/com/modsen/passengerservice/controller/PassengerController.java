@@ -38,7 +38,6 @@ public class PassengerController {
     }
 
     @PostMapping
-
     @ResponseStatus(HttpStatus.CREATED)
     public PassengerResponse createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
         return passengerService.add(passengerRequest);
