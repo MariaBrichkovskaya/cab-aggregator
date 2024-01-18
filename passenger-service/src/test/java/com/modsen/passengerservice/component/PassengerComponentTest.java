@@ -1,5 +1,6 @@
 package com.modsen.passengerservice.component;
 
+import com.modsen.passengerservice.client.DriverFeignClient;
 import com.modsen.passengerservice.dto.request.PassengerRequest;
 import com.modsen.passengerservice.dto.response.MessageResponse;
 import com.modsen.passengerservice.dto.response.PassengerResponse;
@@ -10,18 +11,18 @@ import com.modsen.passengerservice.exception.InvalidRequestException;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.mapper.PassengerMapper;
 import com.modsen.passengerservice.repository.PassengerRepository;
+import com.modsen.passengerservice.repository.RatingRepository;
+import com.modsen.passengerservice.service.RatingService;
 import com.modsen.passengerservice.service.impl.PassengerServiceImpl;
+import com.modsen.passengerservice.service.impl.RatingServiceImpl;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
-import lombok.RequiredArgsConstructor;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,42 +32,52 @@ import java.util.Optional;
 
 import static com.modsen.passengerservice.util.Messages.*;
 import static com.modsen.passengerservice.util.PassengerTestUtils.*;
+import static com.modsen.passengerservice.util.RatingTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
-@RequiredArgsConstructor
 @CucumberContextConfiguration
-@RunWith(MockitoJUnitRunner.class)
 public class PassengerComponentTest {
-
     @Mock
     private PassengerRepository passengerRepository;
-
     @Mock
+    private ModelMapper modelMapper;
+    @Mock
+    private RatingRepository ratingRepository;
+
     private PassengerMapper passengerMapper;
 
-    @InjectMocks
     private PassengerServiceImpl passengerService;
+
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        DriverFeignClient driverFeignClient = mock(DriverFeignClient.class);
+
+        RatingService ratingService = new RatingServiceImpl(ratingRepository, passengerRepository, modelMapper, driverFeignClient);
+        this.passengerMapper = new PassengerMapper(modelMapper, ratingService);
+        this.passengerService = new PassengerServiceImpl(passengerRepository, passengerMapper);
+    }
 
     private PassengerResponse passengerResponse;
     private Exception exception;
     private MessageResponse messageResponse;
     private PassengersListResponse passengersListResponse;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(PassengerComponentTest.this);
-    }
 
     @Given("A passenger with id {long} exists")
     public void passengerWithIdExists(long id) {
         PassengerResponse expected = getDefaultPassengerResponse();
         Passenger retrievedPassenger = getDefaultPassenger();
-
         doReturn(Optional.of(retrievedPassenger))
                 .when(passengerRepository)
                 .findById(id);
@@ -74,17 +85,20 @@ public class PassengerComponentTest {
                 .when(passengerRepository)
                 .existsById(id);
         doReturn(expected)
-                .when(passengerMapper)
-                .toPassengerResponse(retrievedPassenger);
+                .when(modelMapper)
+                .map(any(Passenger.class), eq(PassengerResponse.class));
+        doReturn(getDefaultRatings())
+                .when(ratingRepository)
+                .getRatingsByPassengerId(anyLong());
 
         Optional<Passenger> passenger = passengerRepository.findById(id);
-        assertThat(passenger.isPresent()).isEqualTo(true);
+        assertTrue(passenger.isPresent());
     }
 
     @Given("A passenger with id {long} doesn't exist")
     public void passengerWithIdNotExist(long id) {
         Optional<Passenger> passenger = passengerRepository.findById(id);
-        assertThat(passenger.isPresent()).isEqualTo(false);
+        assertFalse(passenger.isPresent());
     }
 
     @When("The id {long} is passed to the findById method")
@@ -136,6 +150,9 @@ public class PassengerComponentTest {
         Passenger passengerToSave = getNotSavedPassenger();
         Passenger savedPassenger = getDefaultPassenger();
 
+        doReturn(Optional.of(getDefaultPassenger()))
+                .when(passengerRepository)
+                .findById(anyLong());
         doReturn(false)
                 .when(passengerRepository)
                 .existsByEmail(email);
@@ -143,15 +160,17 @@ public class PassengerComponentTest {
                 .when(passengerRepository)
                 .existsByPhone(phone);
         doReturn(passengerToSave)
-                .when(passengerMapper)
-                .toEntity(any(PassengerRequest.class));
+                .when(modelMapper)
+                .map(any(PassengerRequest.class), eq(Passenger.class));
         doReturn(savedPassenger)
                 .when(passengerRepository)
                 .save(passengerToSave);
         doReturn(expected)
-                .when(passengerMapper)
-                .toPassengerResponse(any(Passenger.class));
-
+                .when(modelMapper)
+                .map(any(Passenger.class), eq(PassengerResponse.class));
+        doReturn(getDefaultRatings())
+                .when(ratingRepository)
+                .getRatingsByPassengerId(anyLong());
     }
 
     @Given("A passenger with email {string} exists")
@@ -163,7 +182,7 @@ public class PassengerComponentTest {
                 .when(passengerRepository)
                 .existsByPhone(DEFAULT_PHONE);
 
-        assertThat(passengerRepository.existsByEmail(email)).isEqualTo(true);
+        assertTrue(passengerRepository.existsByEmail(email));
     }
 
     @Given("A passenger with phone {string} exists")
@@ -175,17 +194,12 @@ public class PassengerComponentTest {
                 .when(passengerRepository)
                 .existsByPhone(phone);
 
-        assertThat(passengerRepository.existsByPhone(phone)).isEqualTo(true);
+        assertTrue(passengerRepository.existsByPhone(phone));
     }
 
     @When("A create request with email {string}, phone {string} is passed to the add method")
     public void addPassengerMethodCalled(String email, String phone) {
-        PassengerRequest createRequest = PassengerRequest.builder()
-                .name(DEFAULT_NAME)
-                .surname(DEFAULT_SURNAME)
-                .email(email)
-                .phone(phone)
-                .build();
+        PassengerRequest createRequest = getPassengerRequest(email, phone);
         try {
             passengerResponse = passengerService.add(createRequest);
         } catch (AlreadyExistsException e) {
@@ -208,25 +222,8 @@ public class PassengerComponentTest {
     @Given("A passenger with id {long} exists when email {string} and phone {string} doesn't exist")
     public void UpdatePassengerWithUniqueData(long id, String email, String phone) {
 
-        Passenger passengerToUpdate = Passenger.builder()
-                .name(DEFAULT_NAME)
-                .surname(DEFAULT_SURNAME)
-                .email(email)
-                .phone(phone)
-                .build();
-        PassengerResponse notSavedPassenger = PassengerResponse.builder()
-                .name(DEFAULT_NAME)
-                .surname(DEFAULT_SURNAME)
-                .email(email)
-                .phone(phone)
-                .build();
-        Passenger savedPassenger = Passenger.builder()
-                .id(id)
-                .name(DEFAULT_NAME)
-                .surname(DEFAULT_SURNAME)
-                .email(email)
-                .phone(phone)
-                .build();
+        Passenger passengerToUpdate = getUpdatePassenger(email, phone);
+        PassengerResponse notSavedPassenger = getUpdateResponse(email, phone);
         doReturn(Optional.of(passengerToUpdate))
                 .when(passengerRepository)
                 .findById(id);
@@ -237,26 +234,25 @@ public class PassengerComponentTest {
                 .when(passengerRepository)
                 .existsByEmail(email);
         doReturn(passengerToUpdate)
-                .when(passengerMapper)
-                .toEntity(any(PassengerRequest.class));
-        doReturn(savedPassenger)
+                .when(modelMapper)
+                .map(any(PassengerRequest.class), eq(Passenger.class));
+        passengerToUpdate.setId(id);
+        doReturn(passengerToUpdate)
                 .when(passengerRepository)
                 .save(any(Passenger.class));
         notSavedPassenger.setId(id);
         doReturn(notSavedPassenger)
-                .when(passengerMapper)
-                .toPassengerResponse(any(Passenger.class));
+                .when(modelMapper)
+                .map(any(Passenger.class), eq(PassengerResponse.class));
+        doReturn(getDefaultRatings())
+                .when(ratingRepository)
+                .getRatingsByPassengerId(anyLong());
 
     }
 
     @When("An update request with email {string}, phone {string} for passenger with id {long} is passed to the update method")
     public void updatePassengerMethodCalled(String email, String phone, long id) {
-        var request = PassengerRequest.builder()
-                .name(DEFAULT_NAME)
-                .surname(DEFAULT_SURNAME)
-                .email(email)
-                .phone(phone)
-                .build();
+        var request = getPassengerRequest(email, phone);
         try {
             passengerResponse = passengerService.update(request, id);
         } catch (NotFoundException | AlreadyExistsException e) {
@@ -276,8 +272,18 @@ public class PassengerComponentTest {
                 getDefaultPassenger(),
                 getSecondPassenger()
         ));
-        when(passengerRepository.findAll(any(PageRequest.class))).thenReturn(passengerPage);
-        doReturn(getDefaultPassengersListResponse()).when(passengerMapper).toPassengerResponseList(passengerPage);
+        doReturn(Optional.of(getDefaultPassenger()))
+                .when(passengerRepository)
+                .findById(anyLong());
+        doReturn(passengerPage)
+                .when(passengerRepository)
+                .findAll(any(PageRequest.class));
+        doReturn(getDefaultPassengerResponse())
+                .when(modelMapper)
+                .map(any(Passenger.class), eq(PassengerResponse.class));
+        doReturn(getDefaultRatings())
+                .when(ratingRepository)
+                .getRatingsByPassengerId(anyLong());
     }
 
 
