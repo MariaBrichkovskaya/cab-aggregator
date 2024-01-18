@@ -1,4 +1,4 @@
-package com.modsen.driverservice.integration.realization;
+package com.modsen.driverservice.integration.controller;
 
 
 import com.modsen.driverservice.dto.request.DriverRatingRequest;

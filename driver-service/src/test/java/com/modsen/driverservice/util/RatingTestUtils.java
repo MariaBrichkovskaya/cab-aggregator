@@ -9,6 +9,7 @@ import com.modsen.driverservice.entity.Rating;
 import lombok.experimental.UtilityClass;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -33,6 +34,10 @@ public class RatingTestUtils {
                         "score", score
                 ))
                 .build();
+    }
+
+    public List<Rating> getDefaultRatings() {
+        return List.of(getDefaultDriverRating(), getNewSavedDriverRating());
     }
 
     public Rating getDefaultDriverRating() {

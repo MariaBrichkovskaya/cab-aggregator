@@ -1,4 +1,4 @@
-package com.modsen.rideservice.integration.realization;
+package com.modsen.rideservice.integration.controller;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
