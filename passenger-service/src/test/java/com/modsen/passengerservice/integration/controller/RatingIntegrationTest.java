@@ -1,4 +1,4 @@
-package com.modsen.passengerservice.integration.realization;
+package com.modsen.passengerservice.integration.controller;
 
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
