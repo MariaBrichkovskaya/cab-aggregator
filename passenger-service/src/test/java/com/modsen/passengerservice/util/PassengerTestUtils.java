@@ -1,8 +1,9 @@
 package com.modsen.passengerservice.util;
 
-import com.modsen.passengerservice.dto.request.*;
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.entity.*;
+import com.modsen.passengerservice.dto.request.PassengerRequest;
+import com.modsen.passengerservice.dto.response.PassengerResponse;
+import com.modsen.passengerservice.dto.response.ValidationExceptionResponse;
+import com.modsen.passengerservice.entity.Passenger;
 import lombok.experimental.UtilityClass;
 import org.springframework.http.HttpStatus;
 
@@ -29,8 +30,8 @@ public class PassengerTestUtils {
     public final double DEFAULT_RATING = 5.0;
     public final String UNIQUE_EMAIL = "123@example.com";
     public final String UNIQUE_PHONE = "80299999999";
-    public final Integer DEFAULT_SCORE = 4;
-    public final double DEFAULT_AVERAGE_RATING = 4.0;
+    public final Integer DEFAULT_SCORE = 5;
+    public final double DEFAULT_AVERAGE_RATING = 5.0;
     public final int INVALID_PAGE = -1;
     public final int VALID_PAGE = 1;
     public final int INVALID_SIZE = -1;
@@ -61,6 +62,33 @@ public class PassengerTestUtils {
                         "email", emailMessage,
                         "phone", phoneMessage
                 ))
+                .build();
+    }
+
+    public PassengerRequest getPassengerRequest(String email, String phone) {
+        return PassengerRequest.builder()
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(email)
+                .phone(phone)
+                .build();
+    }
+
+    public Passenger getUpdatePassenger(String email, String phone) {
+        return Passenger.builder()
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(email)
+                .phone(phone)
+                .build();
+    }
+
+    public PassengerResponse getUpdateResponse(String email, String phone) {
+        return PassengerResponse.builder()
+                .name(DEFAULT_NAME)
+                .surname(DEFAULT_SURNAME)
+                .email(email)
+                .phone(phone)
                 .build();
     }
 

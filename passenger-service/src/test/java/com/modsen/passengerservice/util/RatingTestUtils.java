@@ -2,12 +2,15 @@ package com.modsen.passengerservice.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.modsen.passengerservice.dto.request.*;
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.entity.*;
+import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
+import com.modsen.passengerservice.dto.response.DriverResponse;
+import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.ValidationExceptionResponse;
+import com.modsen.passengerservice.entity.Rating;
 import lombok.experimental.UtilityClass;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -38,6 +41,10 @@ public class RatingTestUtils {
         return Rating.builder().passenger(getDefaultPassenger())
                 .score(DEFAULT_SCORE)
                 .driverId(DEFAULT_ID).build();
+    }
+
+    public List<Rating> getDefaultRatings() {
+        return List.of(getDefaultPassengerRating(), getNewSavedPassengerRating());
     }
 
     public Rating getSavedPassengerRating() {

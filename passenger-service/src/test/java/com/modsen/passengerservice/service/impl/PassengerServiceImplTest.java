@@ -230,13 +230,13 @@ class PassengerServiceImplTest {
         Passenger passengerToUpdate = getUpdatePassenger();
         PassengerRequest request = getPassengerRequest();
         PassengerResponse response = getDefaultPassengerResponse();
-
+        Passenger savedPassenger = getDefaultPassenger();
         when(passengerRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(passengerToUpdate));
         when(passengerRepository.existsByPhone(request.getPhone())).thenReturn(false);
         when(passengerRepository.existsByEmail(request.getEmail())).thenReturn(false);
         when(passengerMapper.toEntity(request)).thenReturn(passengerToUpdate);
-        when(passengerRepository.save(passengerToUpdate)).thenReturn(passengerToUpdate);
-        when(passengerMapper.toPassengerResponse(passengerToUpdate)).thenReturn(response);
+        when(passengerRepository.save(passengerToUpdate)).thenReturn(savedPassenger);
+        when(passengerMapper.toPassengerResponse(savedPassenger)).thenReturn(response);
 
         PassengerResponse result = passengerService.update(request, DEFAULT_ID);
 
@@ -245,7 +245,7 @@ class PassengerServiceImplTest {
         verify(passengerRepository).existsByPhone(request.getPhone());
         verify(passengerMapper).toEntity(request);
         verify(passengerRepository).save(passengerToUpdate);
-        verify(passengerMapper).toPassengerResponse(passengerToUpdate);
+        verify(passengerMapper).toPassengerResponse(savedPassenger);
 
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo(request.getEmail());
