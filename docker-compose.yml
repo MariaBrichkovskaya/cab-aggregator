@@ -1,17 +1,21 @@
-version: "3.7"
-
-networks:
-  kafka-net:
-    name: kafka-net
-    driver: bridge
-
 services:
+  db:
+    container_name: postgres
+    image: postgres:15-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - PG_DATA=/var/lib/postgresql/data
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgres/sql/postgresql.conf
+  
   zookeeper:
     image: zookeeper:3.7.0
     container_name: zookeeper
     restart: "no"
-    networks:
-      - kafka-net
     ports:
       - "2181:2181"
 
@@ -19,8 +23,6 @@ services:
     image: obsidiandynamics/kafka
     container_name: kafka
     restart: "no"
-    networks:
-      - kafka-net
     ports:
       - "9092:9092"
     environment:
@@ -38,11 +40,67 @@ services:
     image: obsidiandynamics/kafdrop
     container_name: kafdrop
     restart: "no"
-    networks:
-      - kafka-net
     ports:
       - "9000:9000"
     environment:
       KAFKA_BROKERCONNECT: "kafka:29092"
     depends_on:
       - "kafka"
+
+  passenger-service:
+    image: passenger-service
+    container_name: passenger-service
+    ports:
+      - '9001:9001'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/passengers
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db
+  driver-service:
+    image: driver-service
+    container_name: driver-service
+    ports:
+      - '9002:9002'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/drivers
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - db
+      - kafka
+
+  ride-service:
+    image: ride-service
+    container_name: ride-service
+    ports:
+      - '9003:9003'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/rides
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - FEIGN_CLIENT_CONFIG_PASSENGER_URL=passenger-service:9001
+      - FEIGN_CLIENT_CONFIG_DRIVER_URL=driver-service:9002
+      - FEIGN_CLIENT_CONFIG_PAYMENT_URL=payment-service:9004
+    depends_on:
+      - db
+      - kafka
+
+  payment-service:
+    image: payment-service
+    container_name: payment-service
+    ports:
+      - '9004:9004'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/payments
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - STRIPE_KEY_PUBLIC=${STRIPE_PUBLIC_KEY}
+      - STRIPE_KEY_SECRET=${STRIPE_SECRET_KEY}
+    depends_on:
+      - db
