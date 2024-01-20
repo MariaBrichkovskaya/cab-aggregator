@@ -1,11 +1,9 @@
 package com.modsen.rideservice.integration;
 
 import com.modsen.rideservice.config.KafkaConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -20,11 +18,11 @@ import org.testcontainers.utility.DockerImageName;
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Import(KafkaConfig.class)
 public abstract class IntegrationTest {
 
     @Container
-    @ServiceConnection
     public static final KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka"));
 
     @Container
@@ -32,16 +30,9 @@ public abstract class IntegrationTest {
             "postgres:15-alpine"
     );
 
-    @BeforeAll
-    static void beforeAll() {
-        kafka.start();
+    static {
         postgres.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        kafka.stop();
-        postgres.stop();
+        kafka.start();
     }
 
     @DynamicPropertySource

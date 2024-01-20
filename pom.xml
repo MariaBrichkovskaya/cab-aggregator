@@ -7,7 +7,13 @@
     <groupId>org.example</groupId>
     <artifactId>cab-aggregator</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    <packaging>pom</packaging>
+    <modules>
+        <module>passenger-service</module>
+        <module>payment-service</module>
+        <module>driver-service</module>
+        <module>ride-service</module>
+    </modules>
     <properties>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>

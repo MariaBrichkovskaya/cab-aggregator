@@ -17,7 +17,7 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class DriverConsumerConfig {
-    @Value("${spring.kafka.bootstrap-servers}")
+    @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean

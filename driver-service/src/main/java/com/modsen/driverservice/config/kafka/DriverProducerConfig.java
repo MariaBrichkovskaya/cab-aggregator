@@ -24,7 +24,7 @@ public class DriverProducerConfig {
     private int PARTITIONS_COUNT;
     @Value("${kafka.replicas.count}")
     private int REPLICAS_COUNT;
-    @Value("${spring.kafka.bootstrap-servers}")
+    @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean

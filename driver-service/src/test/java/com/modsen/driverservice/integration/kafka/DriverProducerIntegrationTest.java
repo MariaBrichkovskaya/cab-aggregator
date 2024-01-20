@@ -34,10 +34,12 @@ public class DriverProducerIntegrationTest extends IntegrationTestStructure {
         ConsumerRecords<String, DriverForRideRequest> records = consumer.poll(Duration.ofMillis(10000L));
         for (ConsumerRecord<String, DriverForRideRequest> record : records) {
             DriverForRideRequest receivedMessage = record.value();
-            assertEquals((DriverForRideRequest.builder().driverId(2L).rideId(0).build()), receivedMessage);
+            assertEquals((DriverForRideRequest.builder()
+                    .driverId(2L)
+                    .rideId(0)
+                    .build()), receivedMessage);
         }
         consumer.close();
-
     }
 
 
