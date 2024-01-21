@@ -11,14 +11,13 @@ import com.modsen.driverservice.exception.AlreadyExistsException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.kafka.DriverProducer;
+import com.modsen.driverservice.mapper.DriverMapper;
 import com.modsen.driverservice.repository.DriverRepository;
-import com.modsen.driverservice.service.RatingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -27,24 +26,27 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static com.modsen.driverservice.util.TestUtils.*;
+import static com.modsen.driverservice.util.DriverTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DriverServiceImplTest {
     @Mock
     private DriverRepository driverRepository;
     @Mock
-    private ModelMapper modelMapper;
+    private DriverMapper driverMapper;
 
     @InjectMocks
     private DriverServiceImpl driverService;
-    @Mock
-    private RatingService ratingService;
     @Mock
     private DriverProducer driverProducer;
 
@@ -58,25 +60,21 @@ class DriverServiceImplTest {
                 .when(driverRepository)
                 .existsByPhone(DEFAULT_PHONE);
         doReturn(notSavedDriver)
-                .when(modelMapper)
-                .map(createRequest, Driver.class);
+                .when(driverMapper)
+                .toEntity(createRequest);
         doReturn(savedDriver)
                 .when(driverRepository)
                 .save(notSavedDriver);
         doReturn(expected)
-                .when(modelMapper)
-                .map(savedDriver, DriverResponse.class);
-        doReturn(getDefaultRating())
-                .when(ratingService)
-                .getAverageDriverRating(DEFAULT_ID);
+                .when(driverMapper)
+                .toDriverResponse(savedDriver);
 
         DriverResponse actual = driverService.add(createRequest);
 
         verify(driverRepository).existsByPhone(DEFAULT_PHONE);
         verify(driverRepository).save(notSavedDriver);
-        verify(modelMapper).map(createRequest, Driver.class);
-        verify(modelMapper).map(savedDriver, DriverResponse.class);
-        verify(ratingService).getAverageDriverRating(DEFAULT_ID);
+        verify(driverMapper).toEntity(createRequest);
+        verify(driverMapper).toDriverResponse(savedDriver);
         assertThat(actual).isEqualTo(expected);
 
     }
@@ -103,16 +101,14 @@ class DriverServiceImplTest {
                 .when(driverRepository)
                 .findById(DEFAULT_ID);
         doReturn(expected)
-                .when(modelMapper)
-                .map(retrievedDriver, DriverResponse.class);
-        doReturn(getDefaultRating())
-                .when(ratingService)
-                .getAverageDriverRating(DEFAULT_ID);
+                .when(driverMapper)
+                .toDriverResponse(retrievedDriver);
+
 
         DriverResponse actual = driverService.findById(DEFAULT_ID);
 
         verify(driverRepository).findById(DEFAULT_ID);
-        verify(modelMapper).map(retrievedDriver, DriverResponse.class);
+        verify(driverMapper).toDriverResponse(retrievedDriver);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -198,8 +194,7 @@ class DriverServiceImplTest {
                 getSecondDriver()
         ));
         when(driverRepository.findAll(any(PageRequest.class))).thenReturn(driverPagePage);
-        doReturn(getDefaultDriverResponse()).when(modelMapper).map(any(Driver.class), eq(DriverResponse.class));
-        when(ratingService.getAverageDriverRating(any(Long.class))).thenReturn(getDefaultRating());
+        doReturn(getDefaultDriverResponse()).when(driverMapper).toDriverResponse(any(Driver.class));
 
         DriversListResponse response = driverService.findAll(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
 
@@ -208,8 +203,7 @@ class DriverServiceImplTest {
         assertEquals(DEFAULT_ID, response.getDrivers().get(0).getId());
         assertEquals(DEFAULT_NAME, response.getDrivers().get(0).getName());
         verify(driverRepository).findAll(any(PageRequest.class));
-        verify(modelMapper, times(2)).map(any(Driver.class), eq(DriverResponse.class));
-        verify(ratingService, times(2)).getAverageDriverRating(any(Long.class));
+        verify(driverMapper, times(2)).toDriverResponse(any(Driver.class));
     }
 
     @Test
@@ -234,19 +228,17 @@ class DriverServiceImplTest {
         DriverResponse response = getDefaultDriverResponse();
         when(driverRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(updateDriver));
         when(driverRepository.existsByPhone(request.getPhone())).thenReturn(false);
-        when(modelMapper.map(request, Driver.class)).thenReturn(updateDriver);
+        when(driverMapper.toEntity(request)).thenReturn(updateDriver);
         when(driverRepository.save(updateDriver)).thenReturn(updateDriver);
-        when(modelMapper.map(updateDriver, DriverResponse.class)).thenReturn(response);
-        when(ratingService.getAverageDriverRating(DEFAULT_ID)).thenReturn(getDefaultRating());
+        when(driverMapper.toDriverResponse(updateDriver)).thenReturn(response);
 
         DriverResponse result = driverService.update(request, DEFAULT_ID);
 
         verify(driverRepository).findById(DEFAULT_ID);
         verify(driverRepository).existsByPhone(request.getPhone());
-        verify(modelMapper).map(request, Driver.class);
+        verify(driverMapper).toEntity(request);
         verify(driverRepository).save(updateDriver);
-        verify(modelMapper).map(updateDriver, DriverResponse.class);
-        verify(ratingService).getAverageDriverRating(DEFAULT_ID);
+        verify(driverMapper).toDriverResponse(updateDriver);
         assertThat(result).isNotNull();
         assertThat(result.getPhone()).isEqualTo(request.getPhone());
     }
@@ -285,8 +277,7 @@ class DriverServiceImplTest {
                 getSecondDriver()
         ));
         when(driverRepository.findByStatus(any(Status.class), any(PageRequest.class))).thenReturn(passengerPage);
-        doReturn(getDefaultDriverResponse()).when(modelMapper).map(any(Driver.class), eq(DriverResponse.class));
-        when(ratingService.getAverageDriverRating(anyLong())).thenReturn(getDefaultRating());
+        doReturn(getDefaultDriverResponse()).when(driverMapper).toDriverResponse(any(Driver.class));
 
         DriversListResponse response = driverService.findAvailableDrivers(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
 
@@ -295,8 +286,7 @@ class DriverServiceImplTest {
         assertEquals(DEFAULT_ID, response.getDrivers().get(0).getId());
         assertEquals(DEFAULT_NAME, response.getDrivers().get(0).getName());
         verify(driverRepository).findByStatus(any(Status.class), any(PageRequest.class));
-        verify(modelMapper, times(2)).map(any(Driver.class), eq(DriverResponse.class));
-        verify(ratingService, times(2)).getAverageDriverRating(any(Long.class));
+        verify(driverMapper, times(2)).toDriverResponse(any(Driver.class));
     }
 
 
@@ -309,15 +299,13 @@ class DriverServiceImplTest {
         ));
         when(driverRepository.findByStatus(any(Status.class), any(PageRequest.class))).thenReturn(driverPage);
         doReturn(getDefaultDriverResponse())
-                .when(modelMapper)
-                .map(any(Driver.class), eq(DriverResponse.class));
-        when(ratingService.getAverageDriverRating(anyLong())).thenReturn(getDefaultRating());
+                .when(driverMapper)
+                .toDriverResponse(any(Driver.class));
 
         driverService.findDriverForRide(request);
 
         verify(driverRepository).findByStatus(any(Status.class), any(PageRequest.class));
-        verify(modelMapper, times(2)).map(any(Driver.class), eq(DriverResponse.class));
-        verify(ratingService, times(2)).getAverageDriverRating(any(Long.class));
+        verify(driverMapper, times(2)).toDriverResponse(any(Driver.class));
         verify(driverProducer).sendMessage(any(DriverForRideRequest.class));
     }
 
@@ -330,8 +318,7 @@ class DriverServiceImplTest {
         driverService.findDriverForRide(request);
 
         verify(driverRepository).findByStatus(any(Status.class), any(PageRequest.class));
-        verify(modelMapper, never()).map(any(Driver.class), eq(DriverResponse.class));
-        verify(ratingService, never()).getAverageDriverRating(any(Long.class));
+        verify(driverMapper, never()).toDriverResponse(any(Driver.class));
         verify(driverProducer, never()).sendMessage(any(DriverForRideRequest.class));
     }
 }

@@ -16,8 +16,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @ToString
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode
+@AllArgsConstructor
 public class PassengerResponse {
     Long id;
     String name;

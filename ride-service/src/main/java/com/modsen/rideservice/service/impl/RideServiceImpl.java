@@ -3,15 +3,27 @@ package com.modsen.rideservice.service.impl;
 import com.modsen.rideservice.client.DriverFeignClient;
 import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
-import com.modsen.rideservice.dto.request.*;
+import com.modsen.rideservice.dto.request.CreateRideRequest;
+import com.modsen.rideservice.dto.request.CustomerChargeRequest;
+import com.modsen.rideservice.dto.request.CustomerRequest;
+import com.modsen.rideservice.dto.request.DriverForRideRequest;
+import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
+import com.modsen.rideservice.dto.request.RideRequest;
+import com.modsen.rideservice.dto.request.StatusRequest;
+import com.modsen.rideservice.dto.request.UpdateRideRequest;
 import com.modsen.rideservice.dto.response.DriverResponse;
+import com.modsen.rideservice.dto.response.MessageResponse;
 import com.modsen.rideservice.dto.response.PassengerResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.enums.PaymentMethod;
 import com.modsen.rideservice.enums.RideStatus;
-import com.modsen.rideservice.exception.*;
+import com.modsen.rideservice.exception.AlreadyFinishedRideException;
+import com.modsen.rideservice.exception.BalanceException;
+import com.modsen.rideservice.exception.DriverIsEmptyException;
+import com.modsen.rideservice.exception.InvalidRequestException;
+import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.kafka.RideProducer;
 import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
@@ -51,7 +63,7 @@ public class RideServiceImpl implements RideService {
     @Override
     public RideResponse add(CreateRideRequest request) {
         Ride ride = toEntity(request);
-        PassengerResponse passengerResponse = validatePassenger(ride.getPassengerId());
+        validatePassenger(ride.getPassengerId());
         setAdditionalFields(ride);
         checkBalance(ride);
         Ride rideToSave = rideRepository.save(ride);
@@ -60,7 +72,7 @@ public class RideServiceImpl implements RideService {
                 .build()
         );
         log.info("Created ride");
-        return createRideResponse(rideToSave, passengerResponse);
+        return createRideResponse(rideToSave);
     }
 
 
@@ -101,13 +113,15 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponse update(UpdateRideRequest request, Long id) {
-        if (!rideRepository.existsById(id)) {
-            log.error("Ride with id {} was not found", id);
-            throw new NotFoundException(id);
-        }
+        Ride rideToUpdate = rideRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
 
         Ride ride = modelMapper.map(request, Ride.class);
         ride.setId(id);
+        ride.setDate(rideToUpdate.getDate());
+        ride.setRideStatus(rideToUpdate.getRideStatus());
+        ride.setPaymentMethod(rideToUpdate.getPaymentMethod());
+        ride.setDriverId(rideToUpdate.getDriverId());
+        ride.setPassengerId(rideToUpdate.getPassengerId());
         Ride savedRide = rideRepository.save(ride);
         log.info("Update ride with id {}", id);
 
@@ -115,13 +129,16 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public void delete(Long id) {
+    public MessageResponse delete(Long id) {
         if (!rideRepository.existsById(id)) {
             log.error("Ride with id {} was not found", id);
             throw new NotFoundException(id);
         }
         rideRepository.deleteById(id);
         log.info("Delete ride with id {}", id);
+        return MessageResponse.builder()
+                .message(String.format(DELETE_MESSAGE, id))
+                .build();
     }
 
     @Override
@@ -167,7 +184,7 @@ public class RideServiceImpl implements RideService {
             throw new DriverIsEmptyException(EMPTY_DRIVER_MESSAGE);
         }
         if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
-            throw new AlreadyFinishedRideException("Ride already finished");
+            throw new AlreadyFinishedRideException(ALREADY_FINISHED_MESSAGE);
         }
         if (RideStatus.FINISHED.toString().equals(statusRequest.getStatus())) {
             EditDriverStatusRequest driverStatusRequest = EditDriverStatusRequest.builder()
@@ -225,14 +242,14 @@ public class RideServiceImpl implements RideService {
         return modelMapper.map(request, Ride.class);
     }
 
-    private RideResponse createRideResponse(Ride rideToSave, PassengerResponse passengerResponse) {
+    private RideResponse createRideResponse(Ride rideToSave) {
 
         return fromEntityToRideResponse(rideToSave);
     }
 
-    private PassengerResponse validatePassenger(long passengerId) {
+    private void validatePassenger(long passengerId) {
         try {
-            return getPassengerById(passengerId);
+            getPassengerById(passengerId);
         } catch (NotFoundException exception) {
             throw new InvalidRequestException("Passenger does not exist");
         }

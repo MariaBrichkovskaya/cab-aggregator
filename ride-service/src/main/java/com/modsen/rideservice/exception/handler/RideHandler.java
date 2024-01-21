@@ -2,7 +2,11 @@ package com.modsen.rideservice.exception.handler;
 
 import com.modsen.rideservice.dto.response.ExceptionResponse;
 import com.modsen.rideservice.dto.response.ValidationExceptionResponse;
-import com.modsen.rideservice.exception.*;
+import com.modsen.rideservice.exception.AlreadyFinishedRideException;
+import com.modsen.rideservice.exception.CommunicationNotFoundException;
+import com.modsen.rideservice.exception.DriverIsEmptyException;
+import com.modsen.rideservice.exception.InvalidRequestException;
+import com.modsen.rideservice.exception.NotFoundException;
 import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
-
 
 import static com.modsen.rideservice.util.Messages.*;
 
@@ -47,9 +50,9 @@ public class RideHandler {
     }
 
     @ExceptionHandler(value = {DriverIsEmptyException.class})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ExceptionResponse handleDriverIsEmptyException(DriverIsEmptyException driverIsEmptyException) {
-        return new ExceptionResponse(HttpStatus.NO_CONTENT,
+        return new ExceptionResponse(HttpStatus.CONFLICT,
                 driverIsEmptyException.getMessage());
 
     }
