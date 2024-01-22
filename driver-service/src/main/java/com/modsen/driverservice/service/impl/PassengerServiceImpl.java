@@ -31,6 +31,7 @@ public class PassengerServiceImpl implements PassengerService {
                 .email("default")
                 .phone("default")
                 .rating(5.0)
+                .active(false)
                 .build();
     }
 }

@@ -28,6 +28,7 @@ public class DriverServiceImpl implements DriverService {
                 .name("default")
                 .surname("default")
                 .phone("default")
+                .active(false)
                 .rating(5.0)
                 .build();
     }
