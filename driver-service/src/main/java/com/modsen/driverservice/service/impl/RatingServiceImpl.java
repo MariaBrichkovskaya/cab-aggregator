@@ -1,7 +1,6 @@
 package com.modsen.driverservice.service.impl;
 
 
-import com.modsen.driverservice.client.PassengerFeignClient;
 import com.modsen.driverservice.dto.request.DriverRatingRequest;
 import com.modsen.driverservice.dto.response.AverageDriverRatingResponse;
 import com.modsen.driverservice.dto.response.DriverListRatingsResponse;
@@ -11,6 +10,7 @@ import com.modsen.driverservice.entity.Rating;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.repository.DriverRepository;
 import com.modsen.driverservice.repository.RatingRepository;
+import com.modsen.driverservice.service.PassengerService;
 import com.modsen.driverservice.service.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +28,10 @@ public class RatingServiceImpl implements RatingService {
     private final RatingRepository driverRatingRepository;
     private final DriverRepository driverRepository;
     private final ModelMapper modelMapper;
-    private final PassengerFeignClient passengerFeignClient;
+    private final PassengerService passengerService;
 
     private PassengerResponse getPassenger(long id) {
-        return passengerFeignClient.getPassenger(id);
+        return passengerService.getPassenger(id);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.modsen.passengerservice.entity.Rating;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
 import com.modsen.passengerservice.repository.RatingRepository;
+import com.modsen.passengerservice.service.DriverService;
 import com.modsen.passengerservice.service.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +28,11 @@ public class RatingServiceImpl implements RatingService {
     private final RatingRepository ratingRepository;
     private final PassengerRepository passengerRepository;
     private final ModelMapper modelMapper;
-    private final DriverFeignClient driverFeignClient;
+    private final DriverService driverService;
     private final double DEFAULT_RATING = 5.0;
 
     private DriverResponse getDriver(long id) {
-        return driverFeignClient.getDriver(id);
+        return driverService.getDriver(id);
     }
 
     @Override

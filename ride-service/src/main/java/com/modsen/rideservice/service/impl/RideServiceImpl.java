@@ -1,7 +1,5 @@
 package com.modsen.rideservice.service.impl;
 
-import com.modsen.rideservice.client.DriverFeignClient;
-import com.modsen.rideservice.client.PassengerFeignClient;
 import com.modsen.rideservice.client.PaymentFeignClient;
 import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.CustomerChargeRequest;
@@ -27,6 +25,8 @@ import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.kafka.RideProducer;
 import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
+import com.modsen.rideservice.service.DriverService;
+import com.modsen.rideservice.service.PassengerService;
 import com.modsen.rideservice.service.RideService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,8 +53,8 @@ import static com.modsen.rideservice.util.Messages.*;
 public class RideServiceImpl implements RideService {
     private final RideRepository rideRepository;
     private final ModelMapper modelMapper;
-    private final DriverFeignClient driverFeignClient;
-    private final PassengerFeignClient passengerFeignClient;
+    private final DriverService driverService;
+    private final PassengerService passengerService;
     private final PaymentFeignClient paymentFeignClient;
     private final RideProducer rideProducer;
     private final StatusProducer statusProducer;
@@ -223,11 +223,11 @@ public class RideServiceImpl implements RideService {
         if (driverId == null) {
             return null;
         }
-        return driverFeignClient.getDriver(driverId);
+        return driverService.getDriver(driverId);
     }
 
     private PassengerResponse getPassengerById(long passengerId) {
-        return passengerFeignClient.getPassenger(passengerId);
+        return passengerService.getPassenger(passengerId);
     }
 
     private RideResponse fromEntityToRideResponse(Ride ride) {
@@ -259,7 +259,7 @@ public class RideServiceImpl implements RideService {
 
     private void charge(Ride ride, long amount) {
         long passengerId = ride.getPassengerId();
-        PassengerResponse passengerResponse = passengerFeignClient.getPassenger(passengerId);
+        PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
         checkCustomer(passengerId, passengerResponse);
         CustomerChargeRequest request = CustomerChargeRequest.builder()
                 .currency(CURRENCY).amount(amount)
