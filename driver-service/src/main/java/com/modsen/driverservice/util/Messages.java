@@ -12,6 +12,7 @@ public class Messages {
     public final String INVALID_SORTING_MESSAGE = "Sorting request is not valid. Acceptable parameters are: %s";
     public final String DELETE_DRIVER_MESSAGE = "Driver with %d was deleted";
     public final String EDIT_DRIVER_STATUS_MESSAGE = "Status for driver with %d was changed";
+    public final String UNAVAILABLE_DRIVER_MESSAGE = "Driver with %d unavailable";
     public final int RETRYER_PERIOD = 100;
     public final int RETRYER_MAX_PERIOD = 1000;
     public final int RETRYER_MAX_ATTEMPTS = 5;

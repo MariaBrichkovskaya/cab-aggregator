@@ -4,6 +4,7 @@ package com.modsen.driverservice.exception.handler;
 import com.modsen.driverservice.dto.response.ExceptionResponse;
 import com.modsen.driverservice.dto.response.ValidationExceptionResponse;
 import com.modsen.driverservice.exception.AlreadyExistsException;
+import com.modsen.driverservice.exception.DriverIsUnavailableException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
 import feign.FeignException;
@@ -25,6 +26,15 @@ public class DriverHandler {
         ExceptionResponse response =
                 new ExceptionResponse(HttpStatus.NOT_FOUND,
                         notFoundException.getMessage()
+                );
+        return new ResponseEntity<>(response, response.getStatus());
+    }
+
+    @ExceptionHandler(value = {DriverIsUnavailableException.class})
+    public ResponseEntity<Object> handleDriverIsUnavailableException(DriverIsUnavailableException driverIsUnavailableException) {
+        ExceptionResponse response =
+                new ExceptionResponse(HttpStatus.CONFLICT,
+                        driverIsUnavailableException.getMessage()
                 );
         return new ResponseEntity<>(response, response.getStatus());
     }

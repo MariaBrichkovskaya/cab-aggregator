@@ -37,7 +37,7 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public DriverRatingResponse rateDriver(DriverRatingRequest driverRatingRequest, long driverId) {
         Rating newDriverRating = toEntity(driverRatingRequest);
-        newDriverRating.setDriver(driverRepository.findById(driverId)
+        newDriverRating.setDriver(driverRepository.findByIdAndActiveIsTrue(driverId)
                 .orElseThrow(() -> new NotFoundException(driverId)));
         log.info("Update rating for driver {}", driverId);
         return fromEntityToRatingResponse(driverRatingRepository.save(newDriverRating));

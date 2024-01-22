@@ -17,12 +17,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.Collections;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.modsen.rideservice.util.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -52,6 +56,7 @@ public class StatusProducerTest extends IntegrationTest {
 
     @Test
     public void sendStatusMessage_WhenStatusChangedToFinished() {
+        setResponses();
         rideService.editStatus(DEFAULT_ID, StatusRequest.builder()
                 .status(RideStatus.FINISHED.toString())
                 .build());
@@ -66,7 +71,19 @@ public class StatusProducerTest extends IntegrationTest {
                     .build(), request);
         }
         consumer.close();
-
     }
 
+    private void setResponses() {
+        driverServer
+                .stubFor(get(urlPathMatching(DRIVER_PATH))
+                        .willReturn(aResponse().withStatus(HttpStatus.OK.value())
+                                .withHeader("content-type", "application/json")
+                                .withBody(fromObjectToString(getDefaultDriverResponse()))));
+        passengerServer
+                .stubFor(get(urlPathMatching(PASSENGER_PATH))
+                        .willReturn(aResponse()
+                                .withStatus(HttpStatus.OK.value())
+                                .withHeader("content-type", "application/json")
+                                .withBody(fromObjectToString(getDefaultPassengerResponse()))));
+    }
 }

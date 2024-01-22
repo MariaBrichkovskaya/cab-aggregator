@@ -9,6 +9,7 @@ import com.modsen.driverservice.dto.response.MessageResponse;
 import com.modsen.driverservice.entity.Driver;
 import com.modsen.driverservice.enums.Status;
 import com.modsen.driverservice.exception.AlreadyExistsException;
+import com.modsen.driverservice.exception.DriverIsUnavailableException;
 import com.modsen.driverservice.exception.InvalidRequestException;
 import com.modsen.driverservice.exception.NotFoundException;
 import com.modsen.driverservice.kafka.DriverProducer;
@@ -119,7 +120,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     private void checkDriverUnique(DriverRequest request, Long id) {
-        Driver driver = driverRepository.findById(id)
+        Driver driver = driverRepository.findByIdAndActiveIsTrue(id)
                 .orElseThrow(() -> new NotFoundException(id));
         if (!Objects.equals(request.getPhone(), driver.getPhone())) {
             if (driverRepository.existsByPhone(request.getPhone())) {
@@ -132,11 +133,12 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public MessageResponse delete(Long id) {
-        if (!driverRepository.existsById(id)) {
-            log.error("Driver with id {} was not found", id);
-            throw new NotFoundException(id);
+        Driver driver = driverRepository.findByIdAndActiveIsTrue(id).orElseThrow(() -> new NotFoundException(id));
+        if (driver.getStatus().equals(Status.UNAVAILABLE)) {
+            throw new DriverIsUnavailableException(String.format(UNAVAILABLE_DRIVER_MESSAGE, id));
         }
-        driverRepository.deleteById(id);
+        driver.setActive(false);
+        driverRepository.save(driver);
         log.info("Delete driver with id {}", id);
         return MessageResponse.builder()
                 .message(String.format(DELETE_DRIVER_MESSAGE, id))
@@ -145,7 +147,7 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public MessageResponse changeStatus(Long id) {
-        Driver driver = driverRepository.findById(id)
+        Driver driver = driverRepository.findByIdAndActiveIsTrue(id)
                 .orElseThrow(() -> new NotFoundException(id));
         if (driver.getStatus().equals(Status.AVAILABLE)) {
             driver.setStatus(Status.UNAVAILABLE);
@@ -167,7 +169,7 @@ public class DriverServiceImpl implements DriverService {
     @Transactional(readOnly = true)
     public DriversListResponse findAvailableDrivers(int page, int size, String sortingParam) {
         PageRequest pageRequest = getPageRequest(page, size, sortingParam);
-        Page<Driver> driversPage = driverRepository.findByStatus(Status.AVAILABLE, pageRequest);
+        Page<Driver> driversPage = driverRepository.findByStatusAndActiveIsTrue(Status.AVAILABLE, pageRequest);
         return getDriversListResponse(driversPage);
     }
 

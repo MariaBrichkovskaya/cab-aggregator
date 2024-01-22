@@ -19,4 +19,5 @@ public class PassengerResponse {
     String email;
     String phone;
     Double rating;
+    boolean active;
 }

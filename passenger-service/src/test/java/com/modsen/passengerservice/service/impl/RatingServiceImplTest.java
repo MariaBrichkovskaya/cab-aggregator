@@ -1,12 +1,15 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.client.*;
-import com.modsen.passengerservice.dto.request.*;
-import com.modsen.passengerservice.dto.response.*;
-import com.modsen.passengerservice.entity.*;
-import com.modsen.passengerservice.exception.*;
-import com.modsen.passengerservice.repository.*;
-
+import com.modsen.passengerservice.client.DriverFeignClient;
+import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
+import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
+import com.modsen.passengerservice.dto.response.DriverResponse;
+import com.modsen.passengerservice.dto.response.PassengerListRatingsResponse;
+import com.modsen.passengerservice.dto.response.PassengerRatingResponse;
+import com.modsen.passengerservice.entity.Rating;
+import com.modsen.passengerservice.exception.NotFoundException;
+import com.modsen.passengerservice.repository.PassengerRepository;
+import com.modsen.passengerservice.repository.RatingRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -52,7 +55,7 @@ class RatingServiceImplTest {
         doReturn(rating).when(modelMapper).map(request, Rating.class);
         doReturn(Optional.empty())
                 .when(passengerRepository)
-                .findById(rating.getPassenger().getId());
+                .findByIdAndActiveIsTrue(rating.getPassenger().getId());
         assertThrows(
                 NotFoundException.class,
                 () -> ratingService.ratePassenger(request, rating.getPassenger().getId())
@@ -70,16 +73,22 @@ class RatingServiceImplTest {
         doReturn(ratingToSave)
                 .when(modelMapper)
                 .map(request, Rating.class);
-        doReturn(Optional.of(getDefaultPassenger())).when(passengerRepository).findById(DEFAULT_ID);
+        doReturn(Optional.of(getDefaultPassenger()))
+                .when(passengerRepository)
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         doReturn(savedRating)
                 .when(ratingRepository)
                 .save(ratingToSave);
-        doReturn(response).when(modelMapper).map(savedRating, PassengerRatingResponse.class);
-        doReturn(driverResponse).when(driverFeignClient).getDriver(request.getDriverId());
+        doReturn(response)
+                .when(modelMapper)
+                .map(savedRating, PassengerRatingResponse.class);
+        doReturn(driverResponse)
+                .when(driverFeignClient)
+                .getDriver(request.getDriverId());
         PassengerRatingResponse expected = ratingService.ratePassenger(request, DEFAULT_ID);
 
         assertNotNull(expected);
-        verify(passengerRepository).findById(DEFAULT_ID);
+        verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(ratingRepository).save(ratingToSave);
         verify(modelMapper).map(savedRating, PassengerRatingResponse.class);
         verify(driverFeignClient).getDriver(request.getDriverId());

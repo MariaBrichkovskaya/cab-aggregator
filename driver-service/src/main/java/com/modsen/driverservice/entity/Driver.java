@@ -42,5 +42,6 @@ public class Driver {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     Status status = Status.AVAILABLE;
+    boolean active = true;
 
 }

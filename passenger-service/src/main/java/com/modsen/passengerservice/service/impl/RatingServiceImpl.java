@@ -37,7 +37,7 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId) {
         Rating newPassengerRating = toEntity(passengerRatingRequest);
-        newPassengerRating.setPassenger(passengerRepository.findById(passengerId)
+        newPassengerRating.setPassenger(passengerRepository.findByIdAndActiveIsTrue(passengerId)
                 .orElseThrow(() -> new NotFoundException(passengerId)));
         log.info("Update rating for passenger {}", passengerId);
         return toDto(ratingRepository.save(newPassengerRating));

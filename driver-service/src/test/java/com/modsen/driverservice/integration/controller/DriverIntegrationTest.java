@@ -183,6 +183,7 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
                 .phone(UNIQUE_PHONE)
                 .rating(DEFAULT_RATING)
                 .status(Status.AVAILABLE)
+                .active(true)
                 .build();
 
         var actual = given()
@@ -317,6 +318,7 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
                 .phone(UNIQUE_PHONE)
                 .rating(DEFAULT_RATING)
                 .status(Status.AVAILABLE)
+                .active(true)
                 .build();
 
         var actual = given()
@@ -400,7 +402,7 @@ public class DriverIntegrationTest extends IntegrationTestStructure {
 
     @Test
     void findAvailable_whenValidParamsPassed() {
-        Page<Driver> driverPage = driverRepository.findByStatus(
+        Page<Driver> driverPage = driverRepository.findByStatusAndActiveIsTrue(
                 Status.AVAILABLE, PageRequest.of(VALID_PAGE - 1, VALID_SIZE, Sort.by(VALID_ORDER_BY))
         );
         List<DriverResponse> expected = driverMapper.toDriverResponseList(driverPage);

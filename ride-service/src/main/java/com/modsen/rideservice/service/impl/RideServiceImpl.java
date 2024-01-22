@@ -63,7 +63,6 @@ public class RideServiceImpl implements RideService {
     @Override
     public RideResponse add(CreateRideRequest request) {
         Ride ride = toEntity(request);
-        validatePassenger(ride.getPassengerId());
         setAdditionalFields(ride);
         checkBalance(ride);
         Ride rideToSave = rideRepository.save(ride);
@@ -113,8 +112,8 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponse update(UpdateRideRequest request, Long id) {
-        Ride rideToUpdate = rideRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
-
+        Ride rideToUpdate = rideRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
         Ride ride = modelMapper.map(request, Ride.class);
         ride.setId(id);
         ride.setDate(rideToUpdate.getDate());
@@ -233,8 +232,8 @@ public class RideServiceImpl implements RideService {
 
     private RideResponse fromEntityToRideResponse(Ride ride) {
         RideResponse response = modelMapper.map(ride, RideResponse.class);
-        assignAndCheckDriver(response, ride.getDriverId());
-        assignAndCheckPassenger(response, ride.getPassengerId());
+        response.setDriverResponse(getDriverById(ride.getDriverId()));
+        response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
         return response;
     }
 
@@ -243,17 +242,9 @@ public class RideServiceImpl implements RideService {
     }
 
     private RideResponse createRideResponse(Ride rideToSave) {
-
         return fromEntityToRideResponse(rideToSave);
     }
 
-    private void validatePassenger(long passengerId) {
-        try {
-            getPassengerById(passengerId);
-        } catch (NotFoundException exception) {
-            throw new InvalidRequestException("Passenger does not exist");
-        }
-    }
 
     private void checkBalance(Ride ride) {
         if (PaymentMethod.valueOf(ride.getPaymentMethod().name()).equals(PaymentMethod.CARD)) {
@@ -311,21 +302,4 @@ public class RideServiceImpl implements RideService {
         rideRepository.save(ride);
     }
 
-    private void assignAndCheckPassenger(RideResponse response, long id) {
-        try {
-            response.setPassengerResponse(getPassengerById(id));
-        } catch (NotFoundException exception) {
-            response.setPassengerResponse(null);
-        }
-    }
-
-    private void assignAndCheckDriver(RideResponse response, Long id) {
-        try {
-            if (id != null) {
-                response.setDriverResponse(getDriverById(id));
-            }
-        } catch (NotFoundException exception) {
-            response.setDriverResponse(null);
-        }
-    }
 }

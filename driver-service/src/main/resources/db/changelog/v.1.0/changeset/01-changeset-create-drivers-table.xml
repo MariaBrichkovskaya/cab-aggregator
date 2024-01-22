@@ -19,6 +19,7 @@
             <column name="status" type="varchar(11)">
                 <constraints nullable="false"/>
             </column>
+            <column name="active" type="boolean"/>
         </createTable>
         <rollback>
             <dropTable tableName="drivers"/>

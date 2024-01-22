@@ -80,6 +80,9 @@ public class PassengerComponentTest {
         Passenger retrievedPassenger = getDefaultPassenger();
         doReturn(Optional.of(retrievedPassenger))
                 .when(passengerRepository)
+                .findByIdAndActiveIsTrue(id);
+        doReturn(Optional.of(retrievedPassenger))
+                .when(passengerRepository)
                 .findById(id);
         doReturn(true)
                 .when(passengerRepository)
@@ -91,13 +94,13 @@ public class PassengerComponentTest {
                 .when(ratingRepository)
                 .getRatingsByPassengerId(anyLong());
 
-        Optional<Passenger> passenger = passengerRepository.findById(id);
+        Optional<Passenger> passenger = passengerRepository.findByIdAndActiveIsTrue(id);
         assertTrue(passenger.isPresent());
     }
 
     @Given("A passenger with id {long} doesn't exist")
     public void passengerWithIdNotExist(long id) {
-        Optional<Passenger> passenger = passengerRepository.findById(id);
+        Optional<Passenger> passenger = passengerRepository.findByIdAndActiveIsTrue(id);
         assertFalse(passenger.isPresent());
     }
 
@@ -112,7 +115,7 @@ public class PassengerComponentTest {
 
     @Then("The response should contain passenger with id {long}")
     public void responseContainsPassengerDetails(long id) {
-        Passenger passenger = passengerRepository.findById(id).get();
+        Passenger passenger = passengerRepository.findByIdAndActiveIsTrue(id).get();
         PassengerResponse expected = passengerMapper.toPassengerResponse(passenger);
 
         assertThat(passengerResponse).isEqualTo(expected);
@@ -226,6 +229,9 @@ public class PassengerComponentTest {
         PassengerResponse notSavedPassenger = getUpdateResponse(email, phone);
         doReturn(Optional.of(passengerToUpdate))
                 .when(passengerRepository)
+                .findByIdAndActiveIsTrue(id);
+        doReturn(Optional.of(passengerToUpdate))
+                .when(passengerRepository)
                 .findById(id);
         doReturn(false)
                 .when(passengerRepository)
@@ -262,7 +268,7 @@ public class PassengerComponentTest {
 
     @Then("The response should contain updated passenger with id {long}")
     public void responseContainsUpdatedPassenger(long id) {
-        PassengerResponse actual = passengerMapper.toPassengerResponse(passengerRepository.findById(id).get());
+        PassengerResponse actual = passengerMapper.toPassengerResponse(passengerRepository.findByIdAndActiveIsTrue(id).get());
         assertThat(actual).isEqualTo(passengerResponse);
     }
 

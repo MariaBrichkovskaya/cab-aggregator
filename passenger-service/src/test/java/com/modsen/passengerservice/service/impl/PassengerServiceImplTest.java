@@ -158,35 +158,35 @@ class PassengerServiceImplTest {
     void updateWhenPassengerNotFound() {
         doReturn(Optional.empty())
                 .when(passengerRepository)
-                .findById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         PassengerRequest passengerRequest = getPassengerRequest();
         assertThrows(
                 NotFoundException.class,
                 () -> passengerService.update(passengerRequest, DEFAULT_ID)
         );
-        verify(passengerRepository).findById(DEFAULT_ID);
+        verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
     }
 
 
     @Test
     void deleteWhenPassengerNotFound() {
-        doReturn(false)
+        doReturn(Optional.empty())
                 .when(passengerRepository)
-                .existsById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         assertThrows(
                 NotFoundException.class,
                 () -> passengerService.delete(DEFAULT_ID)
         );
-        verify(passengerRepository).existsById(DEFAULT_ID);
+        verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
     }
 
     @Test
     void deleteWhenPassengerExists() {
-        doReturn(true)
+        doReturn(Optional.of(getDefaultPassenger()))
                 .when(passengerRepository)
-                .existsById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         passengerService.delete(DEFAULT_ID);
-        verify(passengerRepository).deleteById(DEFAULT_ID);
+        verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
     }
 
     @Test
@@ -213,14 +213,20 @@ class PassengerServiceImplTest {
     void updateWhenPassengerDataIsNotUnique() {
         Passenger passengerToUpdate = getUpdatePassenger();
         PassengerRequest request = getPassengerRequest();
-        doReturn(Optional.of(passengerToUpdate)).when(passengerRepository).findById(DEFAULT_ID);
-        doReturn(true).when(passengerRepository).existsByPhone(request.getPhone());
-        doReturn(true).when(passengerRepository).existsByEmail(request.getEmail());
+        doReturn(Optional.of(passengerToUpdate))
+                .when(passengerRepository)
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
+        doReturn(true)
+                .when(passengerRepository)
+                .existsByPhone(request.getPhone());
+        doReturn(true)
+                .when(passengerRepository)
+                .existsByEmail(request.getEmail());
         assertThrows(
                 AlreadyExistsException.class,
                 () -> passengerService.update(request, DEFAULT_ID)
         );
-        verify(passengerRepository).findById(DEFAULT_ID);
+        verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(passengerRepository).existsByEmail(request.getEmail());
         verify(passengerRepository).existsByPhone(request.getPhone());
     }
@@ -231,7 +237,7 @@ class PassengerServiceImplTest {
         PassengerRequest request = getPassengerRequest();
         PassengerResponse response = getDefaultPassengerResponse();
         Passenger savedPassenger = getDefaultPassenger();
-        when(passengerRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(passengerToUpdate));
+        when(passengerRepository.findByIdAndActiveIsTrue(DEFAULT_ID)).thenReturn(Optional.of(passengerToUpdate));
         when(passengerRepository.existsByPhone(request.getPhone())).thenReturn(false);
         when(passengerRepository.existsByEmail(request.getEmail())).thenReturn(false);
         when(passengerMapper.toEntity(request)).thenReturn(passengerToUpdate);
@@ -240,7 +246,7 @@ class PassengerServiceImplTest {
 
         PassengerResponse result = passengerService.update(request, DEFAULT_ID);
 
-        verify(passengerRepository).findById(DEFAULT_ID);
+        verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(passengerRepository).existsByEmail(request.getEmail());
         verify(passengerRepository).existsByPhone(request.getPhone());
         verify(passengerMapper).toEntity(request);

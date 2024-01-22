@@ -82,6 +82,9 @@ public class DriverComponentTest {
         Driver retrievedDriver = getDefaultDriver();
         doReturn(Optional.of(retrievedDriver))
                 .when(driverRepository)
+                .findByIdAndActiveIsTrue(id);
+        doReturn(Optional.of(retrievedDriver))
+                .when(driverRepository)
                 .findById(id);
         doReturn(true)
                 .when(driverRepository)
@@ -93,13 +96,13 @@ public class DriverComponentTest {
                 .when(ratingRepository)
                 .getRatingsByDriverId(anyLong());
 
-        Optional<Driver> driver = driverRepository.findById(id);
+        Optional<Driver> driver = driverRepository.findByIdAndActiveIsTrue(id);
         assertTrue(driver.isPresent());
     }
 
     @Given("A driver with id {long} doesn't exist")
     public void driverWithIdNotExist(long id) {
-        Optional<Driver> driver = driverRepository.findById(id);
+        Optional<Driver> driver = driverRepository.findByIdAndActiveIsTrue(id);
         assertFalse(driver.isPresent());
     }
 
@@ -210,6 +213,9 @@ public class DriverComponentTest {
         Driver savedDriver = getSavedDriver(id, phone);
         doReturn(Optional.of(driverToUpdate))
                 .when(driverRepository)
+                .findByIdAndActiveIsTrue(id);
+        doReturn(Optional.of(driverToUpdate))
+                .when(driverRepository)
                 .findById(id);
         doReturn(false)
                 .when(driverRepository)
@@ -241,7 +247,7 @@ public class DriverComponentTest {
 
     @Then("The response should contain updated driver with id {long}")
     public void responseContainsUpdatedDriver(long id) {
-        DriverResponse actual = driverMapper.toDriverResponse(driverRepository.findById(id).get());
+        DriverResponse actual = driverMapper.toDriverResponse(driverRepository.findByIdAndActiveIsTrue(id).get());
 
         assertEquals(actual, driverResponse);
     }
@@ -272,7 +278,7 @@ public class DriverComponentTest {
                 .findById(anyLong());
         doReturn(driverPage)
                 .when(driverRepository)
-                .findByStatus(any(Status.class), any(PageRequest.class));
+                .findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class));
         doReturn(getDefaultDriverResponse())
                 .when(modelMapper)
                 .map(any(Driver.class), eq(DriverResponse.class));

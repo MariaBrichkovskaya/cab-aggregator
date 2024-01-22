@@ -55,7 +55,7 @@ class RatingServiceImplTest {
         doReturn(rating).when(modelMapper).map(request, Rating.class);
         doReturn(Optional.empty())
                 .when(driverRepository)
-                .findById(rating.getDriver().getId());
+                .findByIdAndActiveIsTrue(rating.getDriver().getId());
         assertThrows(
                 NotFoundException.class,
                 () -> ratingService.rateDriver(request, rating.getDriver().getId())
@@ -73,7 +73,9 @@ class RatingServiceImplTest {
         doReturn(ratingToSave)
                 .when(modelMapper)
                 .map(request, Rating.class);
-        doReturn(Optional.of(getDefaultDriver())).when(driverRepository).findById(DEFAULT_ID);
+        doReturn(Optional.of(getDefaultDriver()))
+                .when(driverRepository)
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         doReturn(savedRating)
                 .when(ratingRepository)
                 .save(ratingToSave);
@@ -82,7 +84,7 @@ class RatingServiceImplTest {
         DriverRatingResponse expected = ratingService.rateDriver(request, DEFAULT_ID);
 
         assertNotNull(expected);
-        verify(driverRepository).findById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(ratingRepository).save(ratingToSave);
         verify(modelMapper).map(savedRating, DriverRatingResponse.class);
         verify(passengerFeignClient).getPassenger(request.getPassengerId());

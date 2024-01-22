@@ -188,6 +188,7 @@ public class PassengerIntegrationTest extends IntegrationTestStructure {
                 .email(UNIQUE_EMAIL)
                 .phone(UNIQUE_PHONE)
                 .rating(DEFAULT_RATING)
+                .active(true)
                 .build();
 
         var actual = given()
@@ -322,6 +323,7 @@ public class PassengerIntegrationTest extends IntegrationTestStructure {
                 .email(UNIQUE_EMAIL)
                 .phone(UNIQUE_PHONE)
                 .rating(DEFAULT_RATING)
+                .active(true)
                 .build();
 
         var actual = given()

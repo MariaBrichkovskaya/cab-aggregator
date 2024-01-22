@@ -153,37 +153,37 @@ class DriverServiceImplTest {
     void updateWhenDriverNotFound() {
         doReturn(Optional.empty())
                 .when(driverRepository)
-                .findById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         DriverRequest passengerRequest = getDriverRequest();
         assertThrows(
                 NotFoundException.class,
                 () -> driverService.update(passengerRequest, DEFAULT_ID)
         );
-        verify(driverRepository).findById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
     }
 
 
     @Test
     void deleteWhenDriverNotFound() {
-        doReturn(false)
+        doReturn(Optional.empty())
                 .when(driverRepository)
-                .existsById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
         assertThrows(
                 NotFoundException.class,
                 () -> driverService.delete(DEFAULT_ID)
         );
-        verify(driverRepository).existsById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
     }
 
     @Test
     void deleteWhenDriverExists() {
-        doReturn(true)
+        doReturn(Optional.of(getDefaultDriver()))
                 .when(driverRepository)
-                .existsById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
 
         driverService.delete(DEFAULT_ID);
 
-        verify(driverRepository).deleteById(DEFAULT_ID);
+        verify(driverRepository).save(any(Driver.class));
     }
 
     @Test
@@ -210,14 +210,14 @@ class DriverServiceImplTest {
     void updateWhenDriverDataIsNotUnique() {
         Driver updateDriver = getUpdateDriver();
         DriverRequest request = getDriverRequest();
-        doReturn(Optional.of(updateDriver)).when(driverRepository).findById(DEFAULT_ID);
+        doReturn(Optional.of(updateDriver)).when(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         doReturn(true).when(driverRepository).existsByPhone(request.getPhone());
 
         assertThrows(
                 AlreadyExistsException.class,
                 () -> driverService.update(request, DEFAULT_ID)
         );
-        verify(driverRepository).findById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(driverRepository).existsByPhone(request.getPhone());
     }
 
@@ -226,7 +226,7 @@ class DriverServiceImplTest {
         Driver updateDriver = getUpdateDriver();
         DriverRequest request = getDriverRequest();
         DriverResponse response = getDefaultDriverResponse();
-        when(driverRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(updateDriver));
+        when(driverRepository.findByIdAndActiveIsTrue(DEFAULT_ID)).thenReturn(Optional.of(updateDriver));
         when(driverRepository.existsByPhone(request.getPhone())).thenReturn(false);
         when(driverMapper.toEntity(request)).thenReturn(updateDriver);
         when(driverRepository.save(updateDriver)).thenReturn(updateDriver);
@@ -234,7 +234,7 @@ class DriverServiceImplTest {
 
         DriverResponse result = driverService.update(request, DEFAULT_ID);
 
-        verify(driverRepository).findById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(driverRepository).existsByPhone(request.getPhone());
         verify(driverMapper).toEntity(request);
         verify(driverRepository).save(updateDriver);
@@ -247,13 +247,13 @@ class DriverServiceImplTest {
     void changeStatusWhenDriverNotFound() {
         doReturn(Optional.empty())
                 .when(driverRepository)
-                .findById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
 
         assertThrows(
                 NotFoundException.class,
                 () -> driverService.changeStatus(DEFAULT_ID)
         );
-        verify(driverRepository).findById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
     }
 
     @Test
@@ -261,11 +261,11 @@ class DriverServiceImplTest {
         Driver driver = getDefaultDriver();
         doReturn(Optional.of(driver))
                 .when(driverRepository)
-                .findById(DEFAULT_ID);
+                .findByIdAndActiveIsTrue(DEFAULT_ID);
 
         driverService.changeStatus(DEFAULT_ID);
 
-        verify(driverRepository).findById(DEFAULT_ID);
+        verify(driverRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(driverRepository, times(1)).save(driver);
         assertEquals(Status.UNAVAILABLE, driver.getStatus());
     }
@@ -276,7 +276,7 @@ class DriverServiceImplTest {
                 getDefaultDriver(),
                 getSecondDriver()
         ));
-        when(driverRepository.findByStatus(any(Status.class), any(PageRequest.class))).thenReturn(passengerPage);
+        when(driverRepository.findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class))).thenReturn(passengerPage);
         doReturn(getDefaultDriverResponse()).when(driverMapper).toDriverResponse(any(Driver.class));
 
         DriversListResponse response = driverService.findAvailableDrivers(VALID_PAGE, VALID_SIZE, VALID_ORDER_BY);
@@ -285,7 +285,7 @@ class DriverServiceImplTest {
         assertEquals(2, response.getDrivers().size());
         assertEquals(DEFAULT_ID, response.getDrivers().get(0).getId());
         assertEquals(DEFAULT_NAME, response.getDrivers().get(0).getName());
-        verify(driverRepository).findByStatus(any(Status.class), any(PageRequest.class));
+        verify(driverRepository).findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class));
         verify(driverMapper, times(2)).toDriverResponse(any(Driver.class));
     }
 
@@ -297,14 +297,14 @@ class DriverServiceImplTest {
                 getDefaultDriver(),
                 getSecondDriver()
         ));
-        when(driverRepository.findByStatus(any(Status.class), any(PageRequest.class))).thenReturn(driverPage);
+        when(driverRepository.findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class))).thenReturn(driverPage);
         doReturn(getDefaultDriverResponse())
                 .when(driverMapper)
                 .toDriverResponse(any(Driver.class));
 
         driverService.findDriverForRide(request);
 
-        verify(driverRepository).findByStatus(any(Status.class), any(PageRequest.class));
+        verify(driverRepository).findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class));
         verify(driverMapper, times(2)).toDriverResponse(any(Driver.class));
         verify(driverProducer).sendMessage(any(DriverForRideRequest.class));
     }
@@ -312,12 +312,12 @@ class DriverServiceImplTest {
     @Test
     void findDriverForRideWhenDriversNotAvailable() {
         RideRequest request = getDefaultRideRequest();
-        when(driverRepository.findByStatus(any(Status.class), any(PageRequest.class)))
+        when(driverRepository.findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(Collections.emptyList()));
 
         driverService.findDriverForRide(request);
 
-        verify(driverRepository).findByStatus(any(Status.class), any(PageRequest.class));
+        verify(driverRepository).findByStatusAndActiveIsTrue(any(Status.class), any(PageRequest.class));
         verify(driverMapper, never()).toDriverResponse(any(Driver.class));
         verify(driverProducer, never()).sendMessage(any(DriverForRideRequest.class));
     }

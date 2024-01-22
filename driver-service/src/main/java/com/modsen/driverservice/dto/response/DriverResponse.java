@@ -24,4 +24,5 @@ public class DriverResponse {
     String phone;
     Double rating;
     Status status;
+    boolean active;
 }

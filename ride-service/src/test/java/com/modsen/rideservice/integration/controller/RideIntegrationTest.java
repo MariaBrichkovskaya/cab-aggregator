@@ -59,7 +59,11 @@ public class RideIntegrationTest extends IntegrationTest {
         driverServer.start();
         passengerServer = new WireMockServer(9001);
         passengerServer.start();
-        driverServer.stubFor(get(urlPathMatching(DRIVER_PATH)).willReturn(aResponse().withStatus(HttpStatus.OK.value()).withHeader("content-type", "application/json").withBody(fromObjectToString(driverResponse))));
+        driverServer
+                .stubFor(get(urlPathMatching(DRIVER_PATH))
+                        .willReturn(aResponse().withStatus(HttpStatus.OK.value())
+                                .withHeader("content-type", "application/json")
+                                .withBody(fromObjectToString(driverResponse))));
         passengerServer
                 .stubFor(get(urlPathMatching(PASSENGER_PATH))
                         .willReturn(aResponse()
