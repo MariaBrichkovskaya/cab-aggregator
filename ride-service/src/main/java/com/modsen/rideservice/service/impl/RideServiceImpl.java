@@ -1,6 +1,5 @@
 package com.modsen.rideservice.service.impl;
 
-import com.modsen.rideservice.client.PaymentFeignClient;
 import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.CustomerChargeRequest;
 import com.modsen.rideservice.dto.request.CustomerRequest;
@@ -22,11 +21,13 @@ import com.modsen.rideservice.exception.BalanceException;
 import com.modsen.rideservice.exception.DriverIsEmptyException;
 import com.modsen.rideservice.exception.InvalidRequestException;
 import com.modsen.rideservice.exception.NotFoundException;
+import com.modsen.rideservice.exception.PaymentFallbackException;
 import com.modsen.rideservice.kafka.RideProducer;
 import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
 import com.modsen.rideservice.service.DriverService;
 import com.modsen.rideservice.service.PassengerService;
+import com.modsen.rideservice.service.PaymentService;
 import com.modsen.rideservice.service.RideService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ public class RideServiceImpl implements RideService {
     private final ModelMapper modelMapper;
     private final DriverService driverService;
     private final PassengerService passengerService;
-    private final PaymentFeignClient paymentFeignClient;
+    private final PaymentService paymentService;
     private final RideProducer rideProducer;
     private final StatusProducer statusProducer;
 
@@ -250,7 +251,7 @@ public class RideServiceImpl implements RideService {
         if (PaymentMethod.valueOf(ride.getPaymentMethod().name()).equals(PaymentMethod.CARD)) {
             try {
                 charge(ride, (long) (ride.getPrice() * 100));
-            } catch (BalanceException exception) {
+            } catch (BalanceException | PaymentFallbackException exception) {
                 ride.setPaymentMethod(PaymentMethod.CASH);
                 rideRepository.save(ride);
             }
@@ -260,17 +261,24 @@ public class RideServiceImpl implements RideService {
     private void charge(Ride ride, long amount) {
         long passengerId = ride.getPassengerId();
         PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
-        checkCustomer(passengerId, passengerResponse);
-        CustomerChargeRequest request = CustomerChargeRequest.builder()
-                .currency(CURRENCY).amount(amount)
-                .passengerId(passengerResponse.getId())
-                .build();
-        paymentFeignClient.chargeFromCustomer(request);
+        try {
+            checkCustomer(passengerId, passengerResponse);
+            CustomerChargeRequest request = CustomerChargeRequest.builder()
+                    .currency(CURRENCY).amount(amount)
+                    .passengerId(passengerResponse.getId())
+                    .build();
+            paymentService.chargeFromCustomer(request);
+        } catch (PaymentFallbackException e) {
+            ride.setPaymentMethod(PaymentMethod.CASH);
+            rideRepository.save(ride);
+        }
+
+
     }
 
     private void checkCustomer(long passengerId, PassengerResponse passengerResponse) {
         try {
-            paymentFeignClient.findCustomer(passengerId);
+            paymentService.findCustomer(passengerId);
         } catch (NotFoundException e) {
             CustomerRequest customerRequest = CustomerRequest.builder()
                     .amount(1000000)
@@ -279,7 +287,7 @@ public class RideServiceImpl implements RideService {
                     .name(passengerResponse.getName())
                     .passengerId(passengerResponse.getId())
                     .build();
-            paymentFeignClient.createCustomer(customerRequest);
+            paymentService.createCustomer(customerRequest);
         }
     }
 
