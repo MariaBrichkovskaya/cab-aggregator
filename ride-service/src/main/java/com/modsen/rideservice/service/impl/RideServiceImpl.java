@@ -260,8 +260,8 @@ public class RideServiceImpl implements RideService {
 
     private void charge(Ride ride, long amount) {
         long passengerId = ride.getPassengerId();
-        PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
         try {
+            PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
             checkCustomer(passengerId, passengerResponse);
             CustomerChargeRequest request = CustomerChargeRequest.builder()
                     .currency(CURRENCY).amount(amount)
