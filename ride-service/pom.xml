@@ -17,8 +17,8 @@
         <java.version>17</java.version>
         <swagger.version>2.2.0</swagger.version>
         <mapper.version>3.1.1</mapper.version>
-        <feign.version>4.1.0</feign.version>
-        <cloud.version>3.1.0</cloud.version>
+        <spring-cloud.version>4.1.0</spring-cloud.version>
+        <resilence4j.version>3.1.0</resilence4j.version>
         <rest-assured.version>5.4.0</rest-assured.version>
         <test.version>1.19.3</test.version>
         <cucumber.version>7.15.0</cucumber.version>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>${spring-cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
@@ -47,7 +52,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>${feign.version}</version>
+            <version>${spring-cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -93,7 +98,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-            <version>${cloud.version}</version>
+            <version>${resilence4j.version}</version>
         </dependency>
         <dependency>
             <groupId>io.rest-assured</groupId>
@@ -127,7 +132,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <version>${feign.version}</version>
+            <version>${spring-cloud.version}</version>
         </dependency>
     </dependencies>
 

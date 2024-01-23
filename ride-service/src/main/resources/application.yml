@@ -1,6 +1,12 @@
 server:
   port: 9003
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
 spring:
+  application:
+    name: ride-service
   datasource:
     url: jdbc:postgresql://localhost:5432/rides
     username: postgres
