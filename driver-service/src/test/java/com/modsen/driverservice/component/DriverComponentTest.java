@@ -15,8 +15,10 @@ import com.modsen.driverservice.mapper.DriverMapper;
 import com.modsen.driverservice.repository.DriverRepository;
 import com.modsen.driverservice.repository.RatingRepository;
 import com.modsen.driverservice.service.DriverService;
+import com.modsen.driverservice.service.PassengerService;
 import com.modsen.driverservice.service.RatingService;
 import com.modsen.driverservice.service.impl.DriverServiceImpl;
+import com.modsen.driverservice.service.impl.PassengerServiceImpl;
 import com.modsen.driverservice.service.impl.RatingServiceImpl;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -62,9 +64,10 @@ public class DriverComponentTest {
         this.modelMapper = mock(ModelMapper.class);
         this.ratingRepository = mock(RatingRepository.class);
         PassengerFeignClient passengerFeignClient = mock(PassengerFeignClient.class);
+        PassengerService passengerService = new PassengerServiceImpl(passengerFeignClient);
         DriverProducer driverProducer = mock(DriverProducer.class);
 
-        RatingService ratingService = new RatingServiceImpl(ratingRepository, driverRepository, modelMapper, passengerFeignClient);
+        RatingService ratingService = new RatingServiceImpl(ratingRepository, driverRepository, modelMapper, passengerService);
         this.driverMapper = new DriverMapper(modelMapper, ratingService);
         this.driverService = new DriverServiceImpl(driverMapper, driverRepository, driverProducer);
 

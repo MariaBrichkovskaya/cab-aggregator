@@ -12,7 +12,9 @@ import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.mapper.PassengerMapper;
 import com.modsen.passengerservice.repository.PassengerRepository;
 import com.modsen.passengerservice.repository.RatingRepository;
+import com.modsen.passengerservice.service.DriverService;
 import com.modsen.passengerservice.service.RatingService;
+import com.modsen.passengerservice.service.impl.DriverServiceImpl;
 import com.modsen.passengerservice.service.impl.PassengerServiceImpl;
 import com.modsen.passengerservice.service.impl.RatingServiceImpl;
 import io.cucumber.java.Before;
@@ -62,8 +64,9 @@ public class PassengerComponentTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         DriverFeignClient driverFeignClient = mock(DriverFeignClient.class);
+        DriverService driverService = new DriverServiceImpl(driverFeignClient);
 
-        RatingService ratingService = new RatingServiceImpl(ratingRepository, passengerRepository, modelMapper, driverFeignClient);
+        RatingService ratingService = new RatingServiceImpl(ratingRepository, passengerRepository, modelMapper, driverService);
         this.passengerMapper = new PassengerMapper(modelMapper, ratingService);
         this.passengerService = new PassengerServiceImpl(passengerRepository, passengerMapper);
     }

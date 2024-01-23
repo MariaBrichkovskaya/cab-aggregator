@@ -1,6 +1,8 @@
 server:
   port: 9002
 eureka:
+  instance:
+    prefer-ip-address: true
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
@@ -50,8 +52,7 @@ feign:
   client:
     config:
       passenger:
-        name: passenger
-        url: http://localhost:9001
+        name: passenger-service
         path: /api/v1/passengers
 management:
   health:

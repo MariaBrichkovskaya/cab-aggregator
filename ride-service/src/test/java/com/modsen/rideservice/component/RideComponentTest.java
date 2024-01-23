@@ -1,8 +1,5 @@
 package com.modsen.rideservice.component;
 
-import com.modsen.rideservice.client.DriverFeignClient;
-import com.modsen.rideservice.client.PassengerFeignClient;
-import com.modsen.rideservice.client.PaymentFeignClient;
 import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
@@ -18,6 +15,9 @@ import com.modsen.rideservice.exception.NotFoundException;
 import com.modsen.rideservice.kafka.RideProducer;
 import com.modsen.rideservice.kafka.StatusProducer;
 import com.modsen.rideservice.repository.RideRepository;
+import com.modsen.rideservice.service.DriverService;
+import com.modsen.rideservice.service.PassengerService;
+import com.modsen.rideservice.service.PaymentService;
 import com.modsen.rideservice.service.impl.RideServiceImpl;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -50,11 +50,11 @@ public class RideComponentTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private DriverFeignClient driverFeignClient;
+    private DriverService driverService;
     @Mock
-    private PassengerFeignClient passengerFeignClient;
+    private PassengerService passengerService;
     @Mock
-    private PaymentFeignClient paymentFeignClient;
+    private PaymentService paymentService;
     @Mock
     private RideProducer rideProducer;
     @Mock
