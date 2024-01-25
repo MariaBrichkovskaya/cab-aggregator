@@ -15,4 +15,6 @@ public class Messages {
     public final int RETRYER_PERIOD = 100;
     public final int RETRYER_MAX_PERIOD = 1000;
     public final int RETRYER_MAX_ATTEMPTS = 5;
+    public final String DEFAULT = "default";
+    public final double DEFAULT_RATING = 5.0;
 }

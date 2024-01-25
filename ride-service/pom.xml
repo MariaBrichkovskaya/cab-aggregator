@@ -17,10 +17,12 @@
         <java.version>17</java.version>
         <swagger.version>2.2.0</swagger.version>
         <mapper.version>3.1.1</mapper.version>
-        <cloud.version>4.1.0</cloud.version>
+        <feign.version>4.1.0</feign.version>
+        <cloud.version>3.1.0</cloud.version>
         <rest-assured.version>5.4.0</rest-assured.version>
         <test.version>1.19.3</test.version>
         <cucumber.version>7.15.0</cucumber.version>
+        <wiremock.version>4.1.0</wiremock.version>
     </properties>
     <dependencies>
         <dependency>
@@ -46,7 +48,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>${cloud.version}</version>
+            <version>${feign.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -90,6 +92,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+            <version>${cloud.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>${rest-assured.version}</version>
@@ -121,7 +128,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <version>${cloud.version}</version>
+            <version>${wiremock.version}</version>
         </dependency>
     </dependencies>
 

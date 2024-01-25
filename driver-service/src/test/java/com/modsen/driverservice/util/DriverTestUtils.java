@@ -166,9 +166,11 @@ public class DriverTestUtils {
         return PassengerResponse.builder()
                 .name(DEFAULT_NAME)
                 .id(DEFAULT_ID)
-                .name(DEFAULT_SURNAME)
+                .surname(DEFAULT_SURNAME)
                 .phone(DEFAULT_PHONE)
                 .email(DEFAULT_EMAIL)
+                .rating(DEFAULT_RATING)
+                .active(true)
                 .build();
     }
 

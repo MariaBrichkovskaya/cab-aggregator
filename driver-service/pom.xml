@@ -15,12 +15,14 @@
     <description>driver-service</description>
     <properties>
         <java.version>17</java.version>
-        <cloud.version>4.1.0</cloud.version>
+        <feign.version>4.1.0</feign.version>
+        <cloud.version>3.1.0</cloud.version>
         <mapper.version>3.1.1</mapper.version>
         <swagger.version>2.2.0</swagger.version>
         <kafka.version>3.1.1</kafka.version>
         <rest-assured.version>5.4.0</rest-assured.version>
         <test.version>1.19.3</test.version>
+        <wiremock.version>4.1.0</wiremock.version>
         <cucumber.version>7.15.0</cucumber.version>
     </properties>
     <dependencies>
@@ -32,6 +34,11 @@
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
             <version>${cucumber.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+            <version>${cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -95,7 +102,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>${cloud.version}</version>
+            <version>${feign.version}</version>
         </dependency>
         <dependency>
             <groupId>io.rest-assured</groupId>
@@ -129,7 +136,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <version>${cloud.version}</version>
+            <version>${wiremock.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
