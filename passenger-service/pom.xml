@@ -22,6 +22,7 @@
         <cucumber.version>7.15.0</cucumber.version>
         <openfeign.version>4.1.0</openfeign.version>
         <cloud.version>3.1.0</cloud.version>
+        <wiremock.version>4.1.0</wiremock.version>
     </properties>
     <dependencies>
         <dependency>
@@ -110,7 +111,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <version>${openfeign.version}</version>
+            <version>${wiremock.version}</version>
         </dependency>
 
     </dependencies>

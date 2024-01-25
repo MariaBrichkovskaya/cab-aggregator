@@ -22,6 +22,7 @@
         <rest-assured.version>5.4.0</rest-assured.version>
         <test.version>1.19.3</test.version>
         <cucumber.version>7.15.0</cucumber.version>
+        <wiremock.version>4.1.0</wiremock.version>
     </properties>
     <dependencies>
         <dependency>
@@ -127,7 +128,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <version>${feign.version}</version>
+            <version>${wiremock.version}</version>
         </dependency>
     </dependencies>
 
