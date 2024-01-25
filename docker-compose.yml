@@ -56,8 +56,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/passengers
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
     depends_on:
       - db
+      - gateway-service
   driver-service:
     image: driver-service
     container_name: driver-service
@@ -69,9 +71,11 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
     depends_on:
       - db
       - kafka
+      - gateway-service
 
   ride-service:
     image: ride-service
@@ -87,9 +91,11 @@ services:
       - FEIGN_CLIENT_CONFIG_PASSENGER_URL=passenger-service:9001
       - FEIGN_CLIENT_CONFIG_DRIVER_URL=driver-service:9002
       - FEIGN_CLIENT_CONFIG_PAYMENT_URL=payment-service:9004
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
     depends_on:
       - db
       - kafka
+      - gateway-service
 
   payment-service:
     image: payment-service
@@ -102,5 +108,23 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - STRIPE_KEY_PUBLIC=${STRIPE_PUBLIC_KEY}
       - STRIPE_KEY_SECRET=${STRIPE_SECRET_KEY}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
     depends_on:
       - db
+      - gateway-service
+
+  eureka-service:
+    image: eureka-service
+    container_name: eureka-service
+    ports:
+      - '8761:8761'
+
+  gateway-service:
+    image: gateway-service
+    container_name: gateway-service
+    environment:
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+    depends_on:
+      - eureka-service
+    ports:
+      - '8080:8080'
