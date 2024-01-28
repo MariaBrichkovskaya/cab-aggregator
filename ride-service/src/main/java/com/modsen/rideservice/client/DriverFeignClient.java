@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
-@FeignClient(value = "${feign.client.config.driver.name}",
+@FeignClient(value = "${feign.client.config.name}",
         path = "${feign.client.config.driver.path}", configuration = FeignClientConfig.class)
 public interface DriverFeignClient {
     @GetMapping("/{id}")

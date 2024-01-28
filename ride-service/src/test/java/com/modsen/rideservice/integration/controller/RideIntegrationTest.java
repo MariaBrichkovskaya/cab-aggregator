@@ -1,7 +1,5 @@
 package com.modsen.rideservice.integration.controller;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.modsen.rideservice.dto.request.CreateRideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
@@ -17,13 +15,12 @@ import com.modsen.rideservice.integration.IntegrationTest;
 import com.modsen.rideservice.repository.RideRepository;
 import io.restassured.http.ContentType;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -34,50 +31,38 @@ import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.modsen.rideservice.util.Messages.*;
 import static com.modsen.rideservice.util.TestUtils.*;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@ExtendWith(WireMockExtension.class)
+@AutoConfigureWireMock
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class RideIntegrationTest extends IntegrationTest {
     private final RideRepository rideRepository;
     private final ModelMapper modelMapper;
     @LocalServerPort
     private int port;
-    private WireMockServer driverServer;
-    private WireMockServer passengerServer;
 
     private final PassengerResponse passengerResponse = getDefaultPassengerResponse();
     private final DriverResponse driverResponse = getDefaultDriverResponse();
 
     @BeforeEach
     public void setup() {
-        driverServer = new WireMockServer(9002);
-        driverServer.start();
-        passengerServer = new WireMockServer(9001);
-        passengerServer.start();
-        driverServer
-                .stubFor(get(urlPathMatching(DRIVER_PATH))
-                        .willReturn(aResponse().withStatus(HttpStatus.OK.value())
-                                .withHeader("content-type", "application/json")
-                                .withBody(fromObjectToString(driverResponse))));
-        passengerServer
-                .stubFor(get(urlPathMatching(PASSENGER_PATH))
-                        .willReturn(aResponse()
-                                .withStatus(HttpStatus.OK.value())
-                                .withHeader("content-type", "application/json")
-                                .withBody(fromObjectToString(passengerResponse))));
+        stubFor(get(urlPathMatching(DRIVER_PATH))
+                .willReturn(aResponse().withStatus(HttpStatus.OK.value())
+                        .withHeader("content-type", "application/json")
+                        .withBody(fromObjectToString(driverResponse))));
+        stubFor(get(urlPathMatching(PASSENGER_PATH))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("content-type", "application/json")
+                        .withBody(fromObjectToString(passengerResponse))));
 
     }
 
-    @AfterEach
-    public void teardown() {
-        driverServer.stop();
-        passengerServer.stop();
-    }
 
     @Test
     void findById_shouldReturnNotFoundResponse_whenRideNotExist() {

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class DriverServiceImpl implements DriverService {
     private final DriverFeignClient driverFeignClient;
 
-    @CircuitBreaker(name = "breaker", fallbackMethod = "getFallbackDriver")
+    @CircuitBreaker(name = "driverBreaker", fallbackMethod = "getFallbackDriver")
     @Retry(name = "driverProxyRetry")
     public DriverResponse getDriver(long id) {
         return driverFeignClient.getDriver(id);
