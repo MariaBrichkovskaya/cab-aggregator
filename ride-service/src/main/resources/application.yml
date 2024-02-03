@@ -3,6 +3,9 @@ server:
 eureka:
   instance:
     prefer-ip-address: true
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
@@ -69,11 +72,21 @@ kafka:
   replicas:
     count: 1
 management:
-  health:
-    circuit-breakers:
-      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: [ 'prometheus','health' ]
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 resilience4j:
   circuitbreaker:
+    metrics:
+      enabled: true
     instances:
       paymentBreaker:
         register-health-indicator: true
@@ -112,6 +125,8 @@ resilience4j:
           seconds: 10
         failure-rate-threshold: 50
   retry:
+    metrics:
+      enabled: true
     configs:
       default:
         exponential-max-wait-duration:

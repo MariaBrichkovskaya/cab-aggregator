@@ -3,10 +3,15 @@ server:
 eureka:
   instance:
     prefer-ip-address: true
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
 spring:
+  main:
+    allow-bean-definition-overriding: true
   cloud:
     discovery:
       client:
@@ -42,11 +47,21 @@ feign:
         name: gateway-service
         path: /api/v1/drivers
 management:
-  health:
-    circuit-breakers:
-      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: [ 'prometheus','health' ]
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 resilience4j:
   circuitbreaker:
+    metrics:
+      enabled: true
     instances:
       breaker:
         register-health-indicator: true
@@ -64,10 +79,12 @@ resilience4j:
     configs:
       default:
         exponential-max-wait-duration:
-          seconds: 10
+          seconds: 2
         max-attempts: 4
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
     instances:
       proxyRetry:
         base-config: default
+    metrics:
+      enabled: true
