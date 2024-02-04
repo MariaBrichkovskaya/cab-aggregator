@@ -33,9 +33,23 @@ spring:
 eureka:
   instance:
     prefer-ip-address: true
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
   client:
     fetch-registry: true
     register-with-eureka: true
     service-url:
       defaultZone: http://localhost:8761/eureka
-
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: [ 'prometheus','health' ]
+  metrics:
+    export:
+      prometheus:
+        enabled: true

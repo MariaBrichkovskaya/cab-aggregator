@@ -5,7 +5,6 @@ import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.enums.RideStatus;
 import com.modsen.rideservice.integration.IntegrationTest;
 import com.modsen.rideservice.service.RideService;
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -21,12 +20,13 @@ import java.util.Collections;
 import static com.modsen.rideservice.util.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class StatusProducerTest extends IntegrationTest {
     @Value("${topic.name.status}")
     private String topic;
-    private final RideService rideService;
-    private final ConsumerFactory<String, Object> testStatusConsumerFactory;
+    @Autowired
+    private RideService rideService;
+    @Autowired
+    private ConsumerFactory<String, Object> testStatusConsumerFactory;
 
     @Test
     public void sendStatusMessage_WhenStatusChangedToFinished() {
