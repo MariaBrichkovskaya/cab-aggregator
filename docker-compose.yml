@@ -76,6 +76,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=Raznie71593)
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
     networks:
       - cab_aggregator
     depends_on:
@@ -95,6 +96,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
     depends_on:
       - eureka-service
       - db
@@ -114,6 +116,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
     depends_on:
       - eureka-service
       - db
@@ -133,6 +136,7 @@ services:
       - STRIPE_KEY_PUBLIC=${STRIPE_PUBLIC_KEY}
       - STRIPE_KEY_SECRET=${STRIPE_SECRET_KEY}
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
     depends_on:
       - eureka-service
       - db
@@ -152,6 +156,7 @@ services:
       - cab_aggregator
     environment:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
     depends_on:
       - eureka-service
     ports:
@@ -219,6 +224,13 @@ services:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
       - cab_aggregator
+  zipkin:
+    image: openzipkin/zipkin:2.27
+    container_name: zipkin
+    networks:
+      - cab_aggregator
+    ports:
+      - '9411:9411'
 networks:
   cab_aggregator:
     driver: bridge

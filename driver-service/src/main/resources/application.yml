@@ -65,6 +65,9 @@ feign:
         name: gateway-service
         path: /api/v1/passengers
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoint:
     health:
       show-details: always

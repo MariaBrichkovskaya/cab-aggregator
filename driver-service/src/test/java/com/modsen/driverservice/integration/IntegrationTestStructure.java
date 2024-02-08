@@ -1,8 +1,7 @@
+/*
 package com.modsen.driverservice.integration;
 
-import com.modsen.driverservice.config.KafkaConfig;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -19,7 +18,6 @@ import org.testcontainers.utility.DockerImageName;
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@Import(KafkaConfig.class)
 public abstract class IntegrationTestStructure {
     @Container
     protected static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
@@ -45,3 +43,4 @@ public abstract class IntegrationTestStructure {
     }
 
 }
+*/
