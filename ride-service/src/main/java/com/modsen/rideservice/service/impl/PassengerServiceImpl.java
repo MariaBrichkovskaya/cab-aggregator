@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static com.modsen.rideservice.util.Messages.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,11 +28,11 @@ public class PassengerServiceImpl implements PassengerService {
         log.error(exception.getMessage());
         return PassengerResponse.builder()
                 .id(id)
-                .name("default")
-                .surname("default")
-                .email("default")
-                .phone("default")
-                .rating(5.0)
+                .name(DEFAULT)
+                .surname(DEFAULT)
+                .email(DEFAULT)
+                .phone(DEFAULT)
+                .rating(DEFAULT_RATING)
                 .active(false)
                 .build();
     }

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class PassengerServiceImpl implements PassengerService {
     private final PassengerFeignClient passengerFeignClient;
+    private final String DEFAULT = "default";
+    private final double DEFAULT_RATING = 5.0;
 
     @CircuitBreaker(name = "breaker", fallbackMethod = "getFallbackPassenger")
     @Retry(name = "proxyRetry")
@@ -26,11 +28,11 @@ public class PassengerServiceImpl implements PassengerService {
         log.error(exception.getMessage());
         return PassengerResponse.builder()
                 .id(id)
-                .name("default")
-                .surname("default")
-                .email("default")
-                .phone("default")
-                .rating(5.0)
+                .name(DEFAULT)
+                .surname(DEFAULT)
+                .email(DEFAULT)
+                .phone(DEFAULT)
+                .rating(DEFAULT_RATING)
                 .active(false)
                 .build();
     }
