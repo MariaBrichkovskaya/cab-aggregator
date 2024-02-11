@@ -62,7 +62,7 @@ feign:
   client:
     config:
       passenger:
-        name: gateway-service
+        name: passenger-service
         path: /api/v1/passengers
 management:
   tracing:

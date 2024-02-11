@@ -44,7 +44,7 @@ feign:
   client:
     config:
       driver:
-        name: gateway-service
+        name: driver-service
         path: /api/v1/drivers
 management:
   tracing:

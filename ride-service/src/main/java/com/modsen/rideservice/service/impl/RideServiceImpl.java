@@ -158,8 +158,14 @@ public class RideServiceImpl implements RideService {
     public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
+        PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
         List<RideResponse> rides = ridesPage.getContent().stream()
-                .map(this::fromEntityToRideResponse)
+                .map(ride -> {
+                    RideResponse response = modelMapper.map(ride, RideResponse.class);
+                    response.setDriverResponse(getDriverById(ride.getDriverId()));
+                    response.setPassengerResponse(passengerResponse);
+                    return response;
+                })
                 .toList();
         log.info("Retrieving rides for passenger with id {}", passengerId);
         return RidesListResponse.builder()
@@ -172,8 +178,15 @@ public class RideServiceImpl implements RideService {
     public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
+        DriverResponse driverResponse = driverService.getDriver(driverId);
         List<RideResponse> rides = ridesPage.getContent().stream()
-                .map(this::fromEntityToRideResponse)
+                .map(ride -> {
+                            RideResponse response = modelMapper.map(ride, RideResponse.class);
+                            response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
+                            response.setDriverResponse(driverResponse);
+                            return response;
+                        }
+                )
                 .toList();
         log.info("Retrieving rides for driver with id {}", driverId);
         return RidesListResponse.builder()

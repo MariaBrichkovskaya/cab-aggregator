@@ -53,12 +53,14 @@ spring:
 feign:
   client:
     config:
-      name: gateway-service
       passenger:
+        name: passenger-service
         path: /api/v1/passengers
       driver:
+        name: driver-service
         path: /api/v1/drivers
       payment:
+        name: payment-service
         path: /api/v1/payments
 topic:
   name:

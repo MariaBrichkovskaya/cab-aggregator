@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "${feign.client.config.name}",
+@FeignClient(value = "${feign.client.config.payment.name}",
         path = "${feign.client.config.payment.path}", configuration = FeignClientConfig.class)
 public interface PaymentFeignClient {
 
