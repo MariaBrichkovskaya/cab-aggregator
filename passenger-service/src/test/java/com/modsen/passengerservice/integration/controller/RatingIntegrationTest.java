@@ -37,7 +37,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         "classpath:sql/rating/delete-data.sql",
         "classpath:sql/rating/insert-data.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@AutoConfigureWireMock(port = 9002)
+@AutoConfigureWireMock
 public class RatingIntegrationTest extends IntegrationTestStructure {
 
     private final RatingRepository ratingRepository;

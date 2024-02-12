@@ -6,12 +6,14 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 @Builder
+@ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DriverResponse {
     long id;

@@ -32,7 +32,7 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@AutoConfigureWireMock(port = 9001)
+@AutoConfigureWireMock
 public class RatingIntegrationTest extends IntegrationTestStructure {
 
     private final RatingRepository ratingRepository;

@@ -176,6 +176,7 @@ public class TestUtils {
                 .surname(DEFAULT_SURNAME)
                 .phone(DEFAULT_PHONE)
                 .rating(DEFAULT_RATING)
+                .active(true)
                 .build();
     }
 

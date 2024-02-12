@@ -7,6 +7,13 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 spring:
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            gateway-service[0]:
+              uri: http://localhost:${wiremock.server.port:8080}
   application:
     name: passenger-service
   datasource:
@@ -32,7 +39,7 @@ feign:
   client:
     config:
       driver:
-        name: driver-service
+        name: gateway-service
         path: /api/v1/drivers
 management:
   health:

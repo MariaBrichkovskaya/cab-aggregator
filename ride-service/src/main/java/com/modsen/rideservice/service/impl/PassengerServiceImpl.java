@@ -17,7 +17,7 @@ import static com.modsen.rideservice.util.Messages.*;
 public class PassengerServiceImpl implements PassengerService {
     private final PassengerFeignClient passengerFeignClient;
 
-    @CircuitBreaker(name = "breaker", fallbackMethod = "getFallbackPassenger")
+    @CircuitBreaker(name = "passengerBreaker", fallbackMethod = "getFallbackPassenger")
     @Retry(name = "proxyRetry")
     @Override
     public PassengerResponse getPassenger(long id) {
