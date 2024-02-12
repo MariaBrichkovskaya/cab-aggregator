@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static com.modsen.rideservice.util.Messages.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,11 +27,11 @@ public class DriverServiceImpl implements DriverService {
         log.error(exception.getMessage());
         return DriverResponse.builder()
                 .id(id)
-                .name("default")
-                .surname("default")
-                .phone("default")
+                .name(DEFAULT)
+                .surname(DEFAULT)
+                .phone(DEFAULT)
+                .rating(DEFAULT_RATING)
                 .active(false)
-                .rating(5.0)
                 .build();
     }
 }
