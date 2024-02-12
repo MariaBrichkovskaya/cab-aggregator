@@ -8,6 +8,7 @@ import com.modsen.rideservice.dto.request.EditDriverStatusRequest;
 import com.modsen.rideservice.dto.request.RideRequest;
 import com.modsen.rideservice.dto.request.StatusRequest;
 import com.modsen.rideservice.dto.request.UpdateRideRequest;
+import com.modsen.rideservice.dto.response.ExistenceResponse;
 import com.modsen.rideservice.dto.response.RideResponse;
 import com.modsen.rideservice.dto.response.RidesListResponse;
 import com.modsen.rideservice.entity.Ride;
@@ -392,7 +393,10 @@ class RideServiceImplTest {
         RideResponse expected = getDefaultRideResponse();
         Ride savedRide = getDefaultRide();
         doReturn(createdRide).when(modelMapper).map(request, Ride.class);
-        when(paymentService.findCustomer(DEFAULT_ID)).thenThrow(NotFoundException.class);
+        when(paymentService.customerExistence(DEFAULT_ID)).thenReturn(ExistenceResponse.builder()
+                .id(DEFAULT_ID)
+                .exist(false)
+                .build());
         doReturn(savedRide).when(rideRepository).save(createdRide);
         doReturn(expected).when(modelMapper).map(savedRide, RideResponse.class);
 
@@ -401,7 +405,7 @@ class RideServiceImplTest {
         assertNotNull(actual);
         assertEquals(actual, expected);
         verify(modelMapper).map(request, Ride.class);
-        verify(paymentService).findCustomer(DEFAULT_ID);
+        verify(paymentService).customerExistence(DEFAULT_ID);
         verify(paymentService).createCustomer(any(CustomerRequest.class));
         verify(paymentService).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));
@@ -416,6 +420,12 @@ class RideServiceImplTest {
         expected.setPaymentMethod("CASH");
         Ride savedRide = getDefaultRide();
         doReturn(createdRide).when(modelMapper).map(request, Ride.class);
+        doReturn(ExistenceResponse.builder()
+                .id(DEFAULT_ID)
+                .exist(true)
+                .build())
+                .when(paymentService)
+                .customerExistence(DEFAULT_ID);
         when(paymentService.chargeFromCustomer(any(CustomerChargeRequest.class))).thenThrow(BalanceException.class);
         doReturn(savedRide).when(rideRepository).save(createdRide);
         doReturn(expected).when(modelMapper).map(savedRide, RideResponse.class);
@@ -426,7 +436,7 @@ class RideServiceImplTest {
         assertEquals(actual, expected);
         assertEquals(actual.getPaymentMethod(), "CASH");
         verify(modelMapper).map(request, Ride.class);
-        verify(paymentService).findCustomer(DEFAULT_ID);
+        verify(paymentService).customerExistence(DEFAULT_ID);
         verify(paymentService, never()).createCustomer(any(CustomerRequest.class));
         verify(paymentService).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));
@@ -440,6 +450,12 @@ class RideServiceImplTest {
         RideResponse expected = getDefaultRideResponse();
         Ride savedRide = getDefaultRide();
         doReturn(createdRide).when(modelMapper).map(request, Ride.class);
+        doReturn(ExistenceResponse.builder()
+                .id(DEFAULT_ID)
+                .exist(true)
+                .build())
+                .when(paymentService)
+                .customerExistence(DEFAULT_ID);
         doReturn(savedRide).when(rideRepository).save(createdRide);
         doReturn(expected).when(modelMapper).map(savedRide, RideResponse.class);
 
@@ -449,7 +465,7 @@ class RideServiceImplTest {
         assertEquals(actual, expected);
         assertEquals(actual.getPaymentMethod(), "CARD");
         verify(modelMapper).map(request, Ride.class);
-        verify(paymentService).findCustomer(DEFAULT_ID);
+        verify(paymentService).customerExistence(DEFAULT_ID);
         verify(paymentService, never()).createCustomer(any(CustomerRequest.class));
         verify(paymentService).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));
@@ -473,7 +489,7 @@ class RideServiceImplTest {
         assertEquals(actual, expected);
         verify(modelMapper).map(request, Ride.class);
         verify(passengerService, times(1)).getPassenger(DEFAULT_ID);
-        verify(paymentService, never()).findCustomer(DEFAULT_ID);
+        verify(paymentService, never()).customerExistence(DEFAULT_ID);
         verify(paymentService, never()).createCustomer(any(CustomerRequest.class));
         verify(paymentService, never()).chargeFromCustomer(any(CustomerChargeRequest.class));
         verify(rideProducer).sendMessage(any(RideRequest.class));

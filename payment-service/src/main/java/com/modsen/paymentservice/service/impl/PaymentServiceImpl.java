@@ -1,11 +1,16 @@
 package com.modsen.paymentservice.service.impl;
 
-import com.modsen.paymentservice.enums.PaymentMethodEnum;
 import com.modsen.paymentservice.dto.request.CardRequest;
 import com.modsen.paymentservice.dto.request.ChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerChargeRequest;
 import com.modsen.paymentservice.dto.request.CustomerRequest;
-import com.modsen.paymentservice.dto.response.*;
+import com.modsen.paymentservice.dto.response.BalanceResponse;
+import com.modsen.paymentservice.dto.response.ChargeResponse;
+import com.modsen.paymentservice.dto.response.CustomerResponse;
+import com.modsen.paymentservice.dto.response.ExistenceResponse;
+import com.modsen.paymentservice.dto.response.MessageResponse;
+import com.modsen.paymentservice.dto.response.TokenResponse;
+import com.modsen.paymentservice.enums.PaymentMethodEnum;
 import com.modsen.paymentservice.exception.AlreadyExistsException;
 import com.modsen.paymentservice.exception.BalanceException;
 import com.modsen.paymentservice.exception.NotFoundException;
@@ -15,7 +20,12 @@ import com.modsen.paymentservice.repository.CustomerRepository;
 import com.modsen.paymentservice.service.PaymentService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.*;
+import com.stripe.model.Balance;
+import com.stripe.model.Charge;
+import com.stripe.model.Customer;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.PaymentMethod;
+import com.stripe.model.Token;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerUpdateParams;
 import com.stripe.param.PaymentIntentConfirmParams;
@@ -200,6 +210,22 @@ public class PaymentServiceImpl implements PaymentService {
         return ChargeResponse.builder().id(intent.getId())
                 .amount(intent.getAmount() / 100)
                 .currency(intent.getCurrency()).build();
+    }
+
+    @Override
+    public ExistenceResponse checkExistence(long id) {
+        try {
+            checkCustomerNotFound(id);
+            return ExistenceResponse.builder()
+                    .exist(true)
+                    .id(id)
+                    .build();
+        } catch (NotFoundException e) {
+            return ExistenceResponse.builder()
+                    .exist(false)
+                    .id(id)
+                    .build();
+        }
     }
 
     private PaymentIntent confirmIntent(CustomerChargeRequest request, String customerId) {

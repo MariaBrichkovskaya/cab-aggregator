@@ -7,6 +7,15 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 spring:
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            gateway-service[0]:
+              uri: http://localhost:${wiremock.server.port:8080}
   application:
     name: ride-service
   datasource:
@@ -41,14 +50,12 @@ spring:
 feign:
   client:
     config:
+      name: gateway-service
       passenger:
-        name: passenger-service
         path: /api/v1/passengers
       driver:
-        name: driver-service
         path: /api/v1/drivers
       payment:
-        name: payment-service
         path: /api/v1/payments
 topic:
   name:
@@ -68,7 +75,31 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      breaker:
+      paymentBreaker:
+        register-health-indicator: true
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+        permitted-number-of-calls-in-half-open-state: 4
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state:
+          seconds: 5
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold:
+          seconds: 10
+        failure-rate-threshold: 50
+      passengerBreaker:
+        register-health-indicator: true
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+        permitted-number-of-calls-in-half-open-state: 4
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state:
+          seconds: 5
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold:
+          seconds: 10
+        failure-rate-threshold: 50
+      driverBreaker:
         register-health-indicator: true
         sliding-window-size: 10
         sliding-window-type: COUNT_BASED
@@ -84,7 +115,7 @@ resilience4j:
     configs:
       default:
         exponential-max-wait-duration:
-          seconds: 10
+          seconds: 5
         max-attempts: 4
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2

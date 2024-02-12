@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(value = "${feign.client.config.passenger.name}",
+@FeignClient(value = "${feign.client.config.name}",
         path = "${feign.client.config.passenger.path}", configuration = FeignClientConfig.class)
 public interface PassengerFeignClient {
     @GetMapping("/{id}")

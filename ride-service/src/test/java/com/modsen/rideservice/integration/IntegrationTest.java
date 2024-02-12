@@ -43,5 +43,6 @@ public abstract class IntegrationTest {
         registry.add("postgresql.driver", postgres::getDriverClassName);
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
         registry.add("kafka.bootstrap-servers", kafka::getBootstrapServers);
+        registry.add("eureka.client.enabled", () -> false);
     }
 }

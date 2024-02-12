@@ -277,9 +277,7 @@ public class RideServiceImpl implements RideService {
     }
 
     private void checkCustomer(long passengerId, PassengerResponse passengerResponse) {
-        try {
-            paymentService.findCustomer(passengerId);
-        } catch (NotFoundException e) {
+        if (!paymentService.customerExistence(passengerId).isExist()) {
             CustomerRequest customerRequest = CustomerRequest.builder()
                     .amount(1000000)
                     .phone(passengerResponse.getPhone())
