@@ -4,7 +4,15 @@ stripe:
     secret: ${STRIPE_SECRET_KEY}
 server:
   port: 9004
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
 spring:
+  application:
+    name: payment-service
   datasource:
     url: jdbc:postgresql://localhost:5432/payments
     username: postgres

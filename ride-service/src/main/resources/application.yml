@@ -1,6 +1,14 @@
 server:
   port: 9003
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
 spring:
+  application:
+    name: ride-service
   datasource:
     url: jdbc:postgresql://localhost:5432/rides
     username: postgres
@@ -34,16 +42,13 @@ feign:
   client:
     config:
       passenger:
-        name: passenger
-        url: http://localhost:9001
+        name: passenger-service
         path: /api/v1/passengers
       driver:
-        name: driver
-        url: http://localhost:9002
+        name: driver-service
         path: /api/v1/drivers
       payment:
-        name: payment
-        url: http://localhost:9004
+        name: payment-service
         path: /api/v1/payments
 topic:
   name:

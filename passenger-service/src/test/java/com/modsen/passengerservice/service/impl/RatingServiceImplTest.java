@@ -1,6 +1,5 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.client.DriverFeignClient;
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
 import com.modsen.passengerservice.dto.response.DriverResponse;
@@ -10,6 +9,7 @@ import com.modsen.passengerservice.entity.Rating;
 import com.modsen.passengerservice.exception.NotFoundException;
 import com.modsen.passengerservice.repository.PassengerRepository;
 import com.modsen.passengerservice.repository.RatingRepository;
+import com.modsen.passengerservice.service.DriverService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,7 +44,7 @@ class RatingServiceImplTest {
     @Mock
     private RatingRepository ratingRepository;
     @Mock
-    private DriverFeignClient driverFeignClient;
+    private DriverService driverService;
     @InjectMocks
     private RatingServiceImpl ratingService;
 
@@ -83,7 +83,7 @@ class RatingServiceImplTest {
                 .when(modelMapper)
                 .map(savedRating, PassengerRatingResponse.class);
         doReturn(driverResponse)
-                .when(driverFeignClient)
+                .when(driverService)
                 .getDriver(request.getDriverId());
         PassengerRatingResponse expected = ratingService.ratePassenger(request, DEFAULT_ID);
 
@@ -91,7 +91,7 @@ class RatingServiceImplTest {
         verify(passengerRepository).findByIdAndActiveIsTrue(DEFAULT_ID);
         verify(ratingRepository).save(ratingToSave);
         verify(modelMapper).map(savedRating, PassengerRatingResponse.class);
-        verify(driverFeignClient).getDriver(request.getDriverId());
+        verify(driverService).getDriver(request.getDriverId());
     }
 
     @Test
@@ -115,13 +115,13 @@ class RatingServiceImplTest {
         when(passengerRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(getDefaultPassenger()));
         when(ratingRepository.getRatingsByPassengerId(DEFAULT_ID)).thenReturn(ratings);
         doReturn(getDefaultPassengerRatingResponse()).when(modelMapper).map(any(Rating.class), eq(PassengerRatingResponse.class));
-        when(driverFeignClient.getDriver(DEFAULT_ID)).thenReturn(getDefaultDriverResponse());
+        when(driverService.getDriver(DEFAULT_ID)).thenReturn(getDefaultDriverResponse());
 
         PassengerListRatingsResponse response = ratingService.getRatingsByPassengerId(DEFAULT_ID);
 
         verify(passengerRepository).findById(DEFAULT_ID);
         verify(ratingRepository).getRatingsByPassengerId(DEFAULT_ID);
-        verify(driverFeignClient, times(ratings.size())).getDriver(DEFAULT_ID);
+        verify(driverService, times(ratings.size())).getDriver(DEFAULT_ID);
 
         assertNotNull(response);
         assertEquals(ratings.size(), response.getPassengerRatings().size());
