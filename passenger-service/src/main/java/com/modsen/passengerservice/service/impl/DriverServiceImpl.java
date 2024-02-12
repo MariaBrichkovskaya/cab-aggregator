@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class DriverServiceImpl implements DriverService {
     private final DriverFeignClient driverFeignClient;
+    private final String DEFAULT = "default";
+    private final double DEFAULT_RATING = 5.0;
 
     @CircuitBreaker(name = "breaker", fallbackMethod = "getFallbackDriver")
     @Retry(name = "driverProxyRetry")
@@ -25,10 +27,10 @@ public class DriverServiceImpl implements DriverService {
         log.error(exception.getMessage());
         return DriverResponse.builder()
                 .id(id)
-                .name("default")
-                .surname("default")
-                .phone("default")
-                .rating(5.0)
+                .name(DEFAULT)
+                .surname(DEFAULT)
+                .phone(DEFAULT)
+                .rating(DEFAULT_RATING)
                 .active(false)
                 .build();
     }
