@@ -14,7 +14,6 @@ import com.modsen.rideservice.enums.RideStatus;
 import com.modsen.rideservice.integration.IntegrationTest;
 import com.modsen.rideservice.repository.RideRepository;
 import io.restassured.http.ContentType;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -39,10 +38,11 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @AutoConfigureWireMock
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class RideIntegrationTest extends IntegrationTest {
-    private final RideRepository rideRepository;
-    private final ModelMapper modelMapper;
+    @Autowired
+    private RideRepository rideRepository;
+    @Autowired
+    private ModelMapper modelMapper;
     @LocalServerPort
     private int port;
 

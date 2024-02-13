@@ -30,6 +30,7 @@ import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerUpdateParams;
 import com.stripe.param.PaymentIntentConfirmParams;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
     @Value("${stripe.key.secret}")
@@ -50,6 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
         Stripe.apiKey = SECRET_KEY;
         Charge charge = checkChargeData(request);
         String message = "Payment successful. ID: " + charge.getId();
+        log.info(message);
         return MessageResponse.builder().message(message).build();
     }
 
@@ -63,6 +66,7 @@ public class PaymentServiceImpl implements PaymentService {
                     )
             );
         } catch (StripeException stripeException) {
+            log.error(stripeException.getMessage());
             throw new PaymentException(stripeException.getMessage());
         }
     }
@@ -77,6 +81,7 @@ public class PaymentServiceImpl implements PaymentService {
                 "cvc", request.getCvc()
         );
         Token token = checkTokenData(card);
+        log.info("create token with id {}", token.getId());
         return TokenResponse.builder().token(token.getId()).build();
     }
 
@@ -84,6 +89,7 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             return Token.create(Map.of("card", card));
         } catch (StripeException stripeException) {
+            log.error(stripeException.getMessage());
             throw new PaymentException(stripeException.getMessage());
         }
     }
@@ -100,6 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
                         .setBalance(request.getAmount())
                         .build();
         Stripe.apiKey = SECRET_KEY;
+        log.info("User was created");
         return createUser(params, request.getPassengerId());
     }
 

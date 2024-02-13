@@ -50,7 +50,11 @@ public class PassengerServiceImpl implements PassengerService {
     @Transactional(readOnly = true)
     public PassengerResponse findById(Long id) {
         Passenger passenger = passengerRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("Passenger with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         log.info("Retrieving passenger by id {}", id);
         return passengerMapper.toPassengerResponse(passenger);
     }
@@ -88,6 +92,7 @@ public class PassengerServiceImpl implements PassengerService {
 
         if (!fieldNames.contains(sortingParam)) {
             String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
+            log.error(errorMessage);
             throw new InvalidRequestException(errorMessage);
         }
     }
@@ -96,7 +101,11 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     public PassengerResponse update(PassengerRequest request, Long id) {
         Passenger passengerToUpdate = passengerRepository.findByIdAndActiveIsTrue(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("Passenger with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         checkUpdateDataIsUnique(request, passengerToUpdate);
         Passenger passenger = passengerMapper.toEntity(request);
         passenger.setId(id);
@@ -107,7 +116,11 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     public MessageResponse delete(Long id) {
         Passenger passenger = passengerRepository.findByIdAndActiveIsTrue(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("Passenger with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         passenger.setActive(false);
         passengerRepository.save(passenger);
         log.info("Delete passenger with id {}", id);

@@ -2,6 +2,9 @@ server:
   port: 9002
 eureka:
   instance:
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
     prefer-ip-address: true
   client:
     service-url:
@@ -59,12 +62,23 @@ feign:
   client:
     config:
       passenger:
-        name: gateway-service
+        name: passenger-service
         path: /api/v1/passengers
 management:
-  health:
-    circuit-breakers:
-      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: [ 'prometheus','health' ]
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 resilience4j:
   circuitbreaker:
     instances:
@@ -80,11 +94,15 @@ resilience4j:
         slow-call-duration-threshold:
           seconds: 10
         failure-rate-threshold: 50
+    metrics:
+      enabled: true
   retry:
+    metrics:
+      enabled: true
     configs:
       default:
         exponential-max-wait-duration:
-          seconds: 10
+          seconds: 2
         max-attempts: 4
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2

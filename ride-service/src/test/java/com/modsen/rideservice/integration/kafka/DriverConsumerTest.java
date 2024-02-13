@@ -4,7 +4,6 @@ import com.modsen.rideservice.dto.request.DriverForRideRequest;
 import com.modsen.rideservice.entity.Ride;
 import com.modsen.rideservice.integration.IntegrationTest;
 import com.modsen.rideservice.repository.RideRepository;
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +17,14 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DriverConsumerTest extends IntegrationTest {
     @Value("${topic.name.driver}")
     private String topic;
+    @Autowired
 
-
-    private final KafkaTemplate<String, DriverForRideRequest> testProducerKafkaTemplate;
-    private final RideRepository rideRepository;
+    private KafkaTemplate<String, DriverForRideRequest> testProducerKafkaTemplate;
+    @Autowired
+    private RideRepository rideRepository;
 
 
     @Test

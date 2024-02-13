@@ -1,6 +1,5 @@
 package com.modsen.passengerservice.service.impl;
 
-import com.modsen.passengerservice.client.DriverFeignClient;
 import com.modsen.passengerservice.dto.request.PassengerRatingRequest;
 import com.modsen.passengerservice.dto.response.AveragePassengerRatingResponse;
 import com.modsen.passengerservice.dto.response.DriverResponse;
@@ -39,7 +38,11 @@ public class RatingServiceImpl implements RatingService {
     public PassengerRatingResponse ratePassenger(PassengerRatingRequest passengerRatingRequest, long passengerId) {
         Rating newPassengerRating = toEntity(passengerRatingRequest);
         newPassengerRating.setPassenger(passengerRepository.findByIdAndActiveIsTrue(passengerId)
-                .orElseThrow(() -> new NotFoundException(passengerId)));
+                .orElseThrow(() -> {
+                            log.error("driver with id {} is not found", passengerId);
+                            return new NotFoundException(passengerId);
+                        }
+                ));
         log.info("Update rating for passenger {}", passengerId);
         return toDto(ratingRepository.save(newPassengerRating));
     }
@@ -77,7 +80,11 @@ public class RatingServiceImpl implements RatingService {
 
     private void validatePassengerExists(long passengerId) {
         passengerRepository.findById(passengerId)
-                .orElseThrow(() -> new NotFoundException(passengerId));
+                .orElseThrow(() -> {
+                            log.error("driver with id {} is not found", passengerId);
+                            return new NotFoundException(passengerId);
+                        }
+                );
     }
 
     public Rating toEntity(PassengerRatingRequest passengerRatingRequest) {

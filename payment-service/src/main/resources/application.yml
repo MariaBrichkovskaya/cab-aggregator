@@ -7,6 +7,9 @@ server:
 eureka:
   instance:
     prefer-ip-address: true
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
@@ -30,5 +33,18 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
-
-
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: [ 'prometheus','health' ]
+  metrics:
+    export:
+      prometheus:
+        enabled: true

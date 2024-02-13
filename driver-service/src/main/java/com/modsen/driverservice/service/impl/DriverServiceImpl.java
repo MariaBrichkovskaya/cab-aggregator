@@ -58,7 +58,10 @@ public class DriverServiceImpl implements DriverService {
     @Transactional(readOnly = true)
     public DriverResponse findById(Long id) {
         Driver driver = driverRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                    log.error("driver with id {} is not found", id);
+                    return new NotFoundException(id);
+                });
         log.info("Retrieving driver by id {}", id);
 
         return driverMapper.toDriverResponse(driver);
@@ -104,6 +107,7 @@ public class DriverServiceImpl implements DriverService {
                 .toList();
 
         if (!fieldNames.contains(sortingParam)) {
+            log.error(INVALID_SORTING_MESSAGE);
             String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
             throw new InvalidRequestException(errorMessage);
         }
@@ -121,10 +125,14 @@ public class DriverServiceImpl implements DriverService {
 
     private void checkDriverUnique(DriverRequest request, Long id) {
         Driver driver = driverRepository.findByIdAndActiveIsTrue(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("driver with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         if (!Objects.equals(request.getPhone(), driver.getPhone())) {
             if (driverRepository.existsByPhone(request.getPhone())) {
-                log.error("Driver with phone {} is exists", request.getPhone());
+                log.error("Driver with phone {} already exists", request.getPhone());
                 throw new AlreadyExistsException(String.format(DRIVER_WITH_PHONE_EXISTS_MESSAGE, request.getPhone()));
             }
         }
@@ -135,6 +143,7 @@ public class DriverServiceImpl implements DriverService {
     public MessageResponse delete(Long id) {
         Driver driver = driverRepository.findByIdAndActiveIsTrue(id).orElseThrow(() -> new NotFoundException(id));
         if (driver.getStatus().equals(Status.UNAVAILABLE)) {
+            log.error(UNAVAILABLE_DRIVER_MESSAGE.formatted(id));
             throw new DriverIsUnavailableException(String.format(UNAVAILABLE_DRIVER_MESSAGE, id));
         }
         driver.setActive(false);
@@ -148,7 +157,11 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public MessageResponse changeStatus(Long id) {
         Driver driver = driverRepository.findByIdAndActiveIsTrue(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("driver with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         if (driver.getStatus().equals(Status.AVAILABLE)) {
             driver.setStatus(Status.UNAVAILABLE);
         } else {
@@ -158,6 +171,7 @@ public class DriverServiceImpl implements DriverService {
                     .build()
             );
         }
+        log.info(String.format(EDIT_DRIVER_STATUS_MESSAGE, id));
         driverRepository.save(driver);
         return MessageResponse.builder()
                 .message(String.format(EDIT_DRIVER_STATUS_MESSAGE, id))
@@ -181,6 +195,7 @@ public class DriverServiceImpl implements DriverService {
                     .driverId(drivers.get(0).getId())
                     .rideId(request.getId())
                     .build();
+            log.info("Retrieve drivers for ride");
             driverProducer.sendMessage(driver);
         }
 

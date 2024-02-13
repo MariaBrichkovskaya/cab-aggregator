@@ -90,7 +90,11 @@ public class RideServiceImpl implements RideService {
     @Transactional(readOnly = true)
     public RideResponse findById(Long id) {
         Ride ride = rideRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("Ride with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         log.info("Retrieving ride by id {}", id);
 
         return fromEntityToRideResponse(ride);
@@ -114,18 +118,26 @@ public class RideServiceImpl implements RideService {
     @Override
     public RideResponse update(UpdateRideRequest request, Long id) {
         Ride rideToUpdate = rideRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+                .orElseThrow(() -> {
+                            log.error("Ride with id {} is not found", id);
+                            return new NotFoundException(id);
+                        }
+                );
         Ride ride = modelMapper.map(request, Ride.class);
         ride.setId(id);
+        setFieldsForUpdate(ride, rideToUpdate);
+        Ride savedRide = rideRepository.save(ride);
+        log.info("Update ride with id {}", id);
+
+        return fromEntityToRideResponse(savedRide);
+    }
+
+    private void setFieldsForUpdate(Ride ride, Ride rideToUpdate) {
         ride.setDate(rideToUpdate.getDate());
         ride.setRideStatus(rideToUpdate.getRideStatus());
         ride.setPaymentMethod(rideToUpdate.getPaymentMethod());
         ride.setDriverId(rideToUpdate.getDriverId());
         ride.setPassengerId(rideToUpdate.getPassengerId());
-        Ride savedRide = rideRepository.save(ride);
-        log.info("Update ride with id {}", id);
-
-        return fromEntityToRideResponse(savedRide);
     }
 
     @Override
@@ -146,8 +158,14 @@ public class RideServiceImpl implements RideService {
     public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
+        PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
         List<RideResponse> rides = ridesPage.getContent().stream()
-                .map(this::fromEntityToRideResponse)
+                .map(ride -> {
+                    RideResponse response = modelMapper.map(ride, RideResponse.class);
+                    response.setDriverResponse(getDriverById(ride.getDriverId()));
+                    response.setPassengerResponse(passengerResponse);
+                    return response;
+                })
                 .toList();
         log.info("Retrieving rides for passenger with id {}", passengerId);
         return RidesListResponse.builder()
@@ -160,8 +178,15 @@ public class RideServiceImpl implements RideService {
     public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
+        DriverResponse driverResponse = driverService.getDriver(driverId);
         List<RideResponse> rides = ridesPage.getContent().stream()
-                .map(this::fromEntityToRideResponse)
+                .map(ride -> {
+                            RideResponse response = modelMapper.map(ride, RideResponse.class);
+                            response.setPassengerResponse(getPassengerById(ride.getPassengerId()));
+                            response.setDriverResponse(driverResponse);
+                            return response;
+                        }
+                )
                 .toList();
         log.info("Retrieving rides for driver with id {}", driverId);
         return RidesListResponse.builder()
@@ -171,19 +196,26 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponse editStatus(long id, StatusRequest statusRequest) {
-        Ride ride = rideRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Ride ride = rideRepository.findById(id).orElseThrow(() -> {
+                    log.error("Ride with id {} is not found", id);
+                    return new NotFoundException(id);
+                }
+        );
         checkStatus(ride, statusRequest);
         ride.setRideStatus(RideStatus.valueOf(statusRequest.getStatus()));
         Ride savedRide = rideRepository.save(ride);
+        log.info("Status for ride with id {} was changed to {}", id, statusRequest.getStatus());
 
         return fromEntityToRideResponse(savedRide);
     }
 
     private void checkStatus(Ride ride, StatusRequest statusRequest) {
         if (ride.getDriverId() == null) {
+            log.error(EMPTY_DRIVER_MESSAGE);
             throw new DriverIsEmptyException(EMPTY_DRIVER_MESSAGE);
         }
         if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
+            log.error(ALREADY_FINISHED_MESSAGE);
             throw new AlreadyFinishedRideException(ALREADY_FINISHED_MESSAGE);
         }
         if (RideStatus.FINISHED.toString().equals(statusRequest.getStatus())) {
@@ -216,6 +248,7 @@ public class RideServiceImpl implements RideService {
                 .toList();
         if (!fieldNames.contains(sortingParam)) {
             String errorMessage = String.format(INVALID_SORTING_MESSAGE, fieldNames);
+            log.error(errorMessage);
             throw new InvalidRequestException(errorMessage);
         }
     }
@@ -253,6 +286,7 @@ public class RideServiceImpl implements RideService {
                 charge(ride, (long) (ride.getPrice() * 100));
             } catch (BalanceException | PaymentFallbackException exception) {
                 ride.setPaymentMethod(PaymentMethod.CASH);
+                log.info("Payment method for ride with id {} was changed to cash", ride.getId());
                 rideRepository.save(ride);
             }
         }
@@ -270,6 +304,7 @@ public class RideServiceImpl implements RideService {
             paymentService.chargeFromCustomer(request);
         } catch (PaymentFallbackException e) {
             ride.setPaymentMethod(PaymentMethod.CASH);
+            log.info("Payment method for ride with id {} was changed to cash", ride.getId());
             rideRepository.save(ride);
         }
 
@@ -302,7 +337,11 @@ public class RideServiceImpl implements RideService {
 
     private void setDriver(DriverForRideRequest request) {
         Ride ride = rideRepository.findById(request.rideId())
-                .orElseThrow(() -> new NotFoundException(request.rideId()));
+                .orElseThrow(() -> {
+                            log.error("Ride with id {} is not found", request.rideId());
+                            return new NotFoundException(request.rideId());
+                        }
+                );
         ride.setDriverId(request.driverId());
         ride.setRideStatus(RideStatus.ACCEPTED);
         rideRepository.save(ride);
