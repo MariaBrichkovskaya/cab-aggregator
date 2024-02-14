@@ -15,7 +15,6 @@
         <module>ride-service</module>
         <module>eureka-service</module>
         <module>gateway-service</module>
-
     </modules>
     <properties>
         <maven.compiler.source>19</maven.compiler.source>
