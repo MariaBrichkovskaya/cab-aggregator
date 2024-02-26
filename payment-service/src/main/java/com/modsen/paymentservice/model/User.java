@@ -7,6 +7,8 @@ import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "customers")
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -17,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 public class User {
     @Id
     @Column(name = "passenger_id")
-    Long passengerId;
+    UUID passengerId;
     @Column(name = "customer_id")
     String customerId;
 }
