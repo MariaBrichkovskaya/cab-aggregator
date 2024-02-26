@@ -11,6 +11,8 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.Range;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -25,9 +27,8 @@ public class CustomerRequest {
     @NotBlank(message = "{phone.not.empty.message}")
     String phone;
     @NotNull(message = "{passenger.not.empty.message}")
-    @Range(min = 1, message = "{min.value.message}")
-    long passengerId;
+    UUID passengerId;
     @NotNull(message = "{amount.not.empty.message}")
-    @Range(min = 100, max = 1000000,message = "{amount.range.message}")
+    @Range(min = 100, max = 1000000, message = "{amount.range.message}")
     long amount;
 }

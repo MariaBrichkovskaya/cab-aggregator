@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -110,19 +111,19 @@ public class PaymentServiceImpl implements PaymentService {
         return createUser(params, request.getPassengerId());
     }
 
-    private void checkCustomerNotFound(long id) {
+    private void checkCustomerNotFound(UUID id) {
         if (!customerRepository.existsById(id)) {
             throw new NotFoundException("Customer is not found");
         }
     }
 
-    private void checkCustomerExistence(long id) {
+    private void checkCustomerExistence(UUID id) {
         if (customerRepository.existsById(id)) {
             throw new AlreadyExistsException("Customer already exists");
         }
     }
 
-    private CustomerResponse createUser(CustomerCreateParams params, long id) {
+    private CustomerResponse createUser(CustomerCreateParams params, UUID id) {
         Stripe.apiKey = SECRET_KEY;
         Customer customer = checkCustomerParams(params);
         createPaymentMethod(customer.getId());
@@ -164,7 +165,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public CustomerResponse retrieve(long id) {
+    public CustomerResponse retrieve(UUID id) {
         Stripe.apiKey = SECRET_KEY;
         checkCustomerNotFound(id);
         String customerId = customerRepository.findById(id).get().getCustomerId();
@@ -208,7 +209,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public ChargeResponse chargeFromCustomer(CustomerChargeRequest request) {
         Stripe.apiKey = SECRET_KEY;
-        Long passengerId = request.getPassengerId();
+        UUID passengerId = request.getPassengerId();
         User user = customerRepository.findById(passengerId).get();
         String customerId = user.getCustomerId();
         checkBalance(customerId, request.getAmount());
@@ -220,7 +221,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public ExistenceResponse checkExistence(long id) {
+    public ExistenceResponse checkExistence(UUID id) {
         try {
             checkCustomerNotFound(id);
             return ExistenceResponse.builder()
