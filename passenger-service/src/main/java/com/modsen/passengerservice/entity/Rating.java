@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,6 +22,6 @@ public class Rating {
     @JoinColumn(name = "passenger_id")
     Passenger passenger;
     Integer score;
-    Long driverId;
+    UUID driverId;
 }
 

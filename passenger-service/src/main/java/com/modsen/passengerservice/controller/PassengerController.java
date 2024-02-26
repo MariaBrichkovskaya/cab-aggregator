@@ -11,7 +11,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,23 +43,26 @@ public class PassengerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PassengerResponse createPassenger(@RequestBody @Valid PassengerRequest passengerRequest) {
-        return passengerService.add(passengerRequest);
+    @PreAuthorize("hasAnyRole('ROLE_PASSENGER')")
+    public PassengerResponse createPassenger(@AuthenticationPrincipal OAuth2User principal) {
+        return passengerService.add(principal);
     }
 
-    @DeleteMapping("/{id}")
-    public MessageResponse deletePassenger(@PathVariable Long id) {
+    @PutMapping("/{id}/block")
+    @PreAuthorize("hasAnyRole('ROLE_PASSENGER') && #id == authentication.principal.id")
+    public MessageResponse deletePassenger(@PathVariable UUID id) {
         return passengerService.delete(id);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PassengerResponse> passengerInfo(@PathVariable Long id) {
+    public ResponseEntity<PassengerResponse> passengerInfo(@PathVariable UUID id) {
         PassengerResponse passenger = passengerService.findById(id);
         return ResponseEntity.ok(passenger);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PassengerResponse> updatePassenger(@PathVariable Long id, @RequestBody @Valid PassengerRequest passengerRequest) {
+    @PreAuthorize("hasAnyRole('ROLE_PASSENGER')&& #id == authentication.principal.id")
+    public ResponseEntity<PassengerResponse> updatePassenger(@PathVariable UUID id, @RequestBody @Valid PassengerRequest passengerRequest) {
         PassengerResponse response = passengerService.update(passengerRequest, id);
         return ResponseEntity.ok(response);
     }

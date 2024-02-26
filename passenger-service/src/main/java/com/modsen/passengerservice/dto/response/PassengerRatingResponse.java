@@ -10,6 +10,8 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -21,7 +23,7 @@ import lombok.experimental.FieldDefaults;
 @ToString
 public class PassengerRatingResponse {
     long id;
-    long passengerId;
+    UUID passengerId;
     DriverResponse driverResponse;
     int score;
 }

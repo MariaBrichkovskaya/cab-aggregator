@@ -4,7 +4,7 @@
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="Maria Brichkovskaya" id="1">
         <createTable tableName="passengers">
-            <column name="id" type="bigserial">
+            <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar(200)">
@@ -14,10 +14,10 @@
                 <constraints nullable="false"/>
             </column>
             <column name="email" type="varchar(200)">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="phone" type="varchar(11)">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="false"/>
             </column>
             <column name="active" type="boolean"/>
         </createTable>
