@@ -6,10 +6,10 @@
             <column name="id" type="bigserial">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="driver_id" type="bigint">
+            <column name="driver_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
-            <column name="passenger_id" type="bigint">
+            <column name="passenger_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
             <column name="score" type="int">
@@ -17,7 +17,8 @@
             </column>
         </createTable>
         <addForeignKeyConstraint baseTableName="ratings" baseColumnNames="driver_id"
-                                 referencedTableName="drivers" referencedColumnNames="id" constraintName="FK_rating_driver"
+                                 referencedTableName="drivers" referencedColumnNames="id"
+                                 constraintName="FK_rating_driver"
                                  deleteCascade="true"/>
     </changeSet>
 </databaseChangeLog>

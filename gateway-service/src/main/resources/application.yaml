@@ -3,10 +3,17 @@ server:
 spring:
   security:
     oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8181/realms/cab-aggregator-realm
-          jwk-set-uri: http://localhost:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8181/realms/cab-aggregator-realm
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: cab-aggregator-client
+            client-secret: ${CLIENT_SECRET}
+            scope: openid
+            authorization-grant-type: authorization_code
   application:
     name: gateway-service
   cloud:
@@ -43,7 +50,8 @@ spring:
           uri: lb://auth-service
           predicates:
             - Path=/api/v1/auth/**
-
+      default-filters:
+        - TokenRelay=
 eureka:
   instance:
     prefer-ip-address: true
@@ -70,3 +78,8 @@ management:
     export:
       prometheus:
         enabled: true
+logging:
+  level:
+    org:
+      springframework:
+        security: TRACE

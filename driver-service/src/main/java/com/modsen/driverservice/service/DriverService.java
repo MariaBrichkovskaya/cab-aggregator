@@ -5,19 +5,22 @@ import com.modsen.driverservice.dto.request.RideRequest;
 import com.modsen.driverservice.dto.response.DriverResponse;
 import com.modsen.driverservice.dto.response.DriversListResponse;
 import com.modsen.driverservice.dto.response.MessageResponse;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
+import java.util.UUID;
 
 public interface DriverService {
-    DriverResponse add(DriverRequest request);
+    DriverResponse add(OAuth2User principal);
 
-    DriverResponse findById(Long id);
+    DriverResponse findById(UUID id);
 
     DriversListResponse findAll(int page, int size, String sortingParam);
 
-    DriverResponse update(DriverRequest request, Long id);
+    DriverResponse update(DriverRequest request, UUID id);
 
-    MessageResponse delete(Long id);
+    MessageResponse delete(UUID id);
 
-    MessageResponse changeStatus(Long id);
+    MessageResponse changeStatus(UUID id);
 
     DriversListResponse findAvailableDrivers(int page, int size, String sortingParam);
 

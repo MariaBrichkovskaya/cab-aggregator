@@ -77,6 +77,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=Raznie71593)
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
     networks:
       - cab_aggregator
     depends_on:
@@ -97,6 +98,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
     depends_on:
       - eureka-service
       - db
@@ -117,6 +119,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
     depends_on:
       - eureka-service
       - db
@@ -133,10 +136,11 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/payments
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=Raznie71593)
-      - STRIPE_KEY_PUBLIC=${STRIPE_PUBLIC_KEY}
-      - STRIPE_KEY_SECRET=${STRIPE_SECRET_KEY}
+      - STRIPE_KEY_PUBLIC=pk_test_51OMpWVHPfaCQO7pdVwsyKlRJaNipKQbxf0bXbs1vU65CdGsZpJmX53wlIaEBlvYxXOs6jqeJ345sr1VI4DwK3zt7008DaWgELG
+      - STRIPE_KEY_SECRET=sk_test_51OMpWVHPfaCQO7pdxLmDbGHksxZbtTtVHIx2uKAmdfbMf9jsKqgfeXLC69xqJ5dF99XLKlPNQgTRugmZPr8IRsmm00sDW2Hpyt
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://keycloak:8181/realms/cab-aggregator-realm
     depends_on:
       - eureka-service
       - db
@@ -157,6 +161,8 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET=XgRwNJnuWByQVSRBG6IpPn2QjlBUK7Dd
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://keycloak:8181/realms/cab-aggregator-realm
     depends_on:
       - eureka-service
     ports:
@@ -237,8 +243,10 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
     ports:
-      - "8181:8080"
+      - "8181:8181"
     networks:
       - cab_aggregator
     command:

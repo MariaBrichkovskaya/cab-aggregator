@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 @Setter
@@ -19,6 +21,6 @@ import lombok.experimental.FieldDefaults;
 public class DriverRatingResponse {
     long id;
     PassengerResponse passengerResponse;
-    long driverId;
+    UUID driverId;
     int score;
 }
