@@ -18,7 +18,4 @@ public class PassengerRatingRequest {
     @Min(value = 1, message = "{min.value.message}")
     @Max(value = 5, message = "{max.value.message}")
     Integer score;
-    @NotNull(message = "{driver.not.empty.message}")
-    @Min(value = 1, message = "{min.value.message}")
-    Long driverId;
 }

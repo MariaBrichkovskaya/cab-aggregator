@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @CircuitBreaker(name = "paymentBreaker", fallbackMethod = "fallbackException")
 @Retry(name = "proxyRetry")
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public ExistenceResponse customerExistence(long id) {
+    public ExistenceResponse customerExistence(UUID id) {
         return paymentFeignClient.customerExistence(id);
     }
 
@@ -48,7 +50,7 @@ public class PaymentServiceImpl implements PaymentService {
         throw new PaymentFallbackException(exception.getMessage());
     }
 
-    private ExistenceResponse fallbackException(long id, Exception exception) {
+    private ExistenceResponse fallbackException(UUID id, Exception exception) {
         log.error(exception.getMessage());
         throw new PaymentFallbackException(exception.getMessage());
     }

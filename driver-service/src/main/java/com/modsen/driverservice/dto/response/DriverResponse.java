@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,7 +20,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 @Builder
 public class DriverResponse {
-    Long id;
+    UUID id;
     String name;
     String surname;
     String phone;

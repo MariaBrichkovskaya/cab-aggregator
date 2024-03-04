@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -15,5 +17,5 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 public class AverageDriverRatingResponse {
     double averageRating;
-    long driverId;
+    UUID driverId;
 }

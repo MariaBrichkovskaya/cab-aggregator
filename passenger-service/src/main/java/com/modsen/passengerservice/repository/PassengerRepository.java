@@ -5,13 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Repository
-public interface PassengerRepository extends JpaRepository<Passenger, Long> {
-    boolean existsByEmail(String email);
+public interface PassengerRepository extends JpaRepository<Passenger, UUID> {
+    boolean existsByEmailAndActiveIsTrue(String email);
 
-    boolean existsByPhone(String phone);
+    boolean existsByPhoneAndActiveIsTrue(String phone);
 
-    Optional<Passenger> findByIdAndActiveIsTrue(long id);
+    Optional<Passenger> findByIdAndActiveIsTrue(UUID id);
 }

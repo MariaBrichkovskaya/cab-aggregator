@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/v1/payments")
@@ -50,7 +52,7 @@ public class PaymentController {
     }
 
     @GetMapping("/customers/{id}")
-    public CustomerResponse findCustomer(@PathVariable long id) {
+    public CustomerResponse findCustomer(@PathVariable UUID id) {
         return paymentService.retrieve(id);
     }
 
@@ -65,7 +67,7 @@ public class PaymentController {
     }
 
     @GetMapping("/customers/existence/{id}")
-    public ExistenceResponse customerExistence(@PathVariable long id) {
+    public ExistenceResponse customerExistence(@PathVariable UUID id) {
         return paymentService.checkExistence(id);
     }
 

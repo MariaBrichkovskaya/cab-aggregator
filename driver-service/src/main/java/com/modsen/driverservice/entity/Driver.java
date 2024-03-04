@@ -18,6 +18,8 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "drivers")
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -29,9 +31,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 public class Driver {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    Long id;
+    UUID id;
     @Column(name = "name", nullable = false)
     String name;
     @Column(name = "surname", nullable = false)

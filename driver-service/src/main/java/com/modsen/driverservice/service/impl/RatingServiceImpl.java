@@ -15,10 +15,14 @@ import com.modsen.driverservice.service.RatingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
+
+import static com.modsen.driverservice.util.SecurityUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +34,14 @@ public class RatingServiceImpl implements RatingService {
     private final ModelMapper modelMapper;
     private final PassengerService passengerService;
 
-    private PassengerResponse getPassenger(long id) {
+    private PassengerResponse getPassenger(UUID id) {
         return passengerService.getPassenger(id);
     }
 
     @Override
-    public DriverRatingResponse rateDriver(DriverRatingRequest driverRatingRequest, long driverId) {
+    public DriverRatingResponse rateDriver(DriverRatingRequest driverRatingRequest, UUID driverId, OAuth2User principal) {
         Rating newDriverRating = toEntity(driverRatingRequest);
+        newDriverRating.setPassengerId(principal.getAttribute(ID_KEY));
         newDriverRating.setDriver(driverRepository.findByIdAndActiveIsTrue(driverId)
                 .orElseThrow(() -> new NotFoundException(driverId)));
         log.info("Update rating for driver {}", driverId);
@@ -45,7 +50,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     @Transactional(readOnly = true)
-    public DriverListRatingsResponse getRatingsByDriverId(long driverId) {
+    public DriverListRatingsResponse getRatingsByDriverId(UUID driverId) {
         validateDriverExists(driverId);
         List<DriverRatingResponse> driverRatings = driverRatingRepository.getRatingsByDriverId(driverId)
                 .stream()
@@ -60,7 +65,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     @Transactional(readOnly = true)
-    public AverageDriverRatingResponse getAverageDriverRating(long driverId) {
+    public AverageDriverRatingResponse getAverageDriverRating(UUID driverId) {
         validateDriverExists(driverId);
         double averageRating = driverRatingRepository
                 .getRatingsByDriverId(driverId)
@@ -75,7 +80,7 @@ public class RatingServiceImpl implements RatingService {
                 .build();
     }
 
-    private void validateDriverExists(long driverId) {
+    private void validateDriverExists(UUID driverId) {
         driverRepository.findById(driverId)
                 .orElseThrow(() -> new NotFoundException(driverId));
     }

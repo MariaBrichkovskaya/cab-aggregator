@@ -7,13 +7,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
 @EqualsAndHashCode
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PassengerResponse {
-    Long id;
+    UUID id;
     String name;
     String surname;
     String email;

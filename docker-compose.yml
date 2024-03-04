@@ -77,6 +77,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
     networks:
       - cab_aggregator
     depends_on:
@@ -97,6 +98,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
     depends_on:
       - eureka-service
       - db
@@ -117,6 +119,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
     depends_on:
       - eureka-service
       - db
@@ -137,6 +140,7 @@ services:
       - STRIPE_KEY_SECRET=${STRIPE_SECRET_KEY}
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://keycloak:8181/realms/cab-aggregator-realm
     depends_on:
       - eureka-service
       - db
@@ -157,6 +161,8 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET=XgRwNJnuWByQVSRBG6IpPn2QjlBUK7Dd
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://keycloak:8181/realms/cab-aggregator-realm
     depends_on:
       - eureka-service
     ports:
@@ -231,6 +237,20 @@ services:
       - cab_aggregator
     ports:
       - '9411:9411'
+  keycloak:
+    image: quay.io/keycloak/keycloak:18.0.2
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    ports:
+      - "8181:8181"
+    networks:
+      - cab_aggregator
+    command:
+      - start-dev
 networks:
   cab_aggregator:
     driver: bridge

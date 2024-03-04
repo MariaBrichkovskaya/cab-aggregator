@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -14,6 +16,6 @@ public class CustomerRequest {
     String name;
     String email;
     String phone;
-    long passengerId;
+    UUID passengerId;
     long amount;
 }

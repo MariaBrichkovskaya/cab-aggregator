@@ -20,10 +20,10 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
             <column name="date" type="timestamp">
                 <constraints nullable="false"/>
             </column>
-            <column name="passenger_id" type="bigint">
+            <column name="passenger_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
-            <column name="driver_id" type="bigint">
+            <column name="driver_id" type="uuid">
                 <constraints nullable="true"/>
             </column>
             <column name="status" type="varchar(255)">

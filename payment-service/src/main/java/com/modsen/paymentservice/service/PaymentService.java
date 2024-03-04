@@ -11,6 +11,8 @@ import com.modsen.paymentservice.dto.response.ExistenceResponse;
 import com.modsen.paymentservice.dto.response.MessageResponse;
 import com.modsen.paymentservice.dto.response.TokenResponse;
 
+import java.util.UUID;
+
 public interface PaymentService {
     MessageResponse charge(ChargeRequest request);
 
@@ -18,11 +20,11 @@ public interface PaymentService {
 
     CustomerResponse createCustomer(CustomerRequest request);
 
-    CustomerResponse retrieve(long id);
+    CustomerResponse retrieve(UUID id);
 
     BalanceResponse balance();
 
     ChargeResponse chargeFromCustomer(CustomerChargeRequest request);
 
-    ExistenceResponse checkExistence(long id);
+    ExistenceResponse checkExistence(UUID id);
 }

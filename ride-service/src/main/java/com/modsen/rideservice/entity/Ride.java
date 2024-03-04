@@ -20,6 +20,7 @@ import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "rides")
@@ -42,9 +43,9 @@ public class Ride {
     @Column(name = "price", nullable = false)
     Double price;
     @Column(name = "passenger_id", nullable = false)
-    Long passengerId;
+    UUID passengerId;
     @Column(name = "driver_id")
-    Long driverId;
+    UUID driverId;
     LocalDateTime date;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

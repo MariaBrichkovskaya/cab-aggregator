@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import static com.modsen.passengerservice.util.Messages.*;
+import static com.modsen.passengerservice.util.SecurityUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -39,16 +42,19 @@ public class PassengerServiceImpl implements PassengerService {
     private final PassengerMapper passengerMapper;
 
     @Override
-    public PassengerResponse add(PassengerRequest request) {
+    public PassengerResponse add(OAuth2User principal) {
+        PassengerRequest request = createRequestFromPrincipal(principal);
         checkCreateDataIsUnique(request);
-        Passenger passenger = passengerRepository.save(passengerMapper.toEntity(request));
+        Passenger passenger = passengerMapper.toEntity(request);
+        passenger.setId(principal.getAttribute(ID_KEY));
+        passengerRepository.save(passenger);
         log.info("Create passenger with surname {}", request.getSurname());
         return passengerMapper.toPassengerResponse(passenger);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PassengerResponse findById(Long id) {
+    public PassengerResponse findById(UUID id) {
         Passenger passenger = passengerRepository.findById(id)
                 .orElseThrow(() -> {
                             log.error("Passenger with id {} is not found", id);
@@ -99,7 +105,7 @@ public class PassengerServiceImpl implements PassengerService {
 
 
     @Override
-    public PassengerResponse update(PassengerRequest request, Long id) {
+    public PassengerResponse update(PassengerRequest request, UUID id) {
         Passenger passengerToUpdate = passengerRepository.findByIdAndActiveIsTrue(id)
                 .orElseThrow(() -> {
                             log.error("Passenger with id {} is not found", id);
@@ -114,7 +120,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
-    public MessageResponse delete(Long id) {
+    public MessageResponse delete(UUID id) {
         Passenger passenger = passengerRepository.findByIdAndActiveIsTrue(id)
                 .orElseThrow(() -> {
                             log.error("Passenger with id {} is not found", id);
@@ -131,7 +137,7 @@ public class PassengerServiceImpl implements PassengerService {
 
 
     private void checkEmailIsUnique(String email, Map<String, String> errors) {
-        if (passengerRepository.existsByEmail(email)) {
+        if (passengerRepository.existsByEmailAndActiveIsTrue(email)) {
             log.error("Passenger with email {} is exists", email);
             errors.put(
                     "email",
@@ -141,7 +147,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     private void checkPhoneIsUnique(String phone, Map<String, String> errors) {
-        if (passengerRepository.existsByPhone(phone)) {
+        if (passengerRepository.existsByPhoneAndActiveIsTrue(phone)) {
             log.error("Passenger with phone {} is exists", phone);
             errors.put(
                     "phone",
@@ -173,4 +179,14 @@ public class PassengerServiceImpl implements PassengerService {
             throw new AlreadyExistsException(errors);
         }
     }
+
+    private PassengerRequest createRequestFromPrincipal(OAuth2User principal) {
+        return PassengerRequest.builder()
+                .name(principal.getAttribute(NAME_KEY))
+                .surname(principal.getAttribute(SURNAME_KEY))
+                .email(principal.getAttribute(EMAIL_KEY))
+                .phone(principal.getAttribute(PHONE_KEY))
+                .build();
+    }
 }
+

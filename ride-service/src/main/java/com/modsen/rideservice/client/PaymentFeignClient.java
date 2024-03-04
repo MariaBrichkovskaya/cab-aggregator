@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.UUID;
+
 @FeignClient(value = "${feign.client.config.payment.name}",
         path = "${feign.client.config.payment.path}", configuration = FeignClientConfig.class)
 public interface PaymentFeignClient {
@@ -23,5 +25,5 @@ public interface PaymentFeignClient {
     CustomerResponse createCustomer(@RequestBody CustomerRequest request);
 
     @GetMapping("/customers/existence/{id}")
-    ExistenceResponse customerExistence(@PathVariable long id);
+    ExistenceResponse customerExistence(@PathVariable UUID id);
 }

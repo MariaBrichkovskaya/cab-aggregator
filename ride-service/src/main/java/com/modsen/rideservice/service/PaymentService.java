@@ -5,6 +5,8 @@ import com.modsen.rideservice.dto.request.CustomerRequest;
 import com.modsen.rideservice.dto.response.ChargeResponse;
 import com.modsen.rideservice.dto.response.ExistenceResponse;
 
+import java.util.UUID;
+
 public interface PaymentService {
 
 
@@ -12,5 +14,5 @@ public interface PaymentService {
 
     void createCustomer(CustomerRequest request);
 
-    ExistenceResponse customerExistence(long id);
+    ExistenceResponse customerExistence(UUID id);
 }

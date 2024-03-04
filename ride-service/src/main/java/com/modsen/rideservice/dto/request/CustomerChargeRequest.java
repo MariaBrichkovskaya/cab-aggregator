@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -13,5 +15,5 @@ import lombok.experimental.FieldDefaults;
 public class CustomerChargeRequest {
     long amount;
     String currency;
-    long passengerId;
+    UUID passengerId;
 }

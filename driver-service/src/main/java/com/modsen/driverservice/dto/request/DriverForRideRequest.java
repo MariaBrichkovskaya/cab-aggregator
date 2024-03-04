@@ -1,10 +1,12 @@
 package com.modsen.driverservice.dto.request;
 
-import lombok.*;
+import lombok.Builder;
+
+import java.util.UUID;
 
 @Builder
 public record DriverForRideRequest(
-        long driverId,
+        UUID driverId,
         long rideId
 ) {
 }
