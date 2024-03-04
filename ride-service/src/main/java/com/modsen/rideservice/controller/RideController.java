@@ -12,6 +12,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/rides")
@@ -39,13 +44,16 @@ public class RideController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ROLE_PASSENGER')")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest) {
-        RideResponse response = rideService.add(rideRequest);
+    public ResponseEntity<RideResponse> createRide(@RequestBody @Valid CreateRideRequest rideRequest,
+                                                   @AuthenticationPrincipal OAuth2User principal) {
+        RideResponse response = rideService.add(rideRequest, principal);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public MessageResponse deleteRide(@PathVariable Long id) {
         return rideService.delete(id);
     }
@@ -57,13 +65,15 @@ public class RideController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public ResponseEntity<RideResponse> updateRide(@PathVariable Long id, @RequestBody @Valid UpdateRideRequest rideRequest) {
         RideResponse response = rideService.update(rideRequest, id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/passenger/{passenger_id}")
-    public ResponseEntity<RidesListResponse> passengerRides(@PathVariable(name = "passenger_id") long passengerId, @RequestParam(required = false, defaultValue = "1") int page,
+    @PreAuthorize("hasAnyRole('ROLE_PASSENGER')&& #passengerId == authentication.principal.id")
+    public ResponseEntity<RidesListResponse> passengerRides(@PathVariable(name = "passenger_id") UUID passengerId, @RequestParam(required = false, defaultValue = "1") int page,
                                                             @RequestParam(required = false, defaultValue = "10") int size,
                                                             @RequestParam(name = "order_by", required = false) String orderBy) {
         RidesListResponse rides = rideService.getRidesByPassengerId(passengerId, page, size, orderBy);
@@ -71,7 +81,8 @@ public class RideController {
     }
 
     @GetMapping("/driver/{driver_id}")
-    public ResponseEntity<RidesListResponse> driverRides(@PathVariable(name = "driver_id") long driverId, @RequestParam(required = false, defaultValue = "1") int page,
+    @PreAuthorize("hasAnyRole('ROLE_DRIVER')&& #driverId == authentication.principal.id")
+    public ResponseEntity<RidesListResponse> driverRides(@PathVariable(name = "driver_id") UUID driverId, @RequestParam(required = false, defaultValue = "1") int page,
                                                          @RequestParam(required = false, defaultValue = "10") int size,
                                                          @RequestParam(name = "order_by", required = false) String orderBy) {
         RidesListResponse rides = rideService.getRidesByDriverId(driverId, page, size, orderBy);
@@ -79,6 +90,7 @@ public class RideController {
     }
 
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ROLE_DRIVER')")
     public ResponseEntity<RideResponse> editStatus(@PathVariable Long id, @RequestBody @Valid StatusRequest statusRequest) {
         RideResponse response = rideService.editStatus(id, statusRequest);
         return ResponseEntity.ok(response);

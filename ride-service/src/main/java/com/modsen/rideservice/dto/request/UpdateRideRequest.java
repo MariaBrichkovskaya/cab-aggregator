@@ -10,6 +10,8 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.Range;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -22,7 +24,6 @@ public class UpdateRideRequest {
     @Min(value = 1, message = "{min.value.message}")
     @NotNull(message = "{price.not.empty.message}")
     Double price;
-    @Range(min = 1, message = "{min.value.message}")
     @NotNull(message = "{passenger.not.empty.message}")
-    Long passengerId;
+    UUID passengerId;
 }

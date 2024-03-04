@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 import static com.modsen.rideservice.util.Messages.*;
 
 @Service
@@ -19,11 +21,11 @@ public class DriverServiceImpl implements DriverService {
 
     @CircuitBreaker(name = "driverBreaker", fallbackMethod = "getFallbackDriver")
     @Retry(name = "driverProxyRetry")
-    public DriverResponse getDriver(long id) {
+    public DriverResponse getDriver(UUID id) {
         return driverFeignClient.getDriver(id);
     }
 
-    private DriverResponse getFallbackDriver(long id, Exception exception) {
+    private DriverResponse getFallbackDriver(UUID id, Exception exception) {
         log.error(exception.getMessage());
         return DriverResponse.builder()
                 .id(id)

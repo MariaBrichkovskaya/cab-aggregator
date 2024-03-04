@@ -35,6 +35,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +44,10 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static com.modsen.rideservice.util.Messages.*;
+import static com.modsen.rideservice.util.SecurityUtil.*;
 
 
 @Service
@@ -62,8 +65,9 @@ public class RideServiceImpl implements RideService {
 
 
     @Override
-    public RideResponse add(CreateRideRequest request) {
+    public RideResponse add(CreateRideRequest request, OAuth2User principal) {
         Ride ride = toEntity(request);
+        ride.setPassengerId(principal.getAttribute(ID_KEY));
         setAdditionalFields(ride);
         checkBalance(ride);
         Ride rideToSave = rideRepository.save(ride);
@@ -155,7 +159,7 @@ public class RideServiceImpl implements RideService {
 
     @Override
     @Transactional(readOnly = true)
-    public RidesListResponse getRidesByPassengerId(long passengerId, int page, int size, String orderBy) {
+    public RidesListResponse getRidesByPassengerId(UUID passengerId, int page, int size, String orderBy) {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByPassengerId(passengerId, pageRequest);
         PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
@@ -175,7 +179,7 @@ public class RideServiceImpl implements RideService {
 
     @Override
     @Transactional(readOnly = true)
-    public RidesListResponse getRidesByDriverId(long driverId, int page, int size, String orderBy) {
+    public RidesListResponse getRidesByDriverId(UUID driverId, int page, int size, String orderBy) {
         PageRequest pageRequest = getPageRequest(page, size, orderBy);
         Page<Ride> ridesPage = rideRepository.findAllByDriverId(driverId, pageRequest);
         DriverResponse driverResponse = driverService.getDriver(driverId);
@@ -253,14 +257,14 @@ public class RideServiceImpl implements RideService {
         }
     }
 
-    private DriverResponse getDriverById(Long driverId) {
+    private DriverResponse getDriverById(UUID driverId) {
         if (driverId == null) {
             return null;
         }
         return driverService.getDriver(driverId);
     }
 
-    private PassengerResponse getPassengerById(long passengerId) {
+    private PassengerResponse getPassengerById(UUID passengerId) {
         return passengerService.getPassenger(passengerId);
     }
 
@@ -293,7 +297,7 @@ public class RideServiceImpl implements RideService {
     }
 
     private void charge(Ride ride, long amount) {
-        long passengerId = ride.getPassengerId();
+        UUID passengerId = ride.getPassengerId();
         try {
             PassengerResponse passengerResponse = passengerService.getPassenger(passengerId);
             checkCustomer(passengerId, passengerResponse);
@@ -311,7 +315,7 @@ public class RideServiceImpl implements RideService {
 
     }
 
-    private void checkCustomer(long passengerId, PassengerResponse passengerResponse) {
+    private void checkCustomer(UUID passengerId, PassengerResponse passengerResponse) {
         if (!paymentService.customerExistence(passengerId).isExist()) {
             CustomerRequest customerRequest = CustomerRequest.builder()
                     .amount(1000000)

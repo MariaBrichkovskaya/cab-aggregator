@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 import static com.modsen.rideservice.util.Messages.*;
 
 @Service
@@ -20,11 +22,11 @@ public class PassengerServiceImpl implements PassengerService {
     @CircuitBreaker(name = "passengerBreaker", fallbackMethod = "getFallbackPassenger")
     @Retry(name = "proxyRetry")
     @Override
-    public PassengerResponse getPassenger(long id) {
+    public PassengerResponse getPassenger(UUID id) {
         return passengerFeignClient.getPassenger(id);
     }
 
-    private PassengerResponse getFallbackPassenger(long id, Exception exception) {
+    private PassengerResponse getFallbackPassenger(UUID id, Exception exception) {
         log.error(exception.getMessage());
         return PassengerResponse.builder()
                 .id(id)

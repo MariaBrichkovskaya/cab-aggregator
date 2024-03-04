@@ -10,6 +10,12 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8181/realms/cab-aggregator-realm
+          jwk-set-uri: http://localhost:8181/realms/cab-aggregator-realm/protocol/openid-connect/certs
   main:
     allow-bean-definition-overriding: true
   cloud:
@@ -142,3 +148,8 @@ resilience4j:
     instances:
       proxyRetry:
         base-config: default
+jwt:
+  auth:
+    converter:
+      resource-id: cab-aggregator-client
+      principal-attribute: sub

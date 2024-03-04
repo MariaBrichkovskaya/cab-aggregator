@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Builder
 public record DriverForRideRequest(
-        long driverId,
+        UUID driverId,
         long rideId
 ) {
 }

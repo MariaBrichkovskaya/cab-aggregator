@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -14,5 +16,5 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 public class AveragePassengerRatingResponse {
     double averageRating;
-    long passengerId;
+    UUID passengerId;
 }

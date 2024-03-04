@@ -6,10 +6,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface RideRepository extends JpaRepository<Ride,Long> {
-    Page<Ride> findAllByPassengerId(long passengerId, PageRequest pageRequest);
+import java.util.UUID;
 
-    Page<Ride> findAllByDriverId(long driverId, PageRequest pageRequest);
+@Repository
+public interface RideRepository extends JpaRepository<Ride, Long> {
+    Page<Ride> findAllByPassengerId(UUID passengerId, PageRequest pageRequest);
+
+    Page<Ride> findAllByDriverId(UUID driverId, PageRequest pageRequest);
 
 }
